@@ -38,6 +38,7 @@ public static class UiStrings
     public static string RecommendationManualHandoffFormat => Resources.Recommendation_Manual_Handoff_Format;
     public static string RecommendationManualActionFormat => Resources.Recommendation_Manual_Action_Format;
     public static string RecommendationVerificationFormat => Resources.Recommendation_Verification_Format;
+    public static string RecommendationVerificationStatusFormat => Resources.Recommendation_Verification_Status_Format;
     public static string RecommendationTitleRecommended => Resources.Recommendation_Title_Recommended;
     public static string RecommendationTitleNotRecommended => Resources.Recommendation_Title_Not_Recommended;
     public static string RecommendationCandidateVersionFormat => Resources.Recommendation_Candidate_Version_Format;
