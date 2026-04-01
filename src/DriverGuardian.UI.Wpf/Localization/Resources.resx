@@ -13,4 +13,22 @@
   <data name="Recommendation_Summary_Format" xml:space="preserve"><value>Рекомендации: к обновлению {0}; без рекомендации {1}</value></data>
   <data name="Manual_Handoff_Summary_Format" xml:space="preserve"><value>Готовность ручной установки: готово {0}; требуется действие пользователя {1}</value></data>
   <data name="Verification_Summary_Format" xml:space="preserve"><value>Проверка после установки: {0}</value></data>
+  <data name="Action_Flow_Title" xml:space="preserve"><value>Что делать дальше</value></data>
+  <data name="Action_Flow_Safety_Notice" xml:space="preserve"><value>Безопасность: приложение не выполняет установку автоматически. Все действия выполняются вами вручную.</value></data>
+  <data name="Action_Status_Required" xml:space="preserve"><value>требуется действие</value></data>
+  <data name="Action_Status_Available" xml:space="preserve"><value>доступно</value></data>
+  <data name="Action_Status_Blocked" xml:space="preserve"><value>заблокировано до ручной проверки</value></data>
+  <data name="Action_Status_Wait" xml:space="preserve"><value>ожидание</value></data>
+  <data name="Action_Status_Not_Available" xml:space="preserve"><value>нет рекомендаций</value></data>
+  <data name="Action_Status_Return" xml:space="preserve"><value>вернуться после установки</value></data>
+  <data name="Action_Step_Review_Recommendation" xml:space="preserve"><value>Проверить рекомендации</value></data>
+  <data name="Action_Step_Review_Recommendation_Hint" xml:space="preserve"><value>Оцените сводку рекомендаций и убедитесь, что выбран правильный драйвер и устройство.</value></data>
+  <data name="Action_Step_Open_Official_Source" xml:space="preserve"><value>Открыть официальный источник вручную</value></data>
+  <data name="Action_Step_Open_Official_Source_Hint" xml:space="preserve"><value>Перейдите на сайт поставщика вручную и проверьте, что источник действительно официальный.</value></data>
+  <data name="Action_Step_Download_Manually" xml:space="preserve"><value>Скачать пакет вручную</value></data>
+  <data name="Action_Step_Download_Manually_Hint" xml:space="preserve"><value>Загрузите пакет драйвера вручную только с официального источника.</value></data>
+  <data name="Action_Step_Install_Outside_App" xml:space="preserve"><value>Установить вне приложения</value></data>
+  <data name="Action_Step_Install_Outside_App_Hint" xml:space="preserve"><value>Запустите установку драйвера самостоятельно вне Driver Guardian.</value></data>
+  <data name="Action_Step_Return_For_Verification" xml:space="preserve"><value>Вернуться для проверки</value></data>
+  <data name="Action_Step_Return_For_Verification_Hint" xml:space="preserve"><value>После ручной установки снова запустите анализ для проверки изменений.</value></data>
 </root>
