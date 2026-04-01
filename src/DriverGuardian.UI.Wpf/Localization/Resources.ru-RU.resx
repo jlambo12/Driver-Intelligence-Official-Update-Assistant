@@ -48,4 +48,9 @@
   <data name="Recommendation_Next_Step_Deferred" xml:space="preserve"><value>Повторите анализ позже или после обновления каталога источников.</value></data>
   <data name="Recommendation_Installed_Driver_Format" xml:space="preserve"><value>Текущий драйвер: {0}; поставщик: {1}</value></data>
   <data name="Recommendation_Provider_Unknown" xml:space="preserve"><value>не указан</value></data>
+  <data name="Report_Export_Action" xml:space="preserve"><value>Подготовить отчёт</value></data>
+  <data name="Report_Section_Title" xml:space="preserve"><value>Предпросмотр отчёта для обмена</value></data>
+  <data name="Report_Preview_Placeholder" xml:space="preserve"><value>После анализа подготовьте отчёт, чтобы скопировать структурированную сводку.</value></data>
+  <data name="Report_Status_Requires_Scan" xml:space="preserve"><value>Сначала выполните анализ, чтобы подготовить отчёт.</value></data>
+  <data name="Report_Status_Prepared" xml:space="preserve"><value>Отчёт подготовлен и скопирован в буфер обмена.</value></data>
 </root>

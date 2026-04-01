@@ -52,6 +52,11 @@ public static class Resources
     public static string Recommendation_Next_Step_Deferred => GetString(nameof(Recommendation_Next_Step_Deferred));
     public static string Recommendation_Installed_Driver_Format => GetString(nameof(Recommendation_Installed_Driver_Format));
     public static string Recommendation_Provider_Unknown => GetString(nameof(Recommendation_Provider_Unknown));
+    public static string Report_Export_Action => GetString(nameof(Report_Export_Action));
+    public static string Report_Section_Title => GetString(nameof(Report_Section_Title));
+    public static string Report_Preview_Placeholder => GetString(nameof(Report_Preview_Placeholder));
+    public static string Report_Status_Requires_Scan => GetString(nameof(Report_Status_Requires_Scan));
+    public static string Report_Status_Prepared => GetString(nameof(Report_Status_Prepared));
 
     private static string GetString(string key)
     {

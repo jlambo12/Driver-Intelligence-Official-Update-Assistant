@@ -16,6 +16,7 @@ public sealed record MainScreenWorkflowResult(
     string VerificationSummary,
     string UiCulture,
     Guid ScanSessionId,
+    string ShareableReportText,
     IReadOnlyCollection<RecommendationDetailResult> RecommendationDetails,
     OpenOfficialSourceActionResult OfficialSourceAction);
 

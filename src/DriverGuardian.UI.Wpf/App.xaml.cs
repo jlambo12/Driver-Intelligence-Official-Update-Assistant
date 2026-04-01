@@ -6,6 +6,7 @@ using DriverGuardian.Application.Recommendations;
 using DriverGuardian.Application.Scanning;
 using DriverGuardian.Application.History;
 using DriverGuardian.Application.OfficialSources;
+using DriverGuardian.Application.Reports;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Contracts.DriverInspection;
 using DriverGuardian.Infrastructure.Audit;
@@ -40,6 +41,7 @@ public partial class App : Application
         ISettingsRepository settingsRepository = new InMemorySettingsRepository();
         IAuditWriter auditWriter = new InMemoryAuditWriter();
         IResultHistoryRepository resultHistoryRepository = new InMemoryResultHistoryRepository();
+        IShareableReportBuilder shareableReportBuilder = new ShareableReportBuilder();
         var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
         IMainScreenWorkflow mainScreenWorkflow = new MainScreenWorkflow(
             scanOrchestrator,
@@ -48,6 +50,7 @@ public partial class App : Application
             settingsRepository,
             auditWriter,
             resultHistoryRepository,
+            shareableReportBuilder,
             openOfficialSourceActionEvaluator);
 
         var vm = new MainViewModel(mainScreenWorkflow);

@@ -16,7 +16,10 @@
         </Grid.RowDefinitions>
 
         <TextBlock Text="{Binding State.StatusText}" FontSize="18" Margin="0 0 0 14" />
-        <Button Grid.Row="1" Content="{Binding State.ScanButtonText}" Command="{Binding ScanCommand}" Width="220" Height="42" HorizontalAlignment="Left"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Button Content="{Binding State.ScanButtonText}" Command="{Binding ScanCommand}" Width="220" Height="42" HorizontalAlignment="Left" Margin="0 0 10 0"/>
+            <Button Content="{Binding State.ExportReportButtonText}" Command="{Binding ExportReportCommand}" Width="220" Height="42" HorizontalAlignment="Left"/>
+        </StackPanel>
 
         <ScrollViewer Grid.Row="2" Margin="0 16 0 0" VerticalScrollBarVisibility="Auto">
             <StackPanel>
@@ -73,6 +76,13 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 14 0 0">
+                    <StackPanel>
+                        <TextBlock Text="{Binding State.ReportSectionTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
+                        <TextBox Text="{Binding State.ReportPreviewText}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="180" VerticalScrollBarVisibility="Auto"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

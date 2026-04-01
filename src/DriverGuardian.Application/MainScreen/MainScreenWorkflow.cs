@@ -2,6 +2,7 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.History;
 using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.OfficialSources;
+using DriverGuardian.Application.Reports;
 using DriverGuardian.Application.Verification;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 
@@ -14,6 +15,7 @@ public sealed class MainScreenWorkflow(
     ISettingsRepository settingsRepository,
     IAuditWriter auditWriter,
     IResultHistoryRepository resultHistoryRepository,
+    IShareableReportBuilder shareableReportBuilder,
     OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator) : IMainScreenWorkflow
 {
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
@@ -28,6 +30,7 @@ public sealed class MainScreenWorkflow(
         var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
         var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
         var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
+        var shareableReportText = BuildShareableReportText(scanResult, recommendations, shareableReportBuilder, clock: DateTimeOffset.UtcNow);
         var verificationPlaceholder = new PostInstallVerificationEvaluator()
             .Evaluate(new PostInstallVerificationRequest(
                 scanResult.Drivers.FirstOrDefault()?.DeviceIdentity ?? new Domain.Devices.DeviceIdentity("UNKNOWN\\DEVICE\\0"),
@@ -62,8 +65,25 @@ public sealed class MainScreenWorkflow(
             VerificationSummary: verificationPlaceholder,
             UiCulture: settings.UiCulture,
             ScanSessionId: scanResult.Session.Id,
+            ShareableReportText: shareableReportText,
             RecommendationDetails: recommendationDetails,
             OfficialSourceAction: officialSourceAction);
+    }
+
+    private static string BuildShareableReportText(
+        ScanResult scanResult,
+        IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations,
+        IShareableReportBuilder shareableReportBuilder,
+        DateTimeOffset clock)
+    {
+        var report = shareableReportBuilder.Build(new ShareableReportRequest(
+            scanResult,
+            recommendations,
+            [],
+            [],
+            clock));
+
+        return shareableReportBuilder.BuildStructuredText(report);
     }
 
     private static IReadOnlyCollection<RecommendationDetailResult> BuildRecommendationDetails(

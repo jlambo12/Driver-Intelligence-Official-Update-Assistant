@@ -47,4 +47,9 @@ public static class UiStrings
     public static string RecommendationNextStepDeferred => Resources.Recommendation_Next_Step_Deferred;
     public static string RecommendationInstalledDriverFormat => Resources.Recommendation_Installed_Driver_Format;
     public static string RecommendationProviderUnknown => Resources.Recommendation_Provider_Unknown;
+    public static string ReportExportAction => Resources.Report_Export_Action;
+    public static string ReportSectionTitle => Resources.Report_Section_Title;
+    public static string ReportPreviewPlaceholder => Resources.Report_Preview_Placeholder;
+    public static string ReportStatusRequiresScan => Resources.Report_Status_Requires_Scan;
+    public static string ReportStatusPrepared => Resources.Report_Status_Prepared;
 }
