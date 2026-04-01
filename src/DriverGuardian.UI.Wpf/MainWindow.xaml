@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="{Binding State.TitleText}"
-        Height="640"
-        Width="860"
+        Height="700"
+        Width="900"
         WindowStartupLocation="CenterScreen">
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -43,12 +43,25 @@
                                             <TextBlock Text="{Binding ManualHandoffSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding ManualActionSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding VerificationSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding ManualStepGuidance}" Margin="0 4 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding VerificationResultSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding NextStepGuidance}" Margin="0 4 0 0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 14">
+                    <StackPanel>
+                        <TextBlock Text="{Binding State.Results.VerificationReturn.Title}" FontWeight="SemiBold" Margin="0 0 0 6"/>
+                        <TextBlock Text="{Binding State.Results.VerificationReturn.ReadinessSummary}" Margin="0 0 0 4" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding State.Results.VerificationReturn.ManualCompletionHint}" Margin="0 0 0 4" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding State.Results.VerificationReturn.LastVerificationSummary}" Margin="0 0 0 8" TextWrapping="Wrap"/>
+                        <CheckBox Content="{Binding State.Results.VerificationReturn.ManualConfirmationLabel}" IsChecked="{Binding IsManualInstallConfirmed}" Margin="0 0 0 8"/>
+                        <Button Content="{Binding State.VerifyReturnButtonText}" Command="{Binding RunVerificationReturnCommand}" IsEnabled="{Binding State.Results.VerificationReturn.IsReady}" Width="280" Height="36" HorizontalAlignment="Left"/>
                     </StackPanel>
                 </Border>
 

@@ -17,7 +17,8 @@ public sealed record MainScreenWorkflowResult(
     string UiCulture,
     Guid ScanSessionId,
     IReadOnlyCollection<RecommendationDetailResult> RecommendationDetails,
-    OpenOfficialSourceActionResult OfficialSourceAction);
+    OpenOfficialSourceActionResult OfficialSourceAction,
+    VerificationReturnResult VerificationReturn);
 
 public sealed record RecommendationDetailResult(
     string DeviceId,
@@ -28,10 +29,18 @@ public sealed record RecommendationDetailResult(
     string? RecommendedVersion,
     bool ManualHandoffReady,
     bool ManualActionRequired,
-    bool VerificationAvailable);
+    bool VerificationAvailable,
+    bool ManualStepCompleted,
+    bool VerificationPending);
 
 public sealed record OpenOfficialSourceActionResult(
     bool IsReady,
     string Status,
     string? ApprovedOfficialSourceUrl,
     string? BlockReason);
+
+public sealed record VerificationReturnResult(
+    bool IsReady,
+    bool ManualCompletionRequired,
+    bool VerificationPending,
+    string LastVerificationSummary);

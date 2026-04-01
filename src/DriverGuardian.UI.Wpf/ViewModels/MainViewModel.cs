@@ -16,13 +16,16 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public MainViewModel(IMainScreenWorkflow mainScreenWorkflow)
     {
         _mainScreenWorkflow = mainScreenWorkflow;
-        _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusReady, UiStrings.ScanAction);
-        ScanCommand = new AsyncRelayCommand(ScanAsync);
+        _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusReady, UiStrings.ScanAction, UiStrings.VerificationReturnRunAction);
+        ScanCommand = new AsyncRelayCommand(() => RunScanAsync(false));
+        RunVerificationReturnCommand = new AsyncRelayCommand(() => RunScanAsync(true));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand ScanCommand { get; }
+
+    public ICommand RunVerificationReturnCommand { get; }
 
     public MainUiState State
     {
@@ -31,19 +34,34 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             _state = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsManualInstallConfirmed));
         }
     }
 
-    private async Task ScanAsync()
+    public bool IsManualInstallConfirmed
     {
-        State = State with { StatusText = UiStrings.StatusScanning };
+        get => State.IsManualInstallConfirmed;
+        set
+        {
+            if (State.IsManualInstallConfirmed == value)
+            {
+                return;
+            }
+
+            State = State with { IsManualInstallConfirmed = value };
+        }
+    }
+
+    private async Task RunScanAsync(bool verificationReturn)
+    {
+        State = State with { StatusText = verificationReturn ? UiStrings.StatusVerifyingReturn : UiStrings.StatusScanning };
 
         var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
 
         State = State with
         {
             StatusText = UiStrings.StatusReady,
-            Results = ScanResultsPresentation.FromResult(result)
+            Results = ScanResultsPresentation.FromResult(result, State.IsManualInstallConfirmed)
         };
     }
 

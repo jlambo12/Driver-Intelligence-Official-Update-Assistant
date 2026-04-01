@@ -5,6 +5,7 @@ public static class UiStrings
     public static string MainWindowTitle => Resources.MainWindow_Title;
     public static string StatusReady => Resources.Status_Ready;
     public static string StatusScanning => Resources.Status_Scanning;
+    public static string StatusVerifyingReturn => Resources.Status_Verifying_Return;
     public static string ScanAction => Resources.Scan_Action;
     public static string ScanSummaryFormat => Resources.Scan_Summary_Format;
     public static string DiscoveryInspectionSummaryFormat => Resources.Discovery_Inspection_Summary_Format;
@@ -19,6 +20,8 @@ public static class UiStrings
     public static string ActionStatusWait => Resources.Action_Status_Wait;
     public static string ActionStatusNotAvailable => Resources.Action_Status_Not_Available;
     public static string ActionStatusReturn => Resources.Action_Status_Return;
+    public static string ActionStatusCompleted => Resources.Action_Status_Completed;
+    public static string ActionStatusReadyToVerify => Resources.Action_Status_Ready_To_Verify;
     public static string ActionStepReviewRecommendation => Resources.Action_Step_Review_Recommendation;
     public static string ActionStepReviewRecommendationHint => Resources.Action_Step_Review_Recommendation_Hint;
     public static string ActionStepOpenOfficialSource => Resources.Action_Step_Open_Official_Source;
@@ -47,4 +50,17 @@ public static class UiStrings
     public static string RecommendationNextStepDeferred => Resources.Recommendation_Next_Step_Deferred;
     public static string RecommendationInstalledDriverFormat => Resources.Recommendation_Installed_Driver_Format;
     public static string RecommendationProviderUnknown => Resources.Recommendation_Provider_Unknown;
+    public static string RecommendationManualStepGuidance => Resources.Recommendation_Manual_Step_Guidance;
+    public static string RecommendationManualStepNotRequired => Resources.Recommendation_Manual_Step_Not_Required;
+    public static string RecommendationVerificationPending => Resources.Recommendation_Verification_Pending;
+    public static string RecommendationVerificationReadyToRun => Resources.Recommendation_Verification_Ready_To_Run;
+    public static string RecommendationVerificationNotRequired => Resources.Recommendation_Verification_Not_Required;
+    public static string VerificationReturnTitle => Resources.Verification_Return_Title;
+    public static string VerificationReturnReady => Resources.Verification_Return_Ready;
+    public static string VerificationReturnNotReady => Resources.Verification_Return_Not_Ready;
+    public static string VerificationReturnManualConfirmLabel => Resources.Verification_Return_Manual_Confirm_Label;
+    public static string VerificationReturnManualConfirmHint => Resources.Verification_Return_Manual_Confirm_Hint;
+    public static string VerificationReturnManualConfirmed => Resources.Verification_Return_Manual_Confirmed;
+    public static string VerificationReturnRunAction => Resources.Verification_Return_Run_Action;
+    public static string VerificationReturnLastSummaryFormat => Resources.Verification_Return_Last_Summary_Format;
 }

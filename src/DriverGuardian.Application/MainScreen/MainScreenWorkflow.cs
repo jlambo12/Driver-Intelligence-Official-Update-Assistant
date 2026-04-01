@@ -63,7 +63,8 @@ public sealed class MainScreenWorkflow(
             UiCulture: settings.UiCulture,
             ScanSessionId: scanResult.Session.Id,
             RecommendationDetails: recommendationDetails,
-            OfficialSourceAction: officialSourceAction);
+            OfficialSourceAction: officialSourceAction,
+            VerificationReturn: BuildVerificationReturnResult(recommendedCount, verificationPlaceholder));
     }
 
     private static IReadOnlyCollection<RecommendationDetailResult> BuildRecommendationDetails(
@@ -85,9 +86,23 @@ public sealed class MainScreenWorkflow(
                     RecommendedVersion: recommendation?.RecommendedVersion,
                     ManualHandoffReady: false,
                     ManualActionRequired: hasRecommendation,
-                    VerificationAvailable: hasRecommendation);
+                    VerificationAvailable: hasRecommendation,
+                    ManualStepCompleted: false,
+                    VerificationPending: hasRecommendation);
             })
             .ToArray();
+    }
+
+
+    private static VerificationReturnResult BuildVerificationReturnResult(int recommendedCount, string verificationPlaceholder)
+    {
+        var isReady = recommendedCount > 0;
+
+        return new VerificationReturnResult(
+            IsReady: isReady,
+            ManualCompletionRequired: isReady,
+            VerificationPending: isReady,
+            LastVerificationSummary: verificationPlaceholder);
     }
 
     private static OpenOfficialSourceActionResult BuildOfficialSourceAction(

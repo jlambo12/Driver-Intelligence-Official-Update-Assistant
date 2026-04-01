@@ -10,6 +10,7 @@ public static class Resources
     public static string MainWindow_Title => GetString(nameof(MainWindow_Title));
     public static string Status_Ready => GetString(nameof(Status_Ready));
     public static string Status_Scanning => GetString(nameof(Status_Scanning));
+    public static string Status_Verifying_Return => GetString(nameof(Status_Verifying_Return));
     public static string Scan_Action => GetString(nameof(Scan_Action));
     public static string Scan_Summary_Format => GetString(nameof(Scan_Summary_Format));
     public static string Discovery_Inspection_Summary_Format => GetString(nameof(Discovery_Inspection_Summary_Format));
@@ -24,6 +25,8 @@ public static class Resources
     public static string Action_Status_Wait => GetString(nameof(Action_Status_Wait));
     public static string Action_Status_Not_Available => GetString(nameof(Action_Status_Not_Available));
     public static string Action_Status_Return => GetString(nameof(Action_Status_Return));
+    public static string Action_Status_Completed => GetString(nameof(Action_Status_Completed));
+    public static string Action_Status_Ready_To_Verify => GetString(nameof(Action_Status_Ready_To_Verify));
     public static string Action_Step_Review_Recommendation => GetString(nameof(Action_Step_Review_Recommendation));
     public static string Action_Step_Review_Recommendation_Hint => GetString(nameof(Action_Step_Review_Recommendation_Hint));
     public static string Action_Step_Open_Official_Source => GetString(nameof(Action_Step_Open_Official_Source));
@@ -52,6 +55,19 @@ public static class Resources
     public static string Recommendation_Next_Step_Deferred => GetString(nameof(Recommendation_Next_Step_Deferred));
     public static string Recommendation_Installed_Driver_Format => GetString(nameof(Recommendation_Installed_Driver_Format));
     public static string Recommendation_Provider_Unknown => GetString(nameof(Recommendation_Provider_Unknown));
+    public static string Recommendation_Manual_Step_Guidance => GetString(nameof(Recommendation_Manual_Step_Guidance));
+    public static string Recommendation_Manual_Step_Not_Required => GetString(nameof(Recommendation_Manual_Step_Not_Required));
+    public static string Recommendation_Verification_Pending => GetString(nameof(Recommendation_Verification_Pending));
+    public static string Recommendation_Verification_Ready_To_Run => GetString(nameof(Recommendation_Verification_Ready_To_Run));
+    public static string Recommendation_Verification_Not_Required => GetString(nameof(Recommendation_Verification_Not_Required));
+    public static string Verification_Return_Title => GetString(nameof(Verification_Return_Title));
+    public static string Verification_Return_Ready => GetString(nameof(Verification_Return_Ready));
+    public static string Verification_Return_Not_Ready => GetString(nameof(Verification_Return_Not_Ready));
+    public static string Verification_Return_Manual_Confirm_Label => GetString(nameof(Verification_Return_Manual_Confirm_Label));
+    public static string Verification_Return_Manual_Confirm_Hint => GetString(nameof(Verification_Return_Manual_Confirm_Hint));
+    public static string Verification_Return_Manual_Confirmed => GetString(nameof(Verification_Return_Manual_Confirmed));
+    public static string Verification_Return_Run_Action => GetString(nameof(Verification_Return_Run_Action));
+    public static string Verification_Return_Last_Summary_Format => GetString(nameof(Verification_Return_Last_Summary_Format));
 
     private static string GetString(string key)
     {

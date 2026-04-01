@@ -9,4 +9,6 @@ public sealed record RecommendationDetailPresentation(
     string ManualHandoffSummary,
     string ManualActionSummary,
     string VerificationSummary,
+    string ManualStepGuidance,
+    string VerificationResultSummary,
     string NextStepGuidance);

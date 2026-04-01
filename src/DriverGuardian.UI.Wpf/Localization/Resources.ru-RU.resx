@@ -48,4 +48,20 @@
   <data name="Recommendation_Next_Step_Deferred" xml:space="preserve"><value>Повторите анализ позже или после обновления каталога источников.</value></data>
   <data name="Recommendation_Installed_Driver_Format" xml:space="preserve"><value>Текущий драйвер: {0}; поставщик: {1}</value></data>
   <data name="Recommendation_Provider_Unknown" xml:space="preserve"><value>не указан</value></data>
+  <data name="Status_Verifying_Return" xml:space="preserve"><value>Выполняется проверка после возврата...</value></data>
+  <data name="Action_Status_Completed" xml:space="preserve"><value>выполнено вручную</value></data>
+  <data name="Action_Status_Ready_To_Verify" xml:space="preserve"><value>готово к проверке</value></data>
+  <data name="Recommendation_Manual_Step_Guidance" xml:space="preserve"><value>Подтвердите ручную установку вне приложения перед запуском проверки.</value></data>
+  <data name="Recommendation_Manual_Step_Not_Required" xml:space="preserve"><value>Ручной шаг установки не требуется.</value></data>
+  <data name="Recommendation_Verification_Pending" xml:space="preserve"><value>Ожидается возврат в приложение для проверки.</value></data>
+  <data name="Recommendation_Verification_Ready_To_Run" xml:space="preserve"><value>Ручная установка подтверждена. Можно запускать проверку.</value></data>
+  <data name="Recommendation_Verification_Not_Required" xml:space="preserve"><value>Проверка после установки не требуется.</value></data>
+  <data name="Verification_Return_Title" xml:space="preserve"><value>Возврат для проверки после ручной установки</value></data>
+  <data name="Verification_Return_Ready" xml:space="preserve"><value>Сценарий возврата готов: сначала выполните установку вручную, затем повторно проверьте результат.</value></data>
+  <data name="Verification_Return_Not_Ready" xml:space="preserve"><value>Сценарий возврата пока недоступен: отсутствуют рекомендации к обновлению.</value></data>
+  <data name="Verification_Return_Manual_Confirm_Label" xml:space="preserve"><value>Я установил драйвер вручную вне приложения</value></data>
+  <data name="Verification_Return_Manual_Confirm_Hint" xml:space="preserve"><value>Подтвердите ручной шаг, чтобы зафиксировать готовность к проверке.</value></data>
+  <data name="Verification_Return_Manual_Confirmed" xml:space="preserve"><value>Ручной шаг подтверждён. Запустите проверку, чтобы оценить итоговое состояние.</value></data>
+  <data name="Verification_Return_Run_Action" xml:space="preserve"><value>Запустить проверку повторно</value></data>
+  <data name="Verification_Return_Last_Summary_Format" xml:space="preserve"><value>Сводка проверки: {0}</value></data>
 </root>
