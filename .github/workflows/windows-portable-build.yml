@@ -1,0 +1,44 @@
+name: Build Windows Portable App
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-portable:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore solution
+        run: dotnet restore DriverGuardian.sln
+
+      - name: Build solution (Release)
+        run: dotnet build DriverGuardian.sln --configuration Release --no-restore
+
+      - name: Publish WPF app (win-x64 portable)
+        run: >
+          dotnet publish src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          /p:PublishSingleFile=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
+          /p:PublishReadyToRun=false
+          --output ${{ github.workspace }}\\artifacts\\DriverGuardian-win-x64
+
+      - name: Upload portable app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DriverGuardian-win-x64-portable
+          path: ${{ github.workspace }}\\artifacts\\DriverGuardian-win-x64
+          if-no-files-found: error
