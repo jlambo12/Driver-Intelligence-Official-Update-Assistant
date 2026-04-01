@@ -2,14 +2,21 @@ using Microsoft.Win32;
 
 namespace DriverGuardian.UI.Wpf.Services;
 
+public enum ReportFileSaveResult
+{
+    CanceledByUser,
+    Saved,
+    FailedToWrite
+}
+
 public interface IReportFileSaveService
 {
-    bool TrySave(string defaultFileName, string extension, string filter, string content);
+    ReportFileSaveResult Save(string defaultFileName, string extension, string filter, string content);
 }
 
 public sealed class ReportFileSaveService : IReportFileSaveService
 {
-    public bool TrySave(string defaultFileName, string extension, string filter, string content)
+    public ReportFileSaveResult Save(string defaultFileName, string extension, string filter, string content)
     {
         var dialog = new SaveFileDialog
         {
@@ -23,10 +30,21 @@ public sealed class ReportFileSaveService : IReportFileSaveService
 
         if (dialog.ShowDialog() != true)
         {
-            return false;
+            return ReportFileSaveResult.CanceledByUser;
         }
 
-        File.WriteAllText(dialog.FileName, content);
-        return true;
+        try
+        {
+            File.WriteAllText(dialog.FileName, content);
+            return ReportFileSaveResult.Saved;
+        }
+        catch (IOException)
+        {
+            return ReportFileSaveResult.FailedToWrite;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return ReportFileSaveResult.FailedToWrite;
+        }
     }
 }

@@ -66,6 +66,7 @@
   <data name="Report_Export_Status_Ready" xml:space="preserve"><value>Отчёт подготовлен. Выберите «Экспортировать отчёт» для сохранения.</value></data>
   <data name="Report_Export_Status_Saved" xml:space="preserve"><value>Отчёт сохранён вручную.</value></data>
   <data name="Report_Export_Status_Canceled" xml:space="preserve"><value>Сохранение отчёта отменено пользователем.</value></data>
+  <data name="Report_Export_Status_Save_Failed" xml:space="preserve"><value>Не удалось сохранить отчёт в выбранный файл. Проверьте путь и права доступа, затем повторите попытку.</value></data>
   <data name="Report_Export_Markdown_Filter" xml:space="preserve"><value>Markdown файл (*.md)|*.md</value></data>
   <data name="Report_Export_Text_Filter" xml:space="preserve"><value>Текстовый файл (*.txt)|*.txt</value></data>
   <data name="Recent_History_Section_Title" xml:space="preserve"><value>Недавняя история сканирования</value></data>
