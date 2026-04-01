@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
@@ -15,6 +16,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly IMainScreenWorkflow _mainScreenWorkflow;
     private readonly ISettingsRepository _settingsRepository;
     private readonly IReportFileSaveService _reportFileSaveService;
+    private readonly PreviewScenarioMainScreenWorkflow? _previewWorkflow;
     private MainUiState _state;
     private string _settingsStatusText;
     private int _historyMaxEntries;
@@ -25,6 +27,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _reportPlainTextContent;
     private string _reportMarkdownContent;
     private IReadOnlyCollection<RecentHistoryPresentation> _recentHistory;
+    private PreviewScenarioOption? _selectedPreviewScenario;
 
     private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
     [
@@ -40,6 +43,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _mainScreenWorkflow = mainScreenWorkflow;
         _settingsRepository = settingsRepository;
         _reportFileSaveService = reportFileSaveService;
+        _previewWorkflow = mainScreenWorkflow as PreviewScenarioMainScreenWorkflow;
         _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusInitial, UiStrings.ScanAction);
         _settingsStatusText = UiStrings.SettingsLoadError;
         _reportExportStatusText = UiStrings.ReportExportStatusNoData;
@@ -50,10 +54,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _reportPlainTextContent = string.Empty;
         _reportMarkdownContent = string.Empty;
         _recentHistory = Array.Empty<RecentHistoryPresentation>();
+        AvailablePreviewScenarios = BuildPreviewOptions();
+        _selectedPreviewScenario = AvailablePreviewScenarios.FirstOrDefault();
         ScanCommand = new AsyncRelayCommand(ScanAsync);
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
-        _ = LoadSettingsAsync();
+        ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
+        _ = InitializeAsync();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -61,7 +68,29 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand ScanCommand { get; }
     public ICommand SaveSettingsCommand { get; }
     public ICommand ExportReportCommand { get; }
+    public ICommand ApplyPreviewScenarioCommand { get; }
     public IReadOnlyList<ReportFormatOption> AvailableReportFormats => ReportFormatItems;
+
+    public bool IsPreviewMode => _previewWorkflow is not null;
+
+    public string PreviewModeBannerText => UiStrings.PreviewModeBanner;
+
+    public IReadOnlyList<PreviewScenarioOption> AvailablePreviewScenarios { get; }
+
+    public PreviewScenarioOption? SelectedPreviewScenario
+    {
+        get => _selectedPreviewScenario;
+        set
+        {
+            if (_selectedPreviewScenario == value)
+            {
+                return;
+            }
+
+            _selectedPreviewScenario = value;
+            OnPropertyChanged();
+        }
+    }
 
     public MainUiState State
     {
@@ -149,24 +178,91 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task ScanAsync()
+    private async Task InitializeAsync()
     {
-        State = State with { StatusText = UiStrings.StatusScanning };
+        await LoadSettingsAsync();
 
-        var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
+        if (!IsPreviewMode)
+        {
+            return;
+        }
 
         State = State with
         {
-            StatusText = result.RecommendedCount > 0
-                ? UiStrings.StatusScanCompletedReady
-                : UiStrings.StatusScanCompletedNoAction,
+            TitleText = UiStrings.PreviewWindowTitle,
+            ScanButtonText = UiStrings.PreviewApplyScenarioAction
+        };
+
+        await ApplyPreviewScenarioAsync();
+    }
+
+    private async Task ScanAsync()
+    {
+        if (IsPreviewMode)
+        {
+            await ApplyPreviewScenarioAsync();
+            return;
+        }
+
+        State = State with { StatusText = UiStrings.StatusScanning };
+
+        var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
+        ApplyWorkflowResult(result, isPreview: false);
+    }
+
+    private async Task ApplyPreviewScenarioAsync()
+    {
+        if (_previewWorkflow is null)
+        {
+            return;
+        }
+
+        var scenario = SelectedPreviewScenario ?? AvailablePreviewScenarios.First();
+        _previewWorkflow.SelectScenario(scenario.Id);
+
+        if (scenario.Id == PreviewScenarioId.FirstRunPreScan)
+        {
+            RecentHistory = Array.Empty<RecentHistoryPresentation>();
+            _reportPlainTextContent = string.Empty;
+            _reportMarkdownContent = string.Empty;
+            _reportFileNameBase = "driverguardian-preview-first-run";
+            ReportExportStatusText = UiStrings.ReportExportStatusNoData;
+            State = MainUiState.Initial(
+                UiStrings.PreviewWindowTitle,
+                string.Format(UiStrings.PreviewModeStatusFormat, scenario.DisplayName),
+                UiStrings.PreviewApplyScenarioAction);
+            return;
+        }
+
+        var result = await _previewWorkflow.RunScanAsync(CancellationToken.None);
+        ApplyWorkflowResult(result, isPreview: true, scenarioName: scenario.DisplayName);
+    }
+
+    private void ApplyWorkflowResult(MainScreenWorkflowResult result, bool isPreview, string? scenarioName = null)
+    {
+        var status = result.RecommendedCount > 0
+            ? UiStrings.StatusScanCompletedReady
+            : UiStrings.StatusScanCompletedNoAction;
+
+        if (isPreview)
+        {
+            status = string.Format(UiStrings.PreviewModeStatusFormat, scenarioName ?? string.Empty);
+        }
+
+        State = State with
+        {
+            TitleText = isPreview ? UiStrings.PreviewWindowTitle : UiStrings.MainWindowTitle,
+            ScanButtonText = isPreview ? UiStrings.PreviewApplyScenarioAction : UiStrings.ScanAction,
+            StatusText = status,
             Results = ScanResultsPresentation.FromResult(result)
         };
         RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);
         _reportFileNameBase = result.ReportExportPayload.FileNameBase;
         _reportPlainTextContent = result.ReportExportPayload.PlainTextContent;
         _reportMarkdownContent = result.ReportExportPayload.MarkdownContent;
-        ReportExportStatusText = UiStrings.ReportExportStatusReady;
+        ReportExportStatusText = string.IsNullOrWhiteSpace(_reportPlainTextContent)
+            ? UiStrings.ReportExportStatusNoData
+            : UiStrings.ReportExportStatusReady;
     }
 
     private async Task LoadSettingsAsync()
@@ -217,6 +313,30 @@ public sealed class MainViewModel : INotifyPropertyChanged
         };
     }
 
+    private IReadOnlyList<PreviewScenarioOption> BuildPreviewOptions()
+    {
+        if (_previewWorkflow is null)
+        {
+            return Array.Empty<PreviewScenarioOption>();
+        }
+
+        return _previewWorkflow.AvailableScenarios
+            .Select(id => new PreviewScenarioOption(id, GetScenarioName(id)))
+            .ToArray();
+    }
+
+    private static string GetScenarioName(PreviewScenarioId scenarioId)
+        => scenarioId switch
+        {
+            PreviewScenarioId.FirstRunPreScan => UiStrings.PreviewScenarioFirstRun,
+            PreviewScenarioId.NoActionableRecommendation => UiStrings.PreviewScenarioNoAction,
+            PreviewScenarioId.RecommendationWithLimitedEvidence => UiStrings.PreviewScenarioLimitedEvidence,
+            PreviewScenarioId.RecommendationReadyForManualAction => UiStrings.PreviewScenarioManualReady,
+            PreviewScenarioId.VerificationReturnGuidance => UiStrings.PreviewScenarioVerificationReturn,
+            PreviewScenarioId.PopulatedHistoryAndExport => UiStrings.PreviewScenarioHistoryExport,
+            _ => UiStrings.PreviewScenarioFirstRun
+        };
+
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -224,3 +344,4 @@ public sealed class MainViewModel : INotifyPropertyChanged
 }
 
 public sealed record ReportFormatOption(ShareableReportFormat Value, string DisplayName);
+public sealed record PreviewScenarioOption(PreviewScenarioId Id, string DisplayName);
