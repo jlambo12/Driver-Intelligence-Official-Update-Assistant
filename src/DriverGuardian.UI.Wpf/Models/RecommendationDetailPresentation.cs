@@ -2,6 +2,8 @@ namespace DriverGuardian.UI.Wpf.Models;
 
 public sealed record RecommendationDetailPresentation(
     string Title,
+    string WorkflowState,
+    string WorkflowStateHint,
     string DeviceSummary,
     string Summary,
     string InstalledDriverSummary,

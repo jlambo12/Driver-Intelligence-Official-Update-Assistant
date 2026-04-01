@@ -7,7 +7,8 @@ public sealed record RecentHistoryPresentation(
     string Timestamp,
     string Title,
     string Summary,
-    string Status)
+    string Status,
+    string Guidance)
 {
     public static IReadOnlyCollection<RecentHistoryPresentation> FromResults(IReadOnlyCollection<RecentHistoryEntryResult> entries)
         => entries.Select(Map).ToArray();
@@ -22,18 +23,26 @@ public sealed record RecentHistoryPresentation(
                 timestamp,
                 UiStrings.RecentHistoryTypeScan,
                 string.Format(UiStrings.RecentHistoryScanSummaryFormat, entry.ScanSessionId),
-                string.Format(UiStrings.RecentHistoryScanStatusFormat, entry.PrimaryCount, entry.SecondaryCount)),
+                string.Format(UiStrings.RecentHistoryScanStatusFormat, entry.PrimaryCount, entry.SecondaryCount),
+                UiStrings.RecentHistoryScanGuidance),
             RecentHistoryEntryKind.Recommendation => new RecentHistoryPresentation(
                 timestamp,
                 UiStrings.RecentHistoryTypeRecommendation,
                 UiStrings.RecentHistoryRecommendationSummary,
-                string.Format(UiStrings.RecentHistoryRecommendationStatusFormat, entry.PrimaryCount, entry.SecondaryCount, entry.TertiaryCount)),
+                string.Format(UiStrings.RecentHistoryRecommendationStatusFormat, entry.PrimaryCount, entry.SecondaryCount, entry.TertiaryCount),
+                UiStrings.RecentHistoryRecommendationGuidance),
             RecentHistoryEntryKind.Verification => new RecentHistoryPresentation(
                 timestamp,
                 UiStrings.RecentHistoryTypeVerification,
                 UiStrings.RecentHistoryVerificationSummary,
-                string.Format(UiStrings.RecentHistoryVerificationStatusFormat, MapVerificationStatus(entry.StatusCode), string.IsNullOrWhiteSpace(entry.Note) ? UiStrings.RecentHistoryVerificationNoteEmpty : entry.Note)),
-            _ => new RecentHistoryPresentation(timestamp, UiStrings.RecentHistoryTypeUnknown, UiStrings.RecentHistoryUnknownSummary, UiStrings.RecentHistoryUnknownStatus)
+                string.Format(UiStrings.RecentHistoryVerificationStatusFormat, MapVerificationStatus(entry.StatusCode), string.IsNullOrWhiteSpace(entry.Note) ? UiStrings.RecentHistoryVerificationNoteEmpty : entry.Note),
+                UiStrings.RecentHistoryVerificationGuidance),
+            _ => new RecentHistoryPresentation(
+                timestamp,
+                UiStrings.RecentHistoryTypeUnknown,
+                UiStrings.RecentHistoryUnknownSummary,
+                UiStrings.RecentHistoryUnknownStatus,
+                UiStrings.RecentHistoryUnknownGuidance)
         };
     }
 
