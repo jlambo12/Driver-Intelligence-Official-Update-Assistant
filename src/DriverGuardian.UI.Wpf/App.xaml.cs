@@ -4,9 +4,12 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Application.Recommendations;
 using DriverGuardian.Application.Scanning;
+using DriverGuardian.Application.History;
+using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Contracts.DriverInspection;
 using DriverGuardian.Infrastructure.Audit;
+using DriverGuardian.Infrastructure.History;
 using DriverGuardian.Infrastructure.Settings;
 using DriverGuardian.Infrastructure.Time;
 using DriverGuardian.ProviderAdapters.Abstractions.Registry;
@@ -36,12 +39,16 @@ public partial class App : Application
         IProviderCatalogSummaryService providerSummaryService = new ProviderCatalogSummaryService(providerRegistry);
         ISettingsRepository settingsRepository = new InMemorySettingsRepository();
         IAuditWriter auditWriter = new InMemoryAuditWriter();
+        IResultHistoryRepository resultHistoryRepository = new InMemoryResultHistoryRepository();
+        var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
         IMainScreenWorkflow mainScreenWorkflow = new MainScreenWorkflow(
             scanOrchestrator,
             recommendationPipeline,
             providerSummaryService,
             settingsRepository,
-            auditWriter);
+            auditWriter,
+            resultHistoryRepository,
+            openOfficialSourceActionEvaluator);
 
         var vm = new MainViewModel(mainScreenWorkflow);
         var window = new MainWindow { DataContext = vm };

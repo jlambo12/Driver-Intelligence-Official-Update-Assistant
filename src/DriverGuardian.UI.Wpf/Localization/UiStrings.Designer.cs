@@ -29,4 +29,22 @@ public static class UiStrings
     public static string ActionStepInstallOutsideAppHint => Resources.Action_Step_Install_Outside_App_Hint;
     public static string ActionStepReturnForVerification => Resources.Action_Step_Return_For_Verification;
     public static string ActionStepReturnForVerificationHint => Resources.Action_Step_Return_For_Verification_Hint;
+
+    public static string OfficialSourceSummaryReadyFormat => Resources.Official_Source_Summary_Ready_Format;
+    public static string OfficialSourceSummaryBlockedFormat => Resources.Official_Source_Summary_Blocked_Format;
+    public static string OfficialSourceBlockedNoReason => Resources.Official_Source_Blocked_No_Reason;
+    public static string OfficialSourceUrlUnavailable => Resources.Official_Source_Url_Unavailable;
+    public static string RecommendationDeviceFormat => Resources.Recommendation_Device_Format;
+    public static string RecommendationManualHandoffFormat => Resources.Recommendation_Manual_Handoff_Format;
+    public static string RecommendationManualActionFormat => Resources.Recommendation_Manual_Action_Format;
+    public static string RecommendationVerificationFormat => Resources.Recommendation_Verification_Format;
+    public static string RecommendationTitleRecommended => Resources.Recommendation_Title_Recommended;
+    public static string RecommendationTitleNotRecommended => Resources.Recommendation_Title_Not_Recommended;
+    public static string RecommendationCandidateVersionFormat => Resources.Recommendation_Candidate_Version_Format;
+    public static string RecommendationCandidateUnavailable => Resources.Recommendation_Candidate_Unavailable;
+    public static string RecommendationReasonUnavailable => Resources.Recommendation_Reason_Unavailable;
+    public static string RecommendationNextStepRecommended => Resources.Recommendation_Next_Step_Recommended;
+    public static string RecommendationNextStepDeferred => Resources.Recommendation_Next_Step_Deferred;
+    public static string RecommendationInstalledDriverFormat => Resources.Recommendation_Installed_Driver_Format;
+    public static string RecommendationProviderUnknown => Resources.Recommendation_Provider_Unknown;
 }

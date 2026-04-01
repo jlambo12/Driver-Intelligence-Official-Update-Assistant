@@ -1,5 +1,8 @@
 using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Application.History;
+using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.MainScreen;
+using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Domain.Devices;
 using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
@@ -11,15 +14,18 @@ namespace DriverGuardian.Tests.Unit.Application;
 public sealed class MainScreenWorkflowTests
 {
     [Fact]
-    public async Task RunScanAsync_ShouldReturnUiReadyResult_AndWriteAudit()
+    public async Task RunScanAsync_ShouldReturnUiReadyResult_WriteAudit_AndCaptureHistory()
     {
         var auditWriter = new FakeAuditWriter();
+        var historyRepository = new FakeHistoryRepository();
         var workflow = new MainScreenWorkflow(
             new FakeScanOrchestrator(),
             new FakeRecommendationPipeline(),
             new FakeProviderCatalogSummaryService(),
             new FakeSettingsRepository(),
-            auditWriter);
+            auditWriter,
+            historyRepository,
+            new OpenOfficialSourceActionEvaluator());
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
@@ -32,6 +38,11 @@ public sealed class MainScreenWorkflowTests
         Assert.Equal(1, result.ManualHandoffUserActionCount);
         Assert.False(string.IsNullOrWhiteSpace(result.VerificationSummary));
         Assert.Equal("ru-RU", result.UiCulture);
+        Assert.Single(result.RecommendationDetails);
+        Assert.False(result.OfficialSourceAction.IsReady);
+        Assert.Equal(2, historyRepository.Entries.Count);
+        Assert.Contains(historyRepository.Entries, entry => entry is ScanHistoryEntry);
+        Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);
         Assert.Single(auditWriter.Entries);
     }
 
@@ -88,5 +99,19 @@ public sealed class MainScreenWorkflowTests
             Entries.Add(entry);
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class FakeHistoryRepository : IResultHistoryRepository
+    {
+        public List<ResultHistoryEntry> Entries { get; } = [];
+
+        public Task SaveAsync(ResultHistoryEntry entry, CancellationToken cancellationToken)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyCollection<ResultHistoryEntry>> GetRecentAsync(int take, CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>(Entries.Take(take).ToArray());
     }
 }

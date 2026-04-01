@@ -31,4 +31,21 @@
   <data name="Action_Step_Install_Outside_App_Hint" xml:space="preserve"><value>Запустите установку драйвера самостоятельно вне Driver Guardian.</value></data>
   <data name="Action_Step_Return_For_Verification" xml:space="preserve"><value>Вернуться для проверки</value></data>
   <data name="Action_Step_Return_For_Verification_Hint" xml:space="preserve"><value>После ручной установки снова запустите анализ для проверки изменений.</value></data>
+  <data name="Official_Source_Summary_Ready_Format" xml:space="preserve"><value>Официальный источник подтверждён: {0}</value></data>
+  <data name="Official_Source_Summary_Blocked_Format" xml:space="preserve"><value>Официальный источник требует ручной проверки: {0}</value></data>
+  <data name="Official_Source_Blocked_No_Reason" xml:space="preserve"><value>причина не предоставлена</value></data>
+  <data name="Official_Source_Url_Unavailable" xml:space="preserve"><value>ссылка недоступна</value></data>
+  <data name="Recommendation_Device_Format" xml:space="preserve"><value>Устройство: {0}</value></data>
+  <data name="Recommendation_Manual_Handoff_Format" xml:space="preserve"><value>Готовность ручной передачи: {0}</value></data>
+  <data name="Recommendation_Manual_Action_Format" xml:space="preserve"><value>Действие пользователя: {0}</value></data>
+  <data name="Recommendation_Verification_Format" xml:space="preserve"><value>Проверка: {0}</value></data>
+  <data name="Recommendation_Title_Recommended" xml:space="preserve"><value>Рекомендовано обновление драйвера</value></data>
+  <data name="Recommendation_Title_Not_Recommended" xml:space="preserve"><value>Рекомендация на обновление отсутствует</value></data>
+  <data name="Recommendation_Candidate_Version_Format" xml:space="preserve"><value>Кандидат к ручной установке: версия {0}</value></data>
+  <data name="Recommendation_Candidate_Unavailable" xml:space="preserve"><value>Кандидат для ручной установки не подтверждён.</value></data>
+  <data name="Recommendation_Reason_Unavailable" xml:space="preserve"><value>По устройству отсутствуют данные рекомендации.</value></data>
+  <data name="Recommendation_Next_Step_Recommended" xml:space="preserve"><value>Проверьте официальный источник, скачайте пакет вручную и выполните установку вне приложения.</value></data>
+  <data name="Recommendation_Next_Step_Deferred" xml:space="preserve"><value>Повторите анализ позже или после обновления каталога источников.</value></data>
+  <data name="Recommendation_Installed_Driver_Format" xml:space="preserve"><value>Текущий драйвер: {0}; поставщик: {1}</value></data>
+  <data name="Recommendation_Provider_Unknown" xml:space="preserve"><value>не указан</value></data>
 </root>

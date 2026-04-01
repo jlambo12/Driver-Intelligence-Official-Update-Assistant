@@ -35,6 +35,24 @@ public static class Resources
     public static string Action_Step_Return_For_Verification => GetString(nameof(Action_Step_Return_For_Verification));
     public static string Action_Step_Return_For_Verification_Hint => GetString(nameof(Action_Step_Return_For_Verification_Hint));
 
+    public static string Official_Source_Summary_Ready_Format => GetString(nameof(Official_Source_Summary_Ready_Format));
+    public static string Official_Source_Summary_Blocked_Format => GetString(nameof(Official_Source_Summary_Blocked_Format));
+    public static string Official_Source_Blocked_No_Reason => GetString(nameof(Official_Source_Blocked_No_Reason));
+    public static string Official_Source_Url_Unavailable => GetString(nameof(Official_Source_Url_Unavailable));
+    public static string Recommendation_Device_Format => GetString(nameof(Recommendation_Device_Format));
+    public static string Recommendation_Manual_Handoff_Format => GetString(nameof(Recommendation_Manual_Handoff_Format));
+    public static string Recommendation_Manual_Action_Format => GetString(nameof(Recommendation_Manual_Action_Format));
+    public static string Recommendation_Verification_Format => GetString(nameof(Recommendation_Verification_Format));
+    public static string Recommendation_Title_Recommended => GetString(nameof(Recommendation_Title_Recommended));
+    public static string Recommendation_Title_Not_Recommended => GetString(nameof(Recommendation_Title_Not_Recommended));
+    public static string Recommendation_Candidate_Version_Format => GetString(nameof(Recommendation_Candidate_Version_Format));
+    public static string Recommendation_Candidate_Unavailable => GetString(nameof(Recommendation_Candidate_Unavailable));
+    public static string Recommendation_Reason_Unavailable => GetString(nameof(Recommendation_Reason_Unavailable));
+    public static string Recommendation_Next_Step_Recommended => GetString(nameof(Recommendation_Next_Step_Recommended));
+    public static string Recommendation_Next_Step_Deferred => GetString(nameof(Recommendation_Next_Step_Deferred));
+    public static string Recommendation_Installed_Driver_Format => GetString(nameof(Recommendation_Installed_Driver_Format));
+    public static string Recommendation_Provider_Unknown => GetString(nameof(Recommendation_Provider_Unknown));
+
     private static string GetString(string key)
     {
         return ResourceManager.GetString(key, CultureInfo.CurrentUICulture) ?? key;
