@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DriverGuardian.ProviderAdapters.Official</AssemblyName>
+    <RootNamespace>DriverGuardian.ProviderAdapters.Official</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DriverGuardian.ProviderAdapters.Abstractions/DriverGuardian.ProviderAdapters.Abstractions.csproj" />
+    <ProjectReference Include="../DriverGuardian.Domain/DriverGuardian.Domain.csproj" />
+  </ItemGroup>
+</Project>

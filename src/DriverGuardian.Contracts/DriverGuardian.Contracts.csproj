@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DriverGuardian.Contracts</AssemblyName>
+    <RootNamespace>DriverGuardian.Contracts</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DriverGuardian.Domain/DriverGuardian.Domain.csproj" />
+  </ItemGroup>
+</Project>
