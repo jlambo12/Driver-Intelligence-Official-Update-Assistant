@@ -68,4 +68,5 @@
   <data name="Report_Export_Status_Canceled" xml:space="preserve"><value>Сохранение отчёта отменено пользователем.</value></data>
   <data name="Report_Export_Markdown_Filter" xml:space="preserve"><value>Markdown файл (*.md)|*.md</value></data>
   <data name="Report_Export_Text_Filter" xml:space="preserve"><value>Текстовый файл (*.txt)|*.txt</value></data>
+  <data name="Report_Export_Status_Save_Failed" xml:space="preserve"><value>Не удалось сохранить отчёт. Проверьте путь и права доступа, затем попробуйте снова.</value></data>
 </root>

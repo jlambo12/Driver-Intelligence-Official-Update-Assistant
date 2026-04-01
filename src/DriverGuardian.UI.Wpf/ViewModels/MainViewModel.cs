@@ -192,8 +192,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var filter = isMarkdown ? UiStrings.ReportExportMarkdownFilter : UiStrings.ReportExportTextFilter;
         var content = isMarkdown ? _reportMarkdownContent : _reportPlainTextContent;
 
-        var saved = _reportFileSaveService.TrySave(_reportFileNameBase, extension, filter, content);
-        ReportExportStatusText = saved ? UiStrings.ReportExportStatusSaved : UiStrings.ReportExportStatusCanceled;
+        var outcome = _reportFileSaveService.Save(_reportFileNameBase, extension, filter, content);
+        ReportExportStatusText = outcome switch
+        {
+            ReportFileSaveOutcome.Saved => UiStrings.ReportExportStatusSaved,
+            ReportFileSaveOutcome.Canceled => UiStrings.ReportExportStatusCanceled,
+            ReportFileSaveOutcome.Failed => UiStrings.ReportExportStatusSaveFailed,
+            _ => UiStrings.ReportExportStatusSaveFailed
+        };
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

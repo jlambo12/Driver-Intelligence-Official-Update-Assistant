@@ -70,6 +70,7 @@ public static class Resources
     public static string Report_Export_Status_Ready => GetString(nameof(Report_Export_Status_Ready));
     public static string Report_Export_Status_Saved => GetString(nameof(Report_Export_Status_Saved));
     public static string Report_Export_Status_Canceled => GetString(nameof(Report_Export_Status_Canceled));
+    public static string Report_Export_Status_Save_Failed => GetString(nameof(Report_Export_Status_Save_Failed));
     public static string Report_Export_Markdown_Filter => GetString(nameof(Report_Export_Markdown_Filter));
     public static string Report_Export_Text_Filter => GetString(nameof(Report_Export_Text_Filter));
 

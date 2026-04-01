@@ -1,15 +1,23 @@
+using System.IO;
 using Microsoft.Win32;
 
 namespace DriverGuardian.UI.Wpf.Services;
 
+public enum ReportFileSaveOutcome
+{
+    Saved,
+    Canceled,
+    Failed
+}
+
 public interface IReportFileSaveService
 {
-    bool TrySave(string defaultFileName, string extension, string filter, string content);
+    ReportFileSaveOutcome Save(string defaultFileName, string extension, string filter, string content);
 }
 
 public sealed class ReportFileSaveService : IReportFileSaveService
 {
-    public bool TrySave(string defaultFileName, string extension, string filter, string content)
+    public ReportFileSaveOutcome Save(string defaultFileName, string extension, string filter, string content)
     {
         var dialog = new SaveFileDialog
         {
@@ -23,10 +31,17 @@ public sealed class ReportFileSaveService : IReportFileSaveService
 
         if (dialog.ShowDialog() != true)
         {
-            return false;
+            return ReportFileSaveOutcome.Canceled;
         }
 
-        File.WriteAllText(dialog.FileName, content);
-        return true;
+        try
+        {
+            File.WriteAllText(dialog.FileName, content);
+            return ReportFileSaveOutcome.Saved;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            return ReportFileSaveOutcome.Failed;
+        }
     }
 }
