@@ -7,6 +7,6 @@ public sealed class ProviderCatalogSummaryService(IProviderRegistry providerRegi
 {
     public Task<int> GetProviderCountAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult(providerRegistry.GetProviders().Count);
+        return Task.FromResult(providerRegistry.GetOfficialProviders().Count);
     }
 }

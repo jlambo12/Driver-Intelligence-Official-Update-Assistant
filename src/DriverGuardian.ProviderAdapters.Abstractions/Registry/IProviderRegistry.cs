@@ -4,5 +4,7 @@ namespace DriverGuardian.ProviderAdapters.Abstractions.Registry;
 
 public interface IProviderRegistry
 {
-    IReadOnlyCollection<ProviderDescriptor> GetProviders();
+    IReadOnlyCollection<ProviderDescriptor> GetOfficialProviders();
+
+    bool TryGetOfficialProvider(string code, out ProviderDescriptor? descriptor);
 }
