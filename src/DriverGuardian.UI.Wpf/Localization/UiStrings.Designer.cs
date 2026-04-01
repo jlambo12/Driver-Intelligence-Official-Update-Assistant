@@ -75,9 +75,9 @@ public static class UiStrings
     public static string RecentHistoryTypeUnknown => Resources.Recent_History_Type_Unknown;
     public static string RecentHistoryScanSummaryFormat => Resources.Recent_History_Scan_Summary_Format;
     public static string RecentHistoryScanStatusFormat => Resources.Recent_History_Scan_Status_Format;
-    public static string RecentHistoryRecommendationSummaryTitle => Resources.Recent_History_Recommendation_Summary_Title;
+    public static string RecentHistoryRecommendationSummary => Resources.Recent_History_Recommendation_Summary;
     public static string RecentHistoryRecommendationStatusFormat => Resources.Recent_History_Recommendation_Status_Format;
-    public static string RecentHistoryVerificationSummaryTitle => Resources.Recent_History_Verification_Summary_Title;
+    public static string RecentHistoryVerificationSummary => Resources.Recent_History_Verification_Summary;
     public static string RecentHistoryVerificationStatusFormat => Resources.Recent_History_Verification_Status_Format;
     public static string RecentHistoryVerificationStatusPassed => Resources.Recent_History_Verification_Status_Passed;
     public static string RecentHistoryVerificationStatusFailed => Resources.Recent_History_Verification_Status_Failed;

@@ -53,7 +53,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ScanCommand = new AsyncRelayCommand(ScanAsync);
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
-        _ = InitializeAsync();
+        _ = LoadSettingsAsync();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -129,7 +129,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
-
     public IReadOnlyCollection<RecentHistoryPresentation> RecentHistory
     {
         get => _recentHistory;
@@ -168,13 +167,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ReportExportStatusText = UiStrings.ReportExportStatusReady;
     }
 
-
-    private async Task InitializeAsync()
-    {
-        await LoadSettingsAsync();
-        await LoadRecentHistoryAsync();
-    }
-
     private async Task LoadSettingsAsync()
     {
         var settings = await _settingsRepository.GetAsync(CancellationToken.None);
@@ -182,13 +174,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ShowVerificationHints = settings.WorkflowGuidance.ShowPostInstallVerificationHints;
         SelectedReportFormat = ReportFormatItems.First(option => option.Value == settings.Reports.DefaultFormat);
         SettingsStatusText = UiStrings.SettingsLoaded;
-    }
-
-
-    private async Task LoadRecentHistoryAsync()
-    {
-        var entries = await _mainScreenWorkflow.GetRecentHistoryAsync(take: 5, CancellationToken.None);
-        RecentHistory = RecentHistoryPresentation.FromResults(entries);
     }
 
     private async Task SaveSettingsAsync()

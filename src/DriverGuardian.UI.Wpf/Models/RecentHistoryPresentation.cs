@@ -1,5 +1,4 @@
 using DriverGuardian.Application.Abstractions;
-using DriverGuardian.Application.History.Models;
 using DriverGuardian.UI.Wpf.Localization;
 
 namespace DriverGuardian.UI.Wpf.Models;
@@ -23,34 +22,27 @@ public sealed record RecentHistoryPresentation(
                 timestamp,
                 UiStrings.RecentHistoryTypeScan,
                 string.Format(UiStrings.RecentHistoryScanSummaryFormat, entry.ScanSessionId),
-                string.Format(UiStrings.RecentHistoryScanStatusFormat, entry.FirstValue, entry.SecondValue)),
-            RecentHistoryEntryKind.RecommendationSummary => new RecentHistoryPresentation(
+                string.Format(UiStrings.RecentHistoryScanStatusFormat, entry.PrimaryCount, entry.SecondaryCount)),
+            RecentHistoryEntryKind.Recommendation => new RecentHistoryPresentation(
                 timestamp,
                 UiStrings.RecentHistoryTypeRecommendation,
-                UiStrings.RecentHistoryRecommendationSummaryTitle,
-                string.Format(UiStrings.RecentHistoryRecommendationStatusFormat, entry.FirstValue, entry.SecondValue, entry.ThirdValue)),
+                UiStrings.RecentHistoryRecommendationSummary,
+                string.Format(UiStrings.RecentHistoryRecommendationStatusFormat, entry.PrimaryCount, entry.SecondaryCount, entry.TertiaryCount)),
             RecentHistoryEntryKind.Verification => new RecentHistoryPresentation(
                 timestamp,
                 UiStrings.RecentHistoryTypeVerification,
-                UiStrings.RecentHistoryVerificationSummaryTitle,
-                string.Format(
-                    UiStrings.RecentHistoryVerificationStatusFormat,
-                    MapVerificationStatus(entry.VerificationStatus),
-                    string.IsNullOrWhiteSpace(entry.VerificationNote) ? UiStrings.RecentHistoryVerificationNoteEmpty : entry.VerificationNote)),
-            _ => new RecentHistoryPresentation(
-                timestamp,
-                UiStrings.RecentHistoryTypeUnknown,
-                UiStrings.RecentHistoryUnknownSummary,
-                UiStrings.RecentHistoryUnknownStatus)
+                UiStrings.RecentHistoryVerificationSummary,
+                string.Format(UiStrings.RecentHistoryVerificationStatusFormat, MapVerificationStatus(entry.StatusCode), string.IsNullOrWhiteSpace(entry.Note) ? UiStrings.RecentHistoryVerificationNoteEmpty : entry.Note)),
+            _ => new RecentHistoryPresentation(timestamp, UiStrings.RecentHistoryTypeUnknown, UiStrings.RecentHistoryUnknownSummary, UiStrings.RecentHistoryUnknownStatus)
         };
     }
 
-    private static string MapVerificationStatus(VerificationHistoryStatus? status)
-        => status switch
+    private static string MapVerificationStatus(string? statusCode)
+        => statusCode switch
         {
-            VerificationHistoryStatus.Passed => UiStrings.RecentHistoryVerificationStatusPassed,
-            VerificationHistoryStatus.Failed => UiStrings.RecentHistoryVerificationStatusFailed,
-            VerificationHistoryStatus.Skipped => UiStrings.RecentHistoryVerificationStatusSkipped,
+            "passed" => UiStrings.RecentHistoryVerificationStatusPassed,
+            "failed" => UiStrings.RecentHistoryVerificationStatusFailed,
+            "skipped" => UiStrings.RecentHistoryVerificationStatusSkipped,
             _ => UiStrings.RecentHistoryVerificationStatusUnknown
         };
 }

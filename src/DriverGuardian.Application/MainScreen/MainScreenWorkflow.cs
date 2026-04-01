@@ -17,7 +17,7 @@ public sealed class MainScreenWorkflow(
     OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator,
     IShareableReportBuilder reportBuilder) : IMainScreenWorkflow
 {
-    private const int DefaultRecentHistoryTake = 5;
+    private const int RecentHistoryTake = 5;
 
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
     {
@@ -56,7 +56,8 @@ public sealed class MainScreenWorkflow(
                 verificationSummary),
             cancellationToken);
 
-        var recentHistory = await GetRecentHistoryAsync(DefaultRecentHistoryTake, cancellationToken);
+        var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(RecentHistoryTake, cancellationToken);
+        var recentHistory = recentHistoryEntries.Select(MapHistoryEntry).ToArray();
 
         await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
 
@@ -77,13 +78,7 @@ public sealed class MainScreenWorkflow(
             RecentHistory: recentHistory);
     }
 
-    public async Task<IReadOnlyCollection<RecentHistoryEntryResult>> GetRecentHistoryAsync(int take, CancellationToken cancellationToken)
-    {
-        var recentEntries = await resultHistoryRepository.GetRecentAsync(take, cancellationToken);
-        return recentEntries.Select(MapHistory).ToArray();
-    }
-
-    private static RecentHistoryEntryResult MapHistory(ResultHistoryEntry entry)
+    private static RecentHistoryEntryResult MapHistoryEntry(ResultHistoryEntry entry)
         => entry switch
         {
             ScanHistoryEntry scan => new RecentHistoryEntryResult(
@@ -97,7 +92,7 @@ public sealed class MainScreenWorkflow(
                 null),
             RecommendationSummaryHistoryEntry recommendation => new RecentHistoryEntryResult(
                 recommendation.OccurredAtUtc,
-                RecentHistoryEntryKind.RecommendationSummary,
+                RecentHistoryEntryKind.Recommendation,
                 recommendation.ScanSessionId,
                 recommendation.TotalRecommendations,
                 recommendation.RequiresManualInstallCount,
@@ -111,17 +106,18 @@ public sealed class MainScreenWorkflow(
                 0,
                 0,
                 0,
-                verification.Status,
+                MapVerificationStatusCode(verification.Status),
                 verification.Note),
-            _ => new RecentHistoryEntryResult(
-                entry.OccurredAtUtc,
-                RecentHistoryEntryKind.Unknown,
-                Guid.Empty,
-                0,
-                0,
-                0,
-                null,
-                null)
+            _ => new RecentHistoryEntryResult(entry.OccurredAtUtc, RecentHistoryEntryKind.Unknown, Guid.Empty, 0, 0, 0, null, null)
+        };
+
+    private static string MapVerificationStatusCode(VerificationHistoryStatus status)
+        => status switch
+        {
+            VerificationHistoryStatus.Passed => "passed",
+            VerificationHistoryStatus.Failed => "failed",
+            VerificationHistoryStatus.Skipped => "skipped",
+            _ => "unknown"
         };
 
     private static ReportExportPayload BuildReportExportPayload(

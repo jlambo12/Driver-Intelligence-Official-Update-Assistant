@@ -79,6 +79,7 @@
                         <ItemsControl ItemsSource="{Binding RecentHistory}">
                             <ItemsControl.Style>
                                 <Style TargetType="ItemsControl">
+                                    <Setter Property="Visibility" Value="Visible"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding RecentHistory.Count}" Value="0">
                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -90,8 +91,8 @@
                                 <DataTemplate>
                                     <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 0 0 8">
                                         <StackPanel>
-                                            <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{Binding Timestamp}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Timestamp}" TextWrapping="Wrap"/>
+                                            <TextBlock FontWeight="SemiBold" Text="{Binding Title}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding Summary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding Status}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                         </StackPanel>
@@ -99,7 +100,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <TextBlock Text="{x:Static localization:UiStrings.RecentHistoryEmptyState}">
+                        <TextBlock Text="{x:Static localization:UiStrings.RecentHistoryEmptyState}" TextWrapping="Wrap">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed"/>

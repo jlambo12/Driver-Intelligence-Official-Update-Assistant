@@ -1,12 +1,8 @@
-using DriverGuardian.Application.History.Models;
-
 namespace DriverGuardian.Application.Abstractions;
 
 public interface IMainScreenWorkflow
 {
     Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken);
-
-    Task<IReadOnlyCollection<RecentHistoryEntryResult>> GetRecentHistoryAsync(int take, CancellationToken cancellationToken);
 }
 
 public sealed record MainScreenWorkflowResult(
@@ -52,16 +48,16 @@ public sealed record RecentHistoryEntryResult(
     DateTimeOffset OccurredAtUtc,
     RecentHistoryEntryKind Kind,
     Guid ScanSessionId,
-    int FirstValue,
-    int SecondValue,
-    int ThirdValue,
-    VerificationHistoryStatus? VerificationStatus,
-    string? VerificationNote);
+    int PrimaryCount,
+    int SecondaryCount,
+    int TertiaryCount,
+    string? StatusCode,
+    string? Note);
 
 public enum RecentHistoryEntryKind
 {
     Scan = 0,
-    RecommendationSummary = 1,
+    Recommendation = 1,
     Verification = 2,
     Unknown = 3
 }
