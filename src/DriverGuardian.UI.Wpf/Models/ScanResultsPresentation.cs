@@ -12,6 +12,16 @@ public sealed record ScanResultsPresentation(
     string OfficialSourceSummary,
     string ActionFlowTitle,
     string SafetyNotice,
+    string WorkflowHeadline,
+    string WorkflowHint,
+    string RecommendationSectionTitle,
+    string RecommendationSectionHint,
+    string RecommendationEmptyState,
+    string ManualSectionTitle,
+    string ManualSectionHint,
+    string VerificationSectionTitle,
+    string VerificationSectionHint,
+    string VerificationRescanHint,
     IReadOnlyCollection<RecommendationDetailPresentation> RecommendationDetails,
     IReadOnlyCollection<UserGuidedActionStepPresentation> UserGuidedSteps)
 {
@@ -25,6 +35,16 @@ public sealed record ScanResultsPresentation(
             string.Empty,
             string.Empty,
             string.Empty,
+            UiStrings.WorkflowHeadlineEmpty,
+            UiStrings.WorkflowHintEmpty,
+            UiStrings.RecommendationSectionTitle,
+            UiStrings.RecommendationSectionHint,
+            UiStrings.RecommendationEmptyState,
+            UiStrings.ManualSectionTitle,
+            UiStrings.ManualSectionHint,
+            UiStrings.VerificationSectionTitle,
+            UiStrings.VerificationSectionHint,
+            UiStrings.VerificationRescanHint,
             Array.Empty<RecommendationDetailPresentation>(),
             Array.Empty<UserGuidedActionStepPresentation>());
 
@@ -32,6 +52,7 @@ public sealed record ScanResultsPresentation(
     {
         var hasRecommendation = result.RecommendedCount > 0;
         var hasReadyHandoff = result.ManualHandoffReadyCount > 0;
+        var officialSourceReady = result.OfficialSourceAction.IsReady;
 
         return new ScanResultsPresentation(
             ScanSummary: string.Format(UiStrings.ScanSummaryFormat, result.ScanSessionId, result.UiCulture, result.ProviderCount),
@@ -42,8 +63,18 @@ public sealed record ScanResultsPresentation(
             OfficialSourceSummary: BuildOfficialSourceSummary(result.OfficialSourceAction),
             ActionFlowTitle: UiStrings.ActionFlowTitle,
             SafetyNotice: UiStrings.ActionFlowSafetyNotice,
+            WorkflowHeadline: BuildWorkflowHeadline(hasRecommendation, officialSourceReady, hasReadyHandoff),
+            WorkflowHint: BuildWorkflowHint(hasRecommendation, officialSourceReady, hasReadyHandoff),
+            RecommendationSectionTitle: UiStrings.RecommendationSectionTitle,
+            RecommendationSectionHint: UiStrings.RecommendationSectionHint,
+            RecommendationEmptyState: UiStrings.RecommendationEmptyState,
+            ManualSectionTitle: UiStrings.ManualSectionTitle,
+            ManualSectionHint: UiStrings.ManualSectionHint,
+            VerificationSectionTitle: UiStrings.VerificationSectionTitle,
+            VerificationSectionHint: UiStrings.VerificationSectionHint,
+            VerificationRescanHint: hasRecommendation ? UiStrings.VerificationRescanHint : UiStrings.VerificationRescanHintNoAction,
             RecommendationDetails: result.RecommendationDetails.Select(MapDetail).ToArray(),
-            UserGuidedSteps: BuildUserGuidedSteps(hasRecommendation, hasReadyHandoff, result.OfficialSourceAction.IsReady));
+            UserGuidedSteps: BuildUserGuidedSteps(hasRecommendation, hasReadyHandoff, officialSourceReady));
     }
 
     private static RecommendationDetailPresentation MapDetail(RecommendationDetailResult detail)
@@ -61,8 +92,12 @@ public sealed record ScanResultsPresentation(
             ? UiStrings.RecommendationNextStepRecommended
             : UiStrings.RecommendationNextStepDeferred;
 
+        var state = ResolveDetailState(detail);
+
         return new RecommendationDetailPresentation(
             recommendationTitle,
+            state.State,
+            state.Hint,
             string.Format(UiStrings.RecommendationDeviceFormat, detail.DeviceId),
             reasonSummary,
             string.Format(UiStrings.RecommendationInstalledDriverFormat, detail.InstalledVersion, detail.InstalledProvider ?? UiStrings.RecommendationProviderUnknown),
@@ -72,6 +107,21 @@ public sealed record ScanResultsPresentation(
             string.Format(UiStrings.RecommendationVerificationFormat, detail.VerificationAvailable ? UiStrings.ActionStatusReturn : UiStrings.ActionStatusWait),
             string.Format(UiStrings.RecommendationVerificationStatusFormat, detail.VerificationStatus),
             nextStep);
+    }
+
+    private static (string State, string Hint) ResolveDetailState(RecommendationDetailResult detail)
+    {
+        if (!detail.HasRecommendation)
+        {
+            return (UiStrings.RecommendationStateInsufficientEvidence, UiStrings.RecommendationStateInsufficientEvidenceHint);
+        }
+
+        if (detail.ManualHandoffReady)
+        {
+            return (UiStrings.RecommendationStateReadyForManualAction, UiStrings.RecommendationStateReadyForManualActionHint);
+        }
+
+        return (UiStrings.RecommendationStateBlocked, UiStrings.RecommendationStateBlockedHint);
     }
 
     private static string BuildOfficialSourceSummary(OpenOfficialSourceActionResult officialSourceAction)
@@ -86,6 +136,46 @@ public sealed record ScanResultsPresentation(
             ? UiStrings.OfficialSourceBlockedNoReason
             : officialSourceAction.BlockReason;
         return string.Format(UiStrings.OfficialSourceSummaryBlockedFormat, reason);
+    }
+
+    private static string BuildWorkflowHeadline(bool hasRecommendation, bool officialSourceReady, bool hasReadyHandoff)
+    {
+        if (!hasRecommendation)
+        {
+            return UiStrings.WorkflowHeadlineNoRecommendation;
+        }
+
+        if (officialSourceReady && hasReadyHandoff)
+        {
+            return UiStrings.WorkflowHeadlineReady;
+        }
+
+        if (!officialSourceReady)
+        {
+            return UiStrings.WorkflowHeadlineOfficialSourceLimited;
+        }
+
+        return UiStrings.WorkflowHeadlineManualActionLimited;
+    }
+
+    private static string BuildWorkflowHint(bool hasRecommendation, bool officialSourceReady, bool hasReadyHandoff)
+    {
+        if (!hasRecommendation)
+        {
+            return UiStrings.WorkflowHintNoRecommendation;
+        }
+
+        if (officialSourceReady && hasReadyHandoff)
+        {
+            return UiStrings.WorkflowHintReady;
+        }
+
+        if (!officialSourceReady)
+        {
+            return UiStrings.WorkflowHintOfficialSourceLimited;
+        }
+
+        return UiStrings.WorkflowHintManualActionLimited;
     }
 
     private static IReadOnlyCollection<UserGuidedActionStepPresentation> BuildUserGuidedSteps(bool hasRecommendation, bool hasReadyHandoff, bool officialSourceReady)

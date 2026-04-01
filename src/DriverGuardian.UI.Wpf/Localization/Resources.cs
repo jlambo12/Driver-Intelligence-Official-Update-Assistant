@@ -17,6 +17,7 @@ public static class Resources
     public static string Manual_Handoff_Summary_Format => GetString(nameof(Manual_Handoff_Summary_Format));
     public static string Verification_Summary_Format => GetString(nameof(Verification_Summary_Format));
     public static string Action_Flow_Title => GetString(nameof(Action_Flow_Title));
+    public static string Scan_Overview_Title => GetString(nameof(Scan_Overview_Title));
     public static string Action_Flow_Safety_Notice => GetString(nameof(Action_Flow_Safety_Notice));
     public static string Action_Status_Required => GetString(nameof(Action_Status_Required));
     public static string Action_Status_Available => GetString(nameof(Action_Status_Available));
@@ -34,6 +35,32 @@ public static class Resources
     public static string Action_Step_Install_Outside_App_Hint => GetString(nameof(Action_Step_Install_Outside_App_Hint));
     public static string Action_Step_Return_For_Verification => GetString(nameof(Action_Step_Return_For_Verification));
     public static string Action_Step_Return_For_Verification_Hint => GetString(nameof(Action_Step_Return_For_Verification_Hint));
+
+    public static string Workflow_Headline_Empty => GetString(nameof(Workflow_Headline_Empty));
+    public static string Workflow_Hint_Empty => GetString(nameof(Workflow_Hint_Empty));
+    public static string Workflow_Headline_Ready => GetString(nameof(Workflow_Headline_Ready));
+    public static string Workflow_Hint_Ready => GetString(nameof(Workflow_Hint_Ready));
+    public static string Workflow_Headline_No_Recommendation => GetString(nameof(Workflow_Headline_No_Recommendation));
+    public static string Workflow_Hint_No_Recommendation => GetString(nameof(Workflow_Hint_No_Recommendation));
+    public static string Workflow_Headline_Official_Source_Limited => GetString(nameof(Workflow_Headline_Official_Source_Limited));
+    public static string Workflow_Hint_Official_Source_Limited => GetString(nameof(Workflow_Hint_Official_Source_Limited));
+    public static string Workflow_Headline_Manual_Action_Limited => GetString(nameof(Workflow_Headline_Manual_Action_Limited));
+    public static string Workflow_Hint_Manual_Action_Limited => GetString(nameof(Workflow_Hint_Manual_Action_Limited));
+    public static string Recommendation_Section_Title => GetString(nameof(Recommendation_Section_Title));
+    public static string Recommendation_Section_Hint => GetString(nameof(Recommendation_Section_Hint));
+    public static string Recommendation_Empty_State => GetString(nameof(Recommendation_Empty_State));
+    public static string Recommendation_State_Ready_For_Manual_Action => GetString(nameof(Recommendation_State_Ready_For_Manual_Action));
+    public static string Recommendation_State_Ready_For_Manual_Action_Hint => GetString(nameof(Recommendation_State_Ready_For_Manual_Action_Hint));
+    public static string Recommendation_State_Insufficient_Evidence => GetString(nameof(Recommendation_State_Insufficient_Evidence));
+    public static string Recommendation_State_Insufficient_Evidence_Hint => GetString(nameof(Recommendation_State_Insufficient_Evidence_Hint));
+    public static string Recommendation_State_Blocked => GetString(nameof(Recommendation_State_Blocked));
+    public static string Recommendation_State_Blocked_Hint => GetString(nameof(Recommendation_State_Blocked_Hint));
+    public static string Manual_Section_Title => GetString(nameof(Manual_Section_Title));
+    public static string Manual_Section_Hint => GetString(nameof(Manual_Section_Hint));
+    public static string Verification_Section_Title => GetString(nameof(Verification_Section_Title));
+    public static string Verification_Section_Hint => GetString(nameof(Verification_Section_Hint));
+    public static string Verification_Rescan_Hint => GetString(nameof(Verification_Rescan_Hint));
+    public static string Verification_Rescan_Hint_No_Action => GetString(nameof(Verification_Rescan_Hint_No_Action));
 
     public static string Official_Source_Summary_Ready_Format => GetString(nameof(Official_Source_Summary_Ready_Format));
     public static string Official_Source_Summary_Blocked_Format => GetString(nameof(Official_Source_Summary_Blocked_Format));
@@ -73,6 +100,31 @@ public static class Resources
     public static string Report_Export_Status_Save_Failed => GetString(nameof(Report_Export_Status_Save_Failed));
     public static string Report_Export_Markdown_Filter => GetString(nameof(Report_Export_Markdown_Filter));
     public static string Report_Export_Text_Filter => GetString(nameof(Report_Export_Text_Filter));
+
+    public static string Recent_History_Section_Title => GetString(nameof(Recent_History_Section_Title));
+    public static string Recent_History_Section_Hint => GetString(nameof(Recent_History_Section_Hint));
+    public static string Recent_History_Empty_State => GetString(nameof(Recent_History_Empty_State));
+    public static string Recent_History_Type_Scan => GetString(nameof(Recent_History_Type_Scan));
+    public static string Recent_History_Type_Recommendation => GetString(nameof(Recent_History_Type_Recommendation));
+    public static string Recent_History_Type_Verification => GetString(nameof(Recent_History_Type_Verification));
+    public static string Recent_History_Type_Unknown => GetString(nameof(Recent_History_Type_Unknown));
+    public static string Recent_History_Scan_Summary_Format => GetString(nameof(Recent_History_Scan_Summary_Format));
+    public static string Recent_History_Scan_Status_Format => GetString(nameof(Recent_History_Scan_Status_Format));
+    public static string Recent_History_Recommendation_Summary => GetString(nameof(Recent_History_Recommendation_Summary));
+    public static string Recent_History_Recommendation_Status_Format => GetString(nameof(Recent_History_Recommendation_Status_Format));
+    public static string Recent_History_Verification_Summary => GetString(nameof(Recent_History_Verification_Summary));
+    public static string Recent_History_Verification_Status_Format => GetString(nameof(Recent_History_Verification_Status_Format));
+    public static string Recent_History_Verification_Status_Passed => GetString(nameof(Recent_History_Verification_Status_Passed));
+    public static string Recent_History_Verification_Status_Failed => GetString(nameof(Recent_History_Verification_Status_Failed));
+    public static string Recent_History_Verification_Status_Skipped => GetString(nameof(Recent_History_Verification_Status_Skipped));
+    public static string Recent_History_Verification_Status_Unknown => GetString(nameof(Recent_History_Verification_Status_Unknown));
+    public static string Recent_History_Verification_Note_Empty => GetString(nameof(Recent_History_Verification_Note_Empty));
+    public static string Recent_History_Unknown_Summary => GetString(nameof(Recent_History_Unknown_Summary));
+    public static string Recent_History_Unknown_Status => GetString(nameof(Recent_History_Unknown_Status));
+    public static string Recent_History_Scan_Guidance => GetString(nameof(Recent_History_Scan_Guidance));
+    public static string Recent_History_Recommendation_Guidance => GetString(nameof(Recent_History_Recommendation_Guidance));
+    public static string Recent_History_Verification_Guidance => GetString(nameof(Recent_History_Verification_Guidance));
+    public static string Recent_History_Unknown_Guidance => GetString(nameof(Recent_History_Unknown_Guidance));
 
     private static string GetString(string key)
     {

@@ -12,6 +12,7 @@ public static class UiStrings
     public static string ManualHandoffSummaryFormat => Resources.Manual_Handoff_Summary_Format;
     public static string VerificationSummaryFormat => Resources.Verification_Summary_Format;
     public static string ActionFlowTitle => Resources.Action_Flow_Title;
+    public static string ScanOverviewTitle => Resources.Scan_Overview_Title;
     public static string ActionFlowSafetyNotice => Resources.Action_Flow_Safety_Notice;
     public static string ActionStatusRequired => Resources.Action_Status_Required;
     public static string ActionStatusAvailable => Resources.Action_Status_Available;
@@ -29,6 +30,32 @@ public static class UiStrings
     public static string ActionStepInstallOutsideAppHint => Resources.Action_Step_Install_Outside_App_Hint;
     public static string ActionStepReturnForVerification => Resources.Action_Step_Return_For_Verification;
     public static string ActionStepReturnForVerificationHint => Resources.Action_Step_Return_For_Verification_Hint;
+
+    public static string WorkflowHeadlineEmpty => Resources.Workflow_Headline_Empty;
+    public static string WorkflowHintEmpty => Resources.Workflow_Hint_Empty;
+    public static string WorkflowHeadlineReady => Resources.Workflow_Headline_Ready;
+    public static string WorkflowHintReady => Resources.Workflow_Hint_Ready;
+    public static string WorkflowHeadlineNoRecommendation => Resources.Workflow_Headline_No_Recommendation;
+    public static string WorkflowHintNoRecommendation => Resources.Workflow_Hint_No_Recommendation;
+    public static string WorkflowHeadlineOfficialSourceLimited => Resources.Workflow_Headline_Official_Source_Limited;
+    public static string WorkflowHintOfficialSourceLimited => Resources.Workflow_Hint_Official_Source_Limited;
+    public static string WorkflowHeadlineManualActionLimited => Resources.Workflow_Headline_Manual_Action_Limited;
+    public static string WorkflowHintManualActionLimited => Resources.Workflow_Hint_Manual_Action_Limited;
+    public static string RecommendationSectionTitle => Resources.Recommendation_Section_Title;
+    public static string RecommendationSectionHint => Resources.Recommendation_Section_Hint;
+    public static string RecommendationEmptyState => Resources.Recommendation_Empty_State;
+    public static string RecommendationStateReadyForManualAction => Resources.Recommendation_State_Ready_For_Manual_Action;
+    public static string RecommendationStateReadyForManualActionHint => Resources.Recommendation_State_Ready_For_Manual_Action_Hint;
+    public static string RecommendationStateInsufficientEvidence => Resources.Recommendation_State_Insufficient_Evidence;
+    public static string RecommendationStateInsufficientEvidenceHint => Resources.Recommendation_State_Insufficient_Evidence_Hint;
+    public static string RecommendationStateBlocked => Resources.Recommendation_State_Blocked;
+    public static string RecommendationStateBlockedHint => Resources.Recommendation_State_Blocked_Hint;
+    public static string ManualSectionTitle => Resources.Manual_Section_Title;
+    public static string ManualSectionHint => Resources.Manual_Section_Hint;
+    public static string VerificationSectionTitle => Resources.Verification_Section_Title;
+    public static string VerificationSectionHint => Resources.Verification_Section_Hint;
+    public static string VerificationRescanHint => Resources.Verification_Rescan_Hint;
+    public static string VerificationRescanHintNoAction => Resources.Verification_Rescan_Hint_No_Action;
 
     public static string OfficialSourceSummaryReadyFormat => Resources.Official_Source_Summary_Ready_Format;
     public static string OfficialSourceSummaryBlockedFormat => Resources.Official_Source_Summary_Blocked_Format;
@@ -69,6 +96,7 @@ public static class UiStrings
     public static string ReportExportMarkdownFilter => Resources.Report_Export_Markdown_Filter;
     public static string ReportExportTextFilter => Resources.Report_Export_Text_Filter;
     public static string RecentHistorySectionTitle => Resources.Recent_History_Section_Title;
+    public static string RecentHistorySectionHint => Resources.Recent_History_Section_Hint;
     public static string RecentHistoryEmptyState => Resources.Recent_History_Empty_State;
     public static string RecentHistoryTypeScan => Resources.Recent_History_Type_Scan;
     public static string RecentHistoryTypeRecommendation => Resources.Recent_History_Type_Recommendation;
@@ -87,4 +115,8 @@ public static class UiStrings
     public static string RecentHistoryVerificationNoteEmpty => Resources.Recent_History_Verification_Note_Empty;
     public static string RecentHistoryUnknownSummary => Resources.Recent_History_Unknown_Summary;
     public static string RecentHistoryUnknownStatus => Resources.Recent_History_Unknown_Status;
+    public static string RecentHistoryScanGuidance => Resources.Recent_History_Scan_Guidance;
+    public static string RecentHistoryRecommendationGuidance => Resources.Recent_History_Recommendation_Guidance;
+    public static string RecentHistoryVerificationGuidance => Resources.Recent_History_Verification_Guidance;
+    public static string RecentHistoryUnknownGuidance => Resources.Recent_History_Unknown_Guidance;
 }
