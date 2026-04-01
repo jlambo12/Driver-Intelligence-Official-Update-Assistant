@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>DriverGuardian.UI.Wpf</AssemblyName>
+    <RootNamespace>DriverGuardian.UI.Wpf</RootNamespace>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DriverGuardian.Application/DriverGuardian.Application.csproj" />
+    <ProjectReference Include="../DriverGuardian.Infrastructure/DriverGuardian.Infrastructure.csproj" />
+    <ProjectReference Include="../DriverGuardian.ProviderAdapters.Abstractions/DriverGuardian.ProviderAdapters.Abstractions.csproj" />
+    <ProjectReference Include="../DriverGuardian.ProviderAdapters.Official/DriverGuardian.ProviderAdapters.Official.csproj" />
+    <ProjectReference Include="../DriverGuardian.SystemAdapters.Windows/DriverGuardian.SystemAdapters.Windows.csproj" />
+  </ItemGroup>
+</Project>
