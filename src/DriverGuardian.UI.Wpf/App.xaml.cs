@@ -27,7 +27,7 @@ public partial class App : Application
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
 
         IClock clock = new SystemClock();
-        IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryStub();
+        IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService();
         IDriverMetadataInspector inspector = new WindowsDriverMetadataInspectorStub();
         IDriverInspectionOrchestrator inspectionOrchestrator = new DriverInspectionOrchestrator(inspector);
         IScanOrchestrator scanOrchestrator = new ScanOrchestrator(discovery, inspectionOrchestrator, clock);

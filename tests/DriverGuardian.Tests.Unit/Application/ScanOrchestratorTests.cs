@@ -34,7 +34,14 @@ public sealed class ScanOrchestratorTests
         {
             IReadOnlyCollection<DiscoveredDevice> devices =
             [
-                new DiscoveredDevice(new DeviceIdentity("TEST\\DEV\\001"), "Test", [new HardwareIdentifier("PCI\\VEN_1234&DEV_ABCD")])
+                new DiscoveredDevice(
+                    new DeviceIdentity("TEST\\DEV\\001"),
+                    "Test",
+                    [new HardwareIdentifier("PCI\\VEN_1234&DEV_ABCD")],
+                    "Vendor",
+                    "System",
+                    DevicePresenceStatus.Present,
+                    "OK")
             ];
 
             return Task.FromResult(devices);
