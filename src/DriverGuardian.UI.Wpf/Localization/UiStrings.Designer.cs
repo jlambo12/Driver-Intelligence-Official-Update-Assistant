@@ -58,4 +58,13 @@ public static class UiStrings
     public static string SettingsLoaded => Resources.Settings_Loaded;
     public static string SettingsSaved => Resources.Settings_Saved;
     public static string SettingsLoadError => Resources.Settings_Load_Error;
+    public static string ReportExportTitle => Resources.Report_Export_Title;
+    public static string ReportExportHint => Resources.Report_Export_Hint;
+    public static string ReportExportAction => Resources.Report_Export_Action;
+    public static string ReportExportStatusNoData => Resources.Report_Export_Status_No_Data;
+    public static string ReportExportStatusReady => Resources.Report_Export_Status_Ready;
+    public static string ReportExportStatusSaved => Resources.Report_Export_Status_Saved;
+    public static string ReportExportStatusCanceled => Resources.Report_Export_Status_Canceled;
+    public static string ReportExportMarkdownFilter => Resources.Report_Export_Markdown_Filter;
+    public static string ReportExportTextFilter => Resources.Report_Export_Text_Filter;
 }

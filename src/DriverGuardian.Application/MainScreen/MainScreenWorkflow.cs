@@ -2,6 +2,7 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.History;
 using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.OfficialSources;
+using DriverGuardian.Application.Reports;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 
 namespace DriverGuardian.Application.MainScreen;
@@ -13,7 +14,8 @@ public sealed class MainScreenWorkflow(
     ISettingsRepository settingsRepository,
     IAuditWriter auditWriter,
     IResultHistoryRepository resultHistoryRepository,
-    OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator) : IMainScreenWorkflow
+    OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator,
+    IShareableReportBuilder reportBuilder) : IMainScreenWorkflow
 {
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
     {
@@ -28,6 +30,7 @@ public sealed class MainScreenWorkflow(
         var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
         var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
         var verificationSummary = BuildVerificationSummary(recommendationDetails);
+        var reportExportPayload = BuildReportExportPayload(scanResult, recommendations, reportBuilder);
 
         var occurredAtUtc = scanResult.Session.CompletedAtUtc ?? DateTimeOffset.UtcNow;
         await resultHistoryRepository.SaveAsync(
@@ -64,8 +67,29 @@ public sealed class MainScreenWorkflow(
             VerificationSummary: verificationSummary,
             UiCulture: settings.UiCulture,
             ScanSessionId: scanResult.Session.Id,
+            ReportExportPayload: reportExportPayload,
             RecommendationDetails: recommendationDetails,
             OfficialSourceAction: officialSourceAction);
+    }
+
+    private static ReportExportPayload BuildReportExportPayload(
+        ScanResult scanResult,
+        IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations,
+        IShareableReportBuilder reportBuilder)
+    {
+        var generatedAtUtc = DateTimeOffset.UtcNow;
+        var report = reportBuilder.Build(
+            new ShareableReportRequest(
+                scanResult,
+                recommendations,
+                [],
+                [],
+                generatedAtUtc));
+        var plainTextContent = reportBuilder.BuildStructuredText(report);
+        var markdownContent = $"# DriverGuardian Scan Report{Environment.NewLine}{Environment.NewLine}```text{Environment.NewLine}{plainTextContent}{Environment.NewLine}```";
+        var fileNameBase = $"driverguardian-report-{scanResult.Session.Id:N}";
+
+        return new ReportExportPayload(fileNameBase, plainTextContent, markdownContent);
     }
 
     private static IReadOnlyCollection<RecommendationDetailResult> BuildRecommendationDetails(

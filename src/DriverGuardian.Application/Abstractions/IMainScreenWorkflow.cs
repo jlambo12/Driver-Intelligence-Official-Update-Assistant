@@ -16,8 +16,14 @@ public sealed record MainScreenWorkflowResult(
     string VerificationSummary,
     string UiCulture,
     Guid ScanSessionId,
+    ReportExportPayload ReportExportPayload,
     IReadOnlyCollection<RecommendationDetailResult> RecommendationDetails,
     OpenOfficialSourceActionResult OfficialSourceAction);
+
+public sealed record ReportExportPayload(
+    string FileNameBase,
+    string PlainTextContent,
+    string MarkdownContent);
 
 public sealed record RecommendationDetailResult(
     string DeviceId,
