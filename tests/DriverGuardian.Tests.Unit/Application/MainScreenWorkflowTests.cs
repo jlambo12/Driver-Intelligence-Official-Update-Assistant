@@ -74,7 +74,7 @@ public sealed class MainScreenWorkflowTests
 
     private sealed class FakeSettingsRepository : ISettingsRepository
     {
-        public Task<AppSettings> GetAsync(CancellationToken cancellationToken) => Task.FromResult(new AppSettings(true, "ru-RU"));
+        public Task<AppSettings> GetAsync(CancellationToken cancellationToken) => Task.FromResult(AppSettings.Default with { Localization = new LocalizationPreferences("ru-RU") });
 
         public Task SaveAsync(AppSettings settings, CancellationToken cancellationToken) => Task.CompletedTask;
     }
