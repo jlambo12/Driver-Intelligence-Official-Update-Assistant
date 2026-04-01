@@ -17,6 +17,8 @@ public sealed class MainScreenWorkflow(
     OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator,
     IShareableReportBuilder reportBuilder) : IMainScreenWorkflow
 {
+    private const int RecentHistoryTake = 5;
+
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
     {
         var scanResult = await scanOrchestrator.RunAsync(cancellationToken);
@@ -54,6 +56,9 @@ public sealed class MainScreenWorkflow(
                 verificationSummary),
             cancellationToken);
 
+        var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(RecentHistoryTake, cancellationToken);
+        var recentHistory = recentHistoryEntries.Select(MapHistoryEntry).ToArray();
+
         await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
 
         return new MainScreenWorkflowResult(
@@ -69,8 +74,51 @@ public sealed class MainScreenWorkflow(
             ScanSessionId: scanResult.Session.Id,
             ReportExportPayload: reportExportPayload,
             RecommendationDetails: recommendationDetails,
-            OfficialSourceAction: officialSourceAction);
+            OfficialSourceAction: officialSourceAction,
+            RecentHistory: recentHistory);
     }
+
+    private static RecentHistoryEntryResult MapHistoryEntry(ResultHistoryEntry entry)
+        => entry switch
+        {
+            ScanHistoryEntry scan => new RecentHistoryEntryResult(
+                scan.OccurredAtUtc,
+                RecentHistoryEntryKind.Scan,
+                scan.ScanSessionId,
+                scan.DiscoveredDeviceCount,
+                scan.InspectedDriverCount,
+                0,
+                null,
+                null),
+            RecommendationSummaryHistoryEntry recommendation => new RecentHistoryEntryResult(
+                recommendation.OccurredAtUtc,
+                RecentHistoryEntryKind.Recommendation,
+                recommendation.ScanSessionId,
+                recommendation.TotalRecommendations,
+                recommendation.RequiresManualInstallCount,
+                recommendation.DeferredDecisionCount,
+                null,
+                null),
+            VerificationHistoryEntry verification => new RecentHistoryEntryResult(
+                verification.OccurredAtUtc,
+                RecentHistoryEntryKind.Verification,
+                verification.ScanSessionId,
+                0,
+                0,
+                0,
+                MapVerificationStatusCode(verification.Status),
+                verification.Note),
+            _ => new RecentHistoryEntryResult(entry.OccurredAtUtc, RecentHistoryEntryKind.Unknown, Guid.Empty, 0, 0, 0, null, null)
+        };
+
+    private static string MapVerificationStatusCode(VerificationHistoryStatus status)
+        => status switch
+        {
+            VerificationHistoryStatus.Passed => "passed",
+            VerificationHistoryStatus.Failed => "failed",
+            VerificationHistoryStatus.Skipped => "skipped",
+            _ => "unknown"
+        };
 
     private static ReportExportPayload BuildReportExportPayload(
         ScanResult scanResult,

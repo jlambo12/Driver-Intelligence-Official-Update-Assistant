@@ -45,6 +45,7 @@ public sealed class MainScreenWorkflowTests
         Assert.Contains("DriverGuardian Scan Report", result.ReportExportPayload.MarkdownContent);
         Assert.Single(result.RecommendationDetails);
         Assert.False(result.OfficialSourceAction.IsReady);
+        Assert.Equal(3, result.RecentHistory.Count);
         Assert.Equal(3, historyRepository.Entries.Count);
         Assert.Contains(historyRepository.Entries, entry => entry is ScanHistoryEntry);
         Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);

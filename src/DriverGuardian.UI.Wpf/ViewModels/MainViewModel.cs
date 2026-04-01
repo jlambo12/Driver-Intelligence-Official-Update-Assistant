@@ -24,6 +24,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _reportFileNameBase;
     private string _reportPlainTextContent;
     private string _reportMarkdownContent;
+    private IReadOnlyCollection<RecentHistoryPresentation> _recentHistory;
 
     private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
     [
@@ -48,6 +49,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _reportFileNameBase = "driverguardian-report";
         _reportPlainTextContent = string.Empty;
         _reportMarkdownContent = string.Empty;
+        _recentHistory = Array.Empty<RecentHistoryPresentation>();
         ScanCommand = new AsyncRelayCommand(ScanAsync);
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
@@ -127,6 +129,16 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    public IReadOnlyCollection<RecentHistoryPresentation> RecentHistory
+    {
+        get => _recentHistory;
+        private set
+        {
+            _recentHistory = value;
+            OnPropertyChanged();
+        }
+    }
+
     public string ReportExportStatusText
     {
         get => _reportExportStatusText;
@@ -148,6 +160,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             StatusText = UiStrings.StatusReady,
             Results = ScanResultsPresentation.FromResult(result)
         };
+        RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);
         _reportFileNameBase = result.ReportExportPayload.FileNameBase;
         _reportPlainTextContent = result.ReportExportPayload.PlainTextContent;
         _reportMarkdownContent = result.ReportExportPayload.MarkdownContent;

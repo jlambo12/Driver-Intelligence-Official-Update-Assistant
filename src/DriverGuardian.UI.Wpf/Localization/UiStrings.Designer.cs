@@ -67,4 +67,23 @@ public static class UiStrings
     public static string ReportExportStatusCanceled => Resources.Report_Export_Status_Canceled;
     public static string ReportExportMarkdownFilter => Resources.Report_Export_Markdown_Filter;
     public static string ReportExportTextFilter => Resources.Report_Export_Text_Filter;
+    public static string RecentHistorySectionTitle => Resources.Recent_History_Section_Title;
+    public static string RecentHistoryEmptyState => Resources.Recent_History_Empty_State;
+    public static string RecentHistoryTypeScan => Resources.Recent_History_Type_Scan;
+    public static string RecentHistoryTypeRecommendation => Resources.Recent_History_Type_Recommendation;
+    public static string RecentHistoryTypeVerification => Resources.Recent_History_Type_Verification;
+    public static string RecentHistoryTypeUnknown => Resources.Recent_History_Type_Unknown;
+    public static string RecentHistoryScanSummaryFormat => Resources.Recent_History_Scan_Summary_Format;
+    public static string RecentHistoryScanStatusFormat => Resources.Recent_History_Scan_Status_Format;
+    public static string RecentHistoryRecommendationSummary => Resources.Recent_History_Recommendation_Summary;
+    public static string RecentHistoryRecommendationStatusFormat => Resources.Recent_History_Recommendation_Status_Format;
+    public static string RecentHistoryVerificationSummary => Resources.Recent_History_Verification_Summary;
+    public static string RecentHistoryVerificationStatusFormat => Resources.Recent_History_Verification_Status_Format;
+    public static string RecentHistoryVerificationStatusPassed => Resources.Recent_History_Verification_Status_Passed;
+    public static string RecentHistoryVerificationStatusFailed => Resources.Recent_History_Verification_Status_Failed;
+    public static string RecentHistoryVerificationStatusSkipped => Resources.Recent_History_Verification_Status_Skipped;
+    public static string RecentHistoryVerificationStatusUnknown => Resources.Recent_History_Verification_Status_Unknown;
+    public static string RecentHistoryVerificationNoteEmpty => Resources.Recent_History_Verification_Note_Empty;
+    public static string RecentHistoryUnknownSummary => Resources.Recent_History_Unknown_Summary;
+    public static string RecentHistoryUnknownStatus => Resources.Recent_History_Unknown_Status;
 }

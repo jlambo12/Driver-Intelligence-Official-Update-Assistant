@@ -18,7 +18,8 @@ public sealed record MainScreenWorkflowResult(
     Guid ScanSessionId,
     ReportExportPayload ReportExportPayload,
     IReadOnlyCollection<RecommendationDetailResult> RecommendationDetails,
-    OpenOfficialSourceActionResult OfficialSourceAction);
+    OpenOfficialSourceActionResult OfficialSourceAction,
+    IReadOnlyCollection<RecentHistoryEntryResult> RecentHistory);
 
 public sealed record ReportExportPayload(
     string FileNameBase,
@@ -42,3 +43,21 @@ public sealed record OpenOfficialSourceActionResult(
     string Status,
     string? ApprovedOfficialSourceUrl,
     string? BlockReason);
+
+public sealed record RecentHistoryEntryResult(
+    DateTimeOffset OccurredAtUtc,
+    RecentHistoryEntryKind Kind,
+    Guid ScanSessionId,
+    int PrimaryCount,
+    int SecondaryCount,
+    int TertiaryCount,
+    string? StatusCode,
+    string? Note);
+
+public enum RecentHistoryEntryKind
+{
+    Scan = 0,
+    Recommendation = 1,
+    Verification = 2,
+    Unknown = 3
+}

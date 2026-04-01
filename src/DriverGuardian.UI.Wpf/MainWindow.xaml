@@ -73,6 +73,48 @@
 
         <ScrollViewer Grid.Row="3" Margin="0 16 0 0" VerticalScrollBarVisibility="Auto">
             <StackPanel>
+                <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 14">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static localization:UiStrings.RecentHistorySectionTitle}" FontWeight="SemiBold" Margin="0 0 0 8"/>
+                        <ItemsControl ItemsSource="{Binding RecentHistory}">
+                            <ItemsControl.Style>
+                                <Style TargetType="ItemsControl">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RecentHistory.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ItemsControl.Style>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 0 0 8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Timestamp}" TextWrapping="Wrap"/>
+                                            <TextBlock FontWeight="SemiBold" Text="{Binding Title}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Summary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Status}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{x:Static localization:UiStrings.RecentHistoryEmptyState}" TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RecentHistory.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
                 <TextBlock Text="{Binding State.Results.ScanSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                 <TextBlock Text="{Binding State.Results.DiscoveryAndInspectionSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                 <TextBlock Text="{Binding State.Results.RecommendationSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
