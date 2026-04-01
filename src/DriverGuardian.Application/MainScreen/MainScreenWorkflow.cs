@@ -17,6 +17,8 @@ public sealed class MainScreenWorkflow(
     OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator,
     IShareableReportBuilder reportBuilder) : IMainScreenWorkflow
 {
+    private const int DefaultRecentHistoryTake = 5;
+
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
     {
         var scanResult = await scanOrchestrator.RunAsync(cancellationToken);
@@ -54,6 +56,8 @@ public sealed class MainScreenWorkflow(
                 verificationSummary),
             cancellationToken);
 
+        var recentHistory = await GetRecentHistoryAsync(DefaultRecentHistoryTake, cancellationToken);
+
         await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
 
         return new MainScreenWorkflowResult(
@@ -69,8 +73,56 @@ public sealed class MainScreenWorkflow(
             ScanSessionId: scanResult.Session.Id,
             ReportExportPayload: reportExportPayload,
             RecommendationDetails: recommendationDetails,
-            OfficialSourceAction: officialSourceAction);
+            OfficialSourceAction: officialSourceAction,
+            RecentHistory: recentHistory);
     }
+
+    public async Task<IReadOnlyCollection<RecentHistoryEntryResult>> GetRecentHistoryAsync(int take, CancellationToken cancellationToken)
+    {
+        var recentEntries = await resultHistoryRepository.GetRecentAsync(take, cancellationToken);
+        return recentEntries.Select(MapHistory).ToArray();
+    }
+
+    private static RecentHistoryEntryResult MapHistory(ResultHistoryEntry entry)
+        => entry switch
+        {
+            ScanHistoryEntry scan => new RecentHistoryEntryResult(
+                scan.OccurredAtUtc,
+                RecentHistoryEntryKind.Scan,
+                scan.ScanSessionId,
+                scan.DiscoveredDeviceCount,
+                scan.InspectedDriverCount,
+                0,
+                null,
+                null),
+            RecommendationSummaryHistoryEntry recommendation => new RecentHistoryEntryResult(
+                recommendation.OccurredAtUtc,
+                RecentHistoryEntryKind.RecommendationSummary,
+                recommendation.ScanSessionId,
+                recommendation.TotalRecommendations,
+                recommendation.RequiresManualInstallCount,
+                recommendation.DeferredDecisionCount,
+                null,
+                null),
+            VerificationHistoryEntry verification => new RecentHistoryEntryResult(
+                verification.OccurredAtUtc,
+                RecentHistoryEntryKind.Verification,
+                verification.ScanSessionId,
+                0,
+                0,
+                0,
+                verification.Status,
+                verification.Note),
+            _ => new RecentHistoryEntryResult(
+                entry.OccurredAtUtc,
+                RecentHistoryEntryKind.Unknown,
+                Guid.Empty,
+                0,
+                0,
+                0,
+                null,
+                null)
+        };
 
     private static ReportExportPayload BuildReportExportPayload(
         ScanResult scanResult,
