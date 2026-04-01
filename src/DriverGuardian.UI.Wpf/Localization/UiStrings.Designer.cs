@@ -3,8 +3,11 @@ namespace DriverGuardian.UI.Wpf.Localization;
 public static class UiStrings
 {
     public static string MainWindowTitle => Resources.MainWindow_Title;
+    public static string StatusInitial => Resources.Status_Initial;
     public static string StatusReady => Resources.Status_Ready;
     public static string StatusScanning => Resources.Status_Scanning;
+    public static string StatusScanCompletedReady => Resources.Status_Scan_Completed_Ready;
+    public static string StatusScanCompletedNoAction => Resources.Status_Scan_Completed_No_Action;
     public static string ScanAction => Resources.Scan_Action;
     public static string ScanSummaryFormat => Resources.Scan_Summary_Format;
     public static string DiscoveryInspectionSummaryFormat => Resources.Discovery_Inspection_Summary_Format;
@@ -13,6 +16,7 @@ public static class UiStrings
     public static string VerificationSummaryFormat => Resources.Verification_Summary_Format;
     public static string ActionFlowTitle => Resources.Action_Flow_Title;
     public static string ScanOverviewTitle => Resources.Scan_Overview_Title;
+    public static string ScanOverviewEmptyState => Resources.Scan_Overview_Empty_State;
     public static string ActionFlowSafetyNotice => Resources.Action_Flow_Safety_Notice;
     public static string ActionStatusRequired => Resources.Action_Status_Required;
     public static string ActionStatusAvailable => Resources.Action_Status_Available;
@@ -43,6 +47,8 @@ public static class UiStrings
     public static string WorkflowHintManualActionLimited => Resources.Workflow_Hint_Manual_Action_Limited;
     public static string RecommendationSectionTitle => Resources.Recommendation_Section_Title;
     public static string RecommendationSectionHint => Resources.Recommendation_Section_Hint;
+    public static string RecommendationEmptyStatePreScan => Resources.Recommendation_Empty_State_Pre_Scan;
+    public static string RecommendationEmptyStateNoAction => Resources.Recommendation_Empty_State_No_Action;
     public static string RecommendationEmptyState => Resources.Recommendation_Empty_State;
     public static string RecommendationStateReadyForManualAction => Resources.Recommendation_State_Ready_For_Manual_Action;
     public static string RecommendationStateReadyForManualActionHint => Resources.Recommendation_State_Ready_For_Manual_Action_Hint;
@@ -52,10 +58,13 @@ public static class UiStrings
     public static string RecommendationStateBlockedHint => Resources.Recommendation_State_Blocked_Hint;
     public static string ManualSectionTitle => Resources.Manual_Section_Title;
     public static string ManualSectionHint => Resources.Manual_Section_Hint;
+    public static string ManualSectionEmptyState => Resources.Manual_Section_Empty_State;
     public static string VerificationSectionTitle => Resources.Verification_Section_Title;
     public static string VerificationSectionHint => Resources.Verification_Section_Hint;
     public static string VerificationRescanHint => Resources.Verification_Rescan_Hint;
     public static string VerificationRescanHintNoAction => Resources.Verification_Rescan_Hint_No_Action;
+    public static string VerificationSectionEmptyStatePreScan => Resources.Verification_Section_Empty_State_Pre_Scan;
+    public static string VerificationSectionEmptyStateNoAction => Resources.Verification_Section_Empty_State_No_Action;
 
     public static string OfficialSourceSummaryReadyFormat => Resources.Official_Source_Summary_Ready_Format;
     public static string OfficialSourceSummaryBlockedFormat => Resources.Official_Source_Summary_Blocked_Format;

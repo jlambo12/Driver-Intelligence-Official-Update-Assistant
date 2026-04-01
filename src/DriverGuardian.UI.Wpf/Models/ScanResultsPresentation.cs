@@ -4,7 +4,9 @@ using DriverGuardian.UI.Wpf.Localization;
 namespace DriverGuardian.UI.Wpf.Models;
 
 public sealed record ScanResultsPresentation(
+    bool HasScanData,
     string ScanSummary,
+    string ScanOverviewEmptyState,
     string DiscoveryAndInspectionSummary,
     string RecommendationSummary,
     string ManualHandoffSummary,
@@ -19,15 +21,20 @@ public sealed record ScanResultsPresentation(
     string RecommendationEmptyState,
     string ManualSectionTitle,
     string ManualSectionHint,
+    string ManualSectionEmptyState,
     string VerificationSectionTitle,
     string VerificationSectionHint,
     string VerificationRescanHint,
+    string VerificationEmptyState,
+    bool ShowVerificationEmptyState,
     IReadOnlyCollection<RecommendationDetailPresentation> RecommendationDetails,
     IReadOnlyCollection<UserGuidedActionStepPresentation> UserGuidedSteps)
 {
     public static ScanResultsPresentation Empty() =>
         new(
+            false,
             string.Empty,
+            UiStrings.ScanOverviewEmptyState,
             string.Empty,
             string.Empty,
             string.Empty,
@@ -39,12 +46,15 @@ public sealed record ScanResultsPresentation(
             UiStrings.WorkflowHintEmpty,
             UiStrings.RecommendationSectionTitle,
             UiStrings.RecommendationSectionHint,
-            UiStrings.RecommendationEmptyState,
+            UiStrings.RecommendationEmptyStatePreScan,
             UiStrings.ManualSectionTitle,
             UiStrings.ManualSectionHint,
+            UiStrings.ManualSectionEmptyState,
             UiStrings.VerificationSectionTitle,
             UiStrings.VerificationSectionHint,
-            UiStrings.VerificationRescanHint,
+            UiStrings.VerificationRescanHintNoAction,
+            UiStrings.VerificationSectionEmptyStatePreScan,
+            true,
             Array.Empty<RecommendationDetailPresentation>(),
             Array.Empty<UserGuidedActionStepPresentation>());
 
@@ -55,7 +65,9 @@ public sealed record ScanResultsPresentation(
         var officialSourceReady = result.OfficialSourceAction.IsReady;
 
         return new ScanResultsPresentation(
+            HasScanData: true,
             ScanSummary: string.Format(UiStrings.ScanSummaryFormat, result.ScanSessionId, result.UiCulture, result.ProviderCount),
+            ScanOverviewEmptyState: string.Empty,
             DiscoveryAndInspectionSummary: string.Format(UiStrings.DiscoveryInspectionSummaryFormat, result.DiscoveredDeviceCount, result.InspectedDriverCount),
             RecommendationSummary: string.Format(UiStrings.RecommendationSummaryFormat, result.RecommendedCount, result.NotRecommendedCount),
             ManualHandoffSummary: string.Format(UiStrings.ManualHandoffSummaryFormat, result.ManualHandoffReadyCount, result.ManualHandoffUserActionCount),
@@ -67,14 +79,19 @@ public sealed record ScanResultsPresentation(
             WorkflowHint: BuildWorkflowHint(hasRecommendation, officialSourceReady, hasReadyHandoff),
             RecommendationSectionTitle: UiStrings.RecommendationSectionTitle,
             RecommendationSectionHint: UiStrings.RecommendationSectionHint,
-            RecommendationEmptyState: UiStrings.RecommendationEmptyState,
+            RecommendationEmptyState: hasRecommendation ? UiStrings.RecommendationEmptyState : UiStrings.RecommendationEmptyStateNoAction,
             ManualSectionTitle: UiStrings.ManualSectionTitle,
             ManualSectionHint: UiStrings.ManualSectionHint,
+            ManualSectionEmptyState: UiStrings.ManualSectionEmptyState,
             VerificationSectionTitle: UiStrings.VerificationSectionTitle,
             VerificationSectionHint: UiStrings.VerificationSectionHint,
             VerificationRescanHint: hasRecommendation ? UiStrings.VerificationRescanHint : UiStrings.VerificationRescanHintNoAction,
+            VerificationEmptyState: hasRecommendation ? string.Empty : UiStrings.VerificationSectionEmptyStateNoAction,
+            ShowVerificationEmptyState: !hasRecommendation,
             RecommendationDetails: result.RecommendationDetails.Select(MapDetail).ToArray(),
-            UserGuidedSteps: BuildUserGuidedSteps(hasRecommendation, hasReadyHandoff, officialSourceReady));
+            UserGuidedSteps: hasRecommendation
+                ? BuildUserGuidedSteps(hasRecommendation, hasReadyHandoff, officialSourceReady)
+                : Array.Empty<UserGuidedActionStepPresentation>());
     }
 
     private static RecommendationDetailPresentation MapDetail(RecommendationDetailResult detail)

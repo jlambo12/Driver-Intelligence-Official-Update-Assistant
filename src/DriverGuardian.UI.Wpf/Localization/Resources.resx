@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -357,4 +357,4 @@
   <data name="Recent_History_Unknown_Guidance" xml:space="preserve">
     <value>Проверьте новый анализ, чтобы получить структурированную запись.</value>
   </data>
-</root>
+<data name="Status_Initial" xml:space="preserve"><value>Готово к первому анализу. Нажмите «Запустить анализ», чтобы получить безопасную сводку.</value></data><data name="Status_Scan_Completed_Ready" xml:space="preserve"><value>Анализ завершён: есть рекомендации для ручной проверки.</value></data><data name="Status_Scan_Completed_No_Action" xml:space="preserve"><value>Анализ завершён: безопасных рекомендаций для ручного действия сейчас нет.</value></data><data name="Scan_Overview_Empty_State" xml:space="preserve"><value>После первого анализа здесь появится сводка по обнаружению устройств, рекомендациям и готовности ручных шагов.</value></data><data name="Recommendation_Empty_State_Pre_Scan" xml:space="preserve"><value>Запустите первый анализ, чтобы увидеть рекомендации по устройствам и ограничения по безопасности.</value></data><data name="Recommendation_Empty_State_No_Action" xml:space="preserve"><value>По текущему анализу безопасных рекомендаций для ручного обновления не найдено. Это нормальный результат, если подтверждений недостаточно.</value></data><data name="Manual_Section_Empty_State" xml:space="preserve"><value>Пока ручные шаги не сформированы. Сначала выполните анализ и проверьте, есть ли безопасная рекомендация.</value></data><data name="Verification_Section_Empty_State_Pre_Scan" xml:space="preserve"><value>Проверка становится актуальной после ручной установки драйвера вне приложения.</value></data><data name="Verification_Section_Empty_State_No_Action" xml:space="preserve"><value>Сейчас возвращаться для проверки не требуется: сначала должен появиться сценарий ручной установки.</value></data></root>
