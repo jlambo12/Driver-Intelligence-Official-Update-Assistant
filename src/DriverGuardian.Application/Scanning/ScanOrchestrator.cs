@@ -25,7 +25,7 @@ public sealed class ScanOrchestrator(
             : await inspectionOrchestrator.InspectAsync(distinctDevices, cancellationToken);
 
         var completed = session.Complete(clock.UtcNow);
-        return new ScanResult(completed, drivers);
+        return new ScanResult(completed, distinctDevices.Length, drivers);
     }
 
     private sealed class DiscoveredDeviceInstanceIdComparer : IEqualityComparer<DiscoveredDevice>

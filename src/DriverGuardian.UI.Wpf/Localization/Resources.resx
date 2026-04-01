@@ -8,5 +8,9 @@
   <data name="Status_Ready" xml:space="preserve"><value>Готово к анализу</value></data>
   <data name="Status_Scanning" xml:space="preserve"><value>Выполняется анализ...</value></data>
   <data name="Scan_Action" xml:space="preserve"><value>Запустить анализ</value></data>
-  <data name="LastScan_Summary_Format" xml:space="preserve"><value>Найдено драйверов: {0}; рекомендаций: {1}; провайдеров: {2}; культура: {3}</value></data>
+  <data name="Scan_Summary_Format" xml:space="preserve"><value>Сводка сканирования: сеанс {0}; UI-культура: {1}; официальных провайдеров: {2}</value></data>
+  <data name="Discovery_Inspection_Summary_Format" xml:space="preserve"><value>Обнаружение и инспекция: устройств найдено {0}; драйверов проинспектировано {1}</value></data>
+  <data name="Recommendation_Summary_Format" xml:space="preserve"><value>Рекомендации: к обновлению {0}; без рекомендации {1}</value></data>
+  <data name="Manual_Handoff_Summary_Format" xml:space="preserve"><value>Готовность ручной установки: готово {0}; требуется действие пользователя {1}</value></data>
+  <data name="Verification_Summary_Format" xml:space="preserve"><value>Проверка после установки: {0}</value></data>
 </root>
