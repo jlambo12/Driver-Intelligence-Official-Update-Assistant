@@ -40,7 +40,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _mainScreenWorkflow = mainScreenWorkflow;
         _settingsRepository = settingsRepository;
         _reportFileSaveService = reportFileSaveService;
-        _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusReady, UiStrings.ScanAction);
+        _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusInitial, UiStrings.ScanAction);
         _settingsStatusText = UiStrings.SettingsLoadError;
         _reportExportStatusText = UiStrings.ReportExportStatusNoData;
         _historyMaxEntries = AppSettings.Default.History.MaxEntries;
@@ -157,7 +157,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         State = State with
         {
-            StatusText = UiStrings.StatusReady,
+            StatusText = result.RecommendedCount > 0
+                ? UiStrings.StatusScanCompletedReady
+                : UiStrings.StatusScanCompletedNoAction,
             Results = ScanResultsPresentation.FromResult(result)
         };
         RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);

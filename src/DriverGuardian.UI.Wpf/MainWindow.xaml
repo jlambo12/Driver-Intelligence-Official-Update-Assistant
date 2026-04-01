@@ -33,11 +33,35 @@
                 <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 14">
                     <StackPanel>
                         <TextBlock Text="{x:Static localization:UiStrings.ScanOverviewTitle}" FontWeight="SemiBold" Margin="0 0 0 8"/>
-                        <TextBlock Text="{Binding State.Results.ScanSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding State.Results.DiscoveryAndInspectionSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding State.Results.RecommendationSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding State.Results.ManualHandoffSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding State.Results.OfficialSourceSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                        <StackPanel>
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State.Results.HasScanData}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="{Binding State.Results.ScanSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.DiscoveryAndInspectionSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.RecommendationSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.ManualHandoffSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.OfficialSourceSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding State.Results.ScanOverviewEmptyState}" Margin="0 0 0 6" TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State.Results.HasScanData}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
                 </Border>
 
@@ -94,6 +118,16 @@
                         <TextBlock Text="{Binding State.Results.ManualSectionTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
                         <TextBlock Text="{Binding State.Results.ManualSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding State.Results.UserGuidedSteps}">
+                            <ItemsControl.Style>
+                                <Style TargetType="ItemsControl">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State.Results.UserGuidedSteps.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ItemsControl.Style>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 0 0 8">
@@ -110,6 +144,18 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        <TextBlock Text="{Binding State.Results.ManualSectionEmptyState}" TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State.Results.UserGuidedSteps.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
                 </Border>
 
@@ -119,6 +165,18 @@
                         <TextBlock Text="{Binding State.Results.VerificationSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding State.Results.VerificationSectionHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding State.Results.VerificationRescanHint}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding State.Results.VerificationEmptyState}" Margin="0 6 0 0" TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State.Results.ShowVerificationEmptyState}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
                 </Border>
 

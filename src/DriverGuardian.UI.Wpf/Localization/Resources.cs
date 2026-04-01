@@ -8,8 +8,11 @@ public static class Resources
     private static readonly ResourceManager ResourceManager = new("DriverGuardian.UI.Wpf.Localization.Resources", typeof(Resources).Assembly);
 
     public static string MainWindow_Title => GetString(nameof(MainWindow_Title));
+    public static string Status_Initial => GetString(nameof(Status_Initial));
     public static string Status_Ready => GetString(nameof(Status_Ready));
     public static string Status_Scanning => GetString(nameof(Status_Scanning));
+    public static string Status_Scan_Completed_Ready => GetString(nameof(Status_Scan_Completed_Ready));
+    public static string Status_Scan_Completed_No_Action => GetString(nameof(Status_Scan_Completed_No_Action));
     public static string Scan_Action => GetString(nameof(Scan_Action));
     public static string Scan_Summary_Format => GetString(nameof(Scan_Summary_Format));
     public static string Discovery_Inspection_Summary_Format => GetString(nameof(Discovery_Inspection_Summary_Format));
@@ -18,6 +21,7 @@ public static class Resources
     public static string Verification_Summary_Format => GetString(nameof(Verification_Summary_Format));
     public static string Action_Flow_Title => GetString(nameof(Action_Flow_Title));
     public static string Scan_Overview_Title => GetString(nameof(Scan_Overview_Title));
+    public static string Scan_Overview_Empty_State => GetString(nameof(Scan_Overview_Empty_State));
     public static string Action_Flow_Safety_Notice => GetString(nameof(Action_Flow_Safety_Notice));
     public static string Action_Status_Required => GetString(nameof(Action_Status_Required));
     public static string Action_Status_Available => GetString(nameof(Action_Status_Available));
@@ -48,6 +52,8 @@ public static class Resources
     public static string Workflow_Hint_Manual_Action_Limited => GetString(nameof(Workflow_Hint_Manual_Action_Limited));
     public static string Recommendation_Section_Title => GetString(nameof(Recommendation_Section_Title));
     public static string Recommendation_Section_Hint => GetString(nameof(Recommendation_Section_Hint));
+    public static string Recommendation_Empty_State_Pre_Scan => GetString(nameof(Recommendation_Empty_State_Pre_Scan));
+    public static string Recommendation_Empty_State_No_Action => GetString(nameof(Recommendation_Empty_State_No_Action));
     public static string Recommendation_Empty_State => GetString(nameof(Recommendation_Empty_State));
     public static string Recommendation_State_Ready_For_Manual_Action => GetString(nameof(Recommendation_State_Ready_For_Manual_Action));
     public static string Recommendation_State_Ready_For_Manual_Action_Hint => GetString(nameof(Recommendation_State_Ready_For_Manual_Action_Hint));
@@ -57,10 +63,13 @@ public static class Resources
     public static string Recommendation_State_Blocked_Hint => GetString(nameof(Recommendation_State_Blocked_Hint));
     public static string Manual_Section_Title => GetString(nameof(Manual_Section_Title));
     public static string Manual_Section_Hint => GetString(nameof(Manual_Section_Hint));
+    public static string Manual_Section_Empty_State => GetString(nameof(Manual_Section_Empty_State));
     public static string Verification_Section_Title => GetString(nameof(Verification_Section_Title));
     public static string Verification_Section_Hint => GetString(nameof(Verification_Section_Hint));
     public static string Verification_Rescan_Hint => GetString(nameof(Verification_Rescan_Hint));
     public static string Verification_Rescan_Hint_No_Action => GetString(nameof(Verification_Rescan_Hint_No_Action));
+    public static string Verification_Section_Empty_State_Pre_Scan => GetString(nameof(Verification_Section_Empty_State_Pre_Scan));
+    public static string Verification_Section_Empty_State_No_Action => GetString(nameof(Verification_Section_Empty_State_No_Action));
 
     public static string Official_Source_Summary_Ready_Format => GetString(nameof(Official_Source_Summary_Ready_Format));
     public static string Official_Source_Summary_Blocked_Format => GetString(nameof(Official_Source_Summary_Blocked_Format));
