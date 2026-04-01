@@ -6,5 +6,6 @@
   <ItemGroup>
     <ProjectReference Include="../DriverGuardian.Contracts/DriverGuardian.Contracts.csproj" />
     <ProjectReference Include="../DriverGuardian.Domain/DriverGuardian.Domain.csproj" />
+    <ProjectReference Include="../DriverGuardian.ProviderAdapters.Abstractions/DriverGuardian.ProviderAdapters.Abstractions.csproj" />
   </ItemGroup>
 </Project>
