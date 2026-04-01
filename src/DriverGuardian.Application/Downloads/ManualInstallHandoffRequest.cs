@@ -2,6 +2,6 @@ using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 
 namespace DriverGuardian.Application.Downloads;
 
-public sealed record DownloadPreparationRequest(
+public sealed record ManualInstallHandoffRequest(
     string ProviderCode,
     ProviderCandidate Candidate);
