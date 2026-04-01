@@ -40,9 +40,10 @@ public sealed class MainScreenWorkflowTests
         Assert.Equal("ru-RU", result.UiCulture);
         Assert.Single(result.RecommendationDetails);
         Assert.False(result.OfficialSourceAction.IsReady);
-        Assert.Equal(2, historyRepository.Entries.Count);
+        Assert.Equal(3, historyRepository.Entries.Count);
         Assert.Contains(historyRepository.Entries, entry => entry is ScanHistoryEntry);
         Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);
+        Assert.Contains(historyRepository.Entries, entry => entry is VerificationHistoryEntry);
         Assert.Single(auditWriter.Entries);
     }
 

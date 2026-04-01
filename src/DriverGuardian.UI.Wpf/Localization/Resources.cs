@@ -43,6 +43,7 @@ public static class Resources
     public static string Recommendation_Manual_Handoff_Format => GetString(nameof(Recommendation_Manual_Handoff_Format));
     public static string Recommendation_Manual_Action_Format => GetString(nameof(Recommendation_Manual_Action_Format));
     public static string Recommendation_Verification_Format => GetString(nameof(Recommendation_Verification_Format));
+    public static string Recommendation_Verification_Status_Format => GetString(nameof(Recommendation_Verification_Status_Format));
     public static string Recommendation_Title_Recommended => GetString(nameof(Recommendation_Title_Recommended));
     public static string Recommendation_Title_Not_Recommended => GetString(nameof(Recommendation_Title_Not_Recommended));
     public static string Recommendation_Candidate_Version_Format => GetString(nameof(Recommendation_Candidate_Version_Format));

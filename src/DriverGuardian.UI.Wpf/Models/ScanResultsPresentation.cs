@@ -70,6 +70,7 @@ public sealed record ScanResultsPresentation(
             string.Format(UiStrings.RecommendationManualHandoffFormat, detail.ManualHandoffReady ? UiStrings.ActionStatusAvailable : UiStrings.ActionStatusBlocked),
             string.Format(UiStrings.RecommendationManualActionFormat, detail.ManualActionRequired ? UiStrings.ActionStatusRequired : UiStrings.ActionStatusWait),
             string.Format(UiStrings.RecommendationVerificationFormat, detail.VerificationAvailable ? UiStrings.ActionStatusReturn : UiStrings.ActionStatusWait),
+            string.Format(UiStrings.RecommendationVerificationStatusFormat, detail.VerificationStatus),
             nextStep);
     }
 

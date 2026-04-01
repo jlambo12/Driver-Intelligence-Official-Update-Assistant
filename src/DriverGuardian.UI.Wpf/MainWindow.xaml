@@ -86,6 +86,7 @@
                                             <TextBlock Text="{Binding ManualHandoffSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding ManualActionSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding VerificationSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding VerificationStatus}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding NextStepGuidance}" Margin="0 4 0 0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </Border>

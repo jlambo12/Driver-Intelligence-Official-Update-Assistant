@@ -2,7 +2,6 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.History;
 using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.OfficialSources;
-using DriverGuardian.Application.Verification;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 
 namespace DriverGuardian.Application.MainScreen;
@@ -28,12 +27,7 @@ public sealed class MainScreenWorkflow(
         var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
         var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
         var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
-        var verificationPlaceholder = new PostInstallVerificationEvaluator()
-            .Evaluate(new PostInstallVerificationRequest(
-                scanResult.Drivers.FirstOrDefault()?.DeviceIdentity ?? new Domain.Devices.DeviceIdentity("UNKNOWN\\DEVICE\\0"),
-                null,
-                null))
-            .Message;
+        var verificationSummary = BuildVerificationSummary(recommendationDetails);
 
         var occurredAtUtc = scanResult.Session.CompletedAtUtc ?? DateTimeOffset.UtcNow;
         await resultHistoryRepository.SaveAsync(
@@ -48,6 +42,14 @@ public sealed class MainScreenWorkflow(
                 manualHandoffUserActionCount,
                 notRecommendedCount),
             cancellationToken);
+        await resultHistoryRepository.SaveAsync(
+            VerificationHistoryEntry.Create(
+                Guid.NewGuid(),
+                occurredAtUtc,
+                scanResult.Session.Id,
+                manualHandoffUserActionCount > 0 ? VerificationHistoryStatus.Skipped : VerificationHistoryStatus.Passed,
+                verificationSummary),
+            cancellationToken);
 
         await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
 
@@ -59,7 +61,7 @@ public sealed class MainScreenWorkflow(
             ProviderCount: providerCount,
             ManualHandoffReadyCount: manualHandoffReadyCount,
             ManualHandoffUserActionCount: manualHandoffUserActionCount,
-            VerificationSummary: verificationPlaceholder,
+            VerificationSummary: verificationSummary,
             UiCulture: settings.UiCulture,
             ScanSessionId: scanResult.Session.Id,
             RecommendationDetails: recommendationDetails,
@@ -85,9 +87,20 @@ public sealed class MainScreenWorkflow(
                     RecommendedVersion: recommendation?.RecommendedVersion,
                     ManualHandoffReady: false,
                     ManualActionRequired: hasRecommendation,
-                    VerificationAvailable: hasRecommendation);
+                    VerificationAvailable: hasRecommendation,
+                    VerificationStatus: hasRecommendation
+                        ? "Ожидается возврат пользователя после ручной установки."
+                        : "Проверка после установки сейчас не требуется.");
             })
             .ToArray();
+    }
+
+    private static string BuildVerificationSummary(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)
+    {
+        var waitingForReturnCount = recommendationDetails.Count(detail => detail.VerificationAvailable);
+        return waitingForReturnCount > 0
+            ? $"Ожидается возврат для проверки по устройствам: {waitingForReturnCount}."
+            : "Активных задач на возврат для проверки нет.";
     }
 
     private static OpenOfficialSourceActionResult BuildOfficialSourceAction(

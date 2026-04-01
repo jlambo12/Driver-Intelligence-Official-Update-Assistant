@@ -28,7 +28,8 @@ public sealed record RecommendationDetailResult(
     string? RecommendedVersion,
     bool ManualHandoffReady,
     bool ManualActionRequired,
-    bool VerificationAvailable);
+    bool VerificationAvailable,
+    string VerificationStatus);
 
 public sealed record OpenOfficialSourceActionResult(
     bool IsReady,
