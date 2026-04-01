@@ -77,12 +77,12 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
         {
             lines.Add($"- Device: {device.DeviceInstanceId}");
             lines.Add($"  Driver Version: {device.DriverSnapshot.DriverVersion}");
-            lines.Add($"  Provider: {device.DriverSnapshot.ProviderName ?? \"(unknown)\"}");
+            lines.Add($"  Provider: {device.DriverSnapshot.ProviderName ?? "(unknown)"}");
             lines.Add($"  Hardware ID: {device.DriverSnapshot.HardwareId}");
 
             if (device.Recommendation is not null)
             {
-                lines.Add($"  Recommendation: {(device.Recommendation.HasRecommendation ? \"Yes\" : \"No\")}");
+                lines.Add($"  Recommendation: {(device.Recommendation.HasRecommendation ? "Yes" : "No")}");
                 lines.Add($"  Recommendation Reason: {device.Recommendation.Reason}");
             }
 
