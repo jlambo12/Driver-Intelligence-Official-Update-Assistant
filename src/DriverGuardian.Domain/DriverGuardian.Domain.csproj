@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DriverGuardian.Domain</AssemblyName>
+    <RootNamespace>DriverGuardian.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

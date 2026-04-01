@@ -1,0 +1,22 @@
+<Window x:Class="DriverGuardian.UI.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="{Binding State.TitleText}"
+        Height="360"
+        Width="640"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="{Binding State.StatusText}" FontSize="18" Margin="0 0 0 14" />
+        <Button Grid.Row="1" Content="{Binding State.ScanButtonText}" Command="{Binding ScanCommand}" Width="220" Height="42" HorizontalAlignment="Left"/>
+        <TextBlock Grid.Row="2" Margin="0 16 0 0" Text="{Binding State.LastScanSummary}" TextWrapping="Wrap"/>
+    </Grid>
+</Window>

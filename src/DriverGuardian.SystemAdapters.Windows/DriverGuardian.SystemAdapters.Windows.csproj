@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DriverGuardian.SystemAdapters.Windows</AssemblyName>
+    <RootNamespace>DriverGuardian.SystemAdapters.Windows</RootNamespace>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DriverGuardian.Contracts/DriverGuardian.Contracts.csproj" />
+    <ProjectReference Include="../DriverGuardian.Domain/DriverGuardian.Domain.csproj" />
+  </ItemGroup>
+</Project>

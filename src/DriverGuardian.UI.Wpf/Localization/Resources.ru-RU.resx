@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="MainWindow_Title" xml:space="preserve"><value>Driver Guardian (Этап 0)</value></data>
+  <data name="Status_Ready" xml:space="preserve"><value>Готово к анализу</value></data>
+  <data name="Status_Scanning" xml:space="preserve"><value>Выполняется анализ...</value></data>
+  <data name="Scan_Action" xml:space="preserve"><value>Запустить анализ</value></data>
+  <data name="LastScan_Summary_Format" xml:space="preserve"><value>Найдено драйверов: {0}; рекомендаций: {1}; провайдеров: {2}; культура: {3}</value></data>
+</root>
