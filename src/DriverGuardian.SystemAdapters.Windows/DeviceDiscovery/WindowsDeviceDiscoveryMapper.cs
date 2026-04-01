@@ -40,22 +40,46 @@ internal sealed record WindowsPnpEntitySnapshot(
 {
     public static WindowsPnpEntitySnapshot From(ManagementObject entity)
     {
-        var hardwareIds = entity["HardwareID"] switch
-        {
-            string single => [single],
-            string[] array => array,
-            _ => Array.Empty<string>()
-        };
-
-        var instanceId = (entity["PNPDeviceID"] as string) ?? (entity["DeviceID"] as string);
+        var instanceId = ReadString(entity, "PNPDeviceID") ?? ReadString(entity, "DeviceID");
 
         return new WindowsPnpEntitySnapshot(
             InstanceId: instanceId,
-            FriendlyName: entity["Name"] as string,
-            HardwareIds: hardwareIds,
-            Manufacturer: entity["Manufacturer"] as string,
-            DeviceClass: entity["PNPClass"] as string,
-            ConfigManagerErrorCode: entity["ConfigManagerErrorCode"] as int?,
-            Status: entity["Status"] as string);
+            FriendlyName: ReadString(entity, "Name"),
+            HardwareIds: ReadHardwareIds(entity),
+            Manufacturer: ReadString(entity, "Manufacturer"),
+            DeviceClass: ReadString(entity, "PNPClass"),
+            ConfigManagerErrorCode: ReadInt(entity, "ConfigManagerErrorCode"),
+            Status: ReadString(entity, "Status"));
+    }
+
+    private static IReadOnlyCollection<string> ReadHardwareIds(ManagementObject entity)
+    {
+        var rawValue = entity["HardwareID"];
+
+        return rawValue switch
+        {
+            string single => [single],
+            string[] array => array,
+            IEnumerable<string> enumerable => enumerable.ToArray(),
+            _ => Array.Empty<string>()
+        };
+    }
+
+    private static string? ReadString(ManagementObject entity, string propertyName)
+    {
+        return entity[propertyName] as string;
+    }
+
+    private static int? ReadInt(ManagementObject entity, string propertyName)
+    {
+        return entity[propertyName] switch
+        {
+            int value => value,
+            uint value => checked((int)value),
+            ushort value => value,
+            short value => value,
+            byte value => value,
+            _ => null
+        };
     }
 }

@@ -20,13 +20,20 @@ public sealed class WindowsDeviceDiscoveryService : IDeviceDiscoveryService
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var snapshot = WindowsPnpEntitySnapshot.From(entity);
-                if (string.IsNullOrWhiteSpace(snapshot.InstanceId))
+                try
                 {
-                    continue;
-                }
+                    var snapshot = WindowsPnpEntitySnapshot.From(entity);
+                    if (string.IsNullOrWhiteSpace(snapshot.InstanceId))
+                    {
+                        continue;
+                    }
 
-                devices.Add(WindowsDeviceDiscoveryMapper.Map(snapshot));
+                    devices.Add(WindowsDeviceDiscoveryMapper.Map(snapshot));
+                }
+                catch (ManagementException)
+                {
+                    // skip malformed entity and continue collecting partial results
+                }
             }
 
             return Task.FromResult<IReadOnlyCollection<DiscoveredDevice>>(devices);
@@ -36,6 +43,10 @@ public sealed class WindowsDeviceDiscoveryService : IDeviceDiscoveryService
             return Task.FromResult<IReadOnlyCollection<DiscoveredDevice>>([]);
         }
         catch (PlatformNotSupportedException)
+        {
+            return Task.FromResult<IReadOnlyCollection<DiscoveredDevice>>([]);
+        }
+        catch (UnauthorizedAccessException)
         {
             return Task.FromResult<IReadOnlyCollection<DiscoveredDevice>>([]);
         }

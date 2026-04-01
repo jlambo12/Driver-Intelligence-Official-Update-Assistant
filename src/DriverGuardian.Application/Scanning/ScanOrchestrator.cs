@@ -1,5 +1,6 @@
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Contracts.DeviceDiscovery;
+using DriverGuardian.Domain.Devices;
 using DriverGuardian.Domain.Scanning;
 
 namespace DriverGuardian.Application.Scanning;
@@ -15,9 +16,28 @@ public sealed class ScanOrchestrator(
         var session = ScanSession.Start(Guid.NewGuid(), started);
 
         var devices = await discoveryService.DiscoverAsync(cancellationToken);
-        var drivers = await inspectionOrchestrator.InspectAsync(devices.Select(d => d.Identity).ToArray(), cancellationToken);
+        var deviceIds = devices.Select(d => d.Identity).Distinct(DeviceIdentityInstanceIdComparer.Instance).ToArray();
+
+        var drivers = deviceIds.Length == 0
+            ? []
+            : await inspectionOrchestrator.InspectAsync(deviceIds, cancellationToken);
 
         var completed = session.Complete(clock.UtcNow);
         return new ScanResult(completed, drivers);
+    }
+
+    private sealed class DeviceIdentityInstanceIdComparer : IEqualityComparer<DeviceIdentity>
+    {
+        public static DeviceIdentityInstanceIdComparer Instance { get; } = new();
+
+        public bool Equals(DeviceIdentity? x, DeviceIdentity? y)
+        {
+            return StringComparer.OrdinalIgnoreCase.Equals(x?.InstanceId, y?.InstanceId);
+        }
+
+        public int GetHashCode(DeviceIdentity obj)
+        {
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.InstanceId);
+        }
     }
 }
