@@ -16,6 +16,8 @@
     <ProjectReference Include="../../src/DriverGuardian.Application/DriverGuardian.Application.csproj" />
     <ProjectReference Include="../../src/DriverGuardian.Contracts/DriverGuardian.Contracts.csproj" />
     <ProjectReference Include="../../src/DriverGuardian.Domain/DriverGuardian.Domain.csproj" />
+    <ProjectReference Include="../../src/DriverGuardian.ProviderAdapters.Abstractions/DriverGuardian.ProviderAdapters.Abstractions.csproj" />
+    <ProjectReference Include="../../src/DriverGuardian.ProviderAdapters.Official/DriverGuardian.ProviderAdapters.Official.csproj" />
     <ProjectReference Include="../../src/DriverGuardian.SystemAdapters.Windows/DriverGuardian.SystemAdapters.Windows.csproj" />
   </ItemGroup>
 </Project>
