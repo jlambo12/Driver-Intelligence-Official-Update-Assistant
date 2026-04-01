@@ -15,4 +15,23 @@ public sealed record MainScreenWorkflowResult(
     int ManualHandoffUserActionCount,
     string VerificationSummary,
     string UiCulture,
-    Guid ScanSessionId);
+    Guid ScanSessionId,
+    IReadOnlyCollection<RecommendationDetailResult> RecommendationDetails,
+    OpenOfficialSourceActionResult OfficialSourceAction);
+
+public sealed record RecommendationDetailResult(
+    string DeviceId,
+    bool HasRecommendation,
+    string RecommendationReason,
+    string InstalledVersion,
+    string? InstalledProvider,
+    string? RecommendedVersion,
+    bool ManualHandoffReady,
+    bool ManualActionRequired,
+    bool VerificationAvailable);
+
+public sealed record OpenOfficialSourceActionResult(
+    bool IsReady,
+    string Status,
+    string? ApprovedOfficialSourceUrl,
+    string? BlockReason);

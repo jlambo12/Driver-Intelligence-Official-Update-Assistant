@@ -24,7 +24,33 @@
                 <TextBlock Text="{Binding State.Results.DiscoveryAndInspectionSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                 <TextBlock Text="{Binding State.Results.RecommendationSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                 <TextBlock Text="{Binding State.Results.ManualHandoffSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
-                <TextBlock Text="{Binding State.Results.VerificationSummary}" Margin="0 0 0 16" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding State.Results.VerificationSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding State.Results.OfficialSourceSummary}" Margin="0 0 0 16" TextWrapping="Wrap"/>
+
+                <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 14">
+                    <StackPanel>
+                        <TextBlock Text="{Binding State.Results.ActionFlowTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
+                        <ItemsControl ItemsSource="{Binding State.Results.RecommendationDetails}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 0 0 8">
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding DeviceSummary}" Margin="0 4 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Summary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding InstalledDriverSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding CandidateSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding ManualHandoffSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding ManualActionSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding VerificationSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding NextStepGuidance}" Margin="0 4 0 0" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
 
                 <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12">
                     <StackPanel>
