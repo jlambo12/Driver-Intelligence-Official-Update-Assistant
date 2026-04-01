@@ -1,4 +1,4 @@
-using DriverGuardian.Domain.Devices;
+using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Drivers;
 
 namespace DriverGuardian.Application.Abstractions;
@@ -6,6 +6,6 @@ namespace DriverGuardian.Application.Abstractions;
 public interface IDriverInspectionOrchestrator
 {
     Task<IReadOnlyCollection<InstalledDriverSnapshot>> InspectAsync(
-        IReadOnlyCollection<DeviceIdentity> deviceIds,
+        IReadOnlyCollection<DiscoveredDevice> devices,
         CancellationToken cancellationToken);
 }

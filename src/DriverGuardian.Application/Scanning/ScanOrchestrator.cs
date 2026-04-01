@@ -15,15 +15,32 @@ public sealed class ScanOrchestrator(
         var started = clock.UtcNow;
         var session = ScanSession.Start(Guid.NewGuid(), started);
 
-        var devices = await discoveryService.DiscoverAsync(cancellationToken);
-        var deviceIds = devices.Select(d => d.Identity).Distinct(DeviceIdentityInstanceIdComparer.Instance).ToArray();
+        var discoveredDevices = await discoveryService.DiscoverAsync(cancellationToken);
+        var distinctDevices = discoveredDevices
+            .Distinct(DiscoveredDeviceInstanceIdComparer.Instance)
+            .ToArray();
 
-        var drivers = deviceIds.Length == 0
+        var drivers = distinctDevices.Length == 0
             ? []
-            : await inspectionOrchestrator.InspectAsync(deviceIds, cancellationToken);
+            : await inspectionOrchestrator.InspectAsync(distinctDevices, cancellationToken);
 
         var completed = session.Complete(clock.UtcNow);
         return new ScanResult(completed, drivers);
+    }
+
+    private sealed class DiscoveredDeviceInstanceIdComparer : IEqualityComparer<DiscoveredDevice>
+    {
+        public static DiscoveredDeviceInstanceIdComparer Instance { get; } = new();
+
+        public bool Equals(DiscoveredDevice? x, DiscoveredDevice? y)
+        {
+            return DeviceIdentityInstanceIdComparer.Instance.Equals(x?.Identity, y?.Identity);
+        }
+
+        public int GetHashCode(DiscoveredDevice obj)
+        {
+            return DeviceIdentityInstanceIdComparer.Instance.GetHashCode(obj.Identity);
+        }
     }
 
     private sealed class DeviceIdentityInstanceIdComparer : IEqualityComparer<DeviceIdentity>

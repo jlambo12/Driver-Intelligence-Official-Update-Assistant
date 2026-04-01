@@ -2,7 +2,6 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.Scanning;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Contracts.DriverInspection;
-using DriverGuardian.Domain.Devices;
 using DriverGuardian.Domain.Drivers;
 
 namespace DriverGuardian.Tests.Unit.Application;
@@ -52,7 +51,7 @@ public sealed class ScanOrchestratorTests
         await orchestrator.RunAsync(CancellationToken.None);
 
         Assert.Equal(1, inspector.CallCount);
-        Assert.Equal(2, inspector.LastRequestedDeviceIds.Count);
+        Assert.Equal(2, inspector.LastRequestedDevices.Count);
     }
 
     private sealed class FakeClock : IClock
@@ -85,16 +84,17 @@ public sealed class ScanOrchestratorTests
     {
         public int CallCount { get; private set; }
 
-        public IReadOnlyCollection<DeviceIdentity> LastRequestedDeviceIds { get; private set; } = [];
+        public IReadOnlyCollection<DiscoveredDevice> LastRequestedDevices { get; private set; } = [];
 
         public Task<IReadOnlyCollection<InstalledDriverSnapshot>> InspectAsync(
-            IReadOnlyCollection<DeviceIdentity> deviceIds,
+            IReadOnlyCollection<DiscoveredDevice> devices,
             CancellationToken cancellationToken)
         {
             CallCount++;
-            LastRequestedDeviceIds = deviceIds.ToArray();
+            LastRequestedDevices = devices.ToArray();
 
-            if (deviceIds.Count == 0)
+            var firstDevice = devices.FirstOrDefault();
+            if (firstDevice is null)
             {
                 return Task.FromResult<IReadOnlyCollection<InstalledDriverSnapshot>>([]);
             }
@@ -102,8 +102,8 @@ public sealed class ScanOrchestratorTests
             IReadOnlyCollection<InstalledDriverSnapshot> snapshots =
             [
                 new InstalledDriverSnapshot(
-                    deviceIds.First(),
-                    new HardwareIdentifier("PCI\\VEN_1234&DEV_ABCD"),
+                    firstDevice.Identity,
+                    firstDevice.HardwareIds.First(),
                     "1.0.0",
                     null,
                     "Fake")
