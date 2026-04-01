@@ -35,6 +35,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _showVerificationHints = AppSettings.Default.WorkflowGuidance.ShowPostInstallVerificationHints;
         _selectedReportFormat = ReportFormatItems[0];
         ScanCommand = new AsyncRelayCommand(ScanAsync);
+        VerifyReturnCommand = new AsyncRelayCommand(VerifyReturnAsync);
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         _ = LoadSettingsAsync();
     }
@@ -42,6 +43,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand ScanCommand { get; }
+    public ICommand VerifyReturnCommand { get; }
     public ICommand SaveSettingsCommand { get; }
     public IReadOnlyList<ReportFormatOption> AvailableReportFormats => ReportFormatItems;
 
@@ -112,6 +114,19 @@ public sealed class MainViewModel : INotifyPropertyChanged
     }
 
     private async Task ScanAsync()
+    {
+        State = State with { StatusText = UiStrings.StatusScanning };
+
+        var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
+
+        State = State with
+        {
+            StatusText = UiStrings.StatusReady,
+            Results = ScanResultsPresentation.FromResult(result)
+        };
+    }
+
+    private async Task VerifyReturnAsync()
     {
         State = State with { StatusText = UiStrings.StatusScanning };
 

@@ -17,7 +17,8 @@ public sealed record MainScreenWorkflowResult(
     string UiCulture,
     Guid ScanSessionId,
     IReadOnlyCollection<RecommendationDetailResult> RecommendationDetails,
-    OpenOfficialSourceActionResult OfficialSourceAction);
+    OpenOfficialSourceActionResult OfficialSourceAction,
+    VerificationReturnResult VerificationReturn);
 
 public sealed record RecommendationDetailResult(
     string DeviceId,
@@ -36,3 +37,10 @@ public sealed record OpenOfficialSourceActionResult(
     string Status,
     string? ApprovedOfficialSourceUrl,
     string? BlockReason);
+
+public sealed record VerificationReturnResult(
+    bool IsReadyForVerificationReturn,
+    int PendingDeviceCount,
+    int CompletedDeviceCount,
+    string Status,
+    string Guidance);

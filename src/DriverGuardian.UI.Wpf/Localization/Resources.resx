@@ -59,4 +59,10 @@
   <data name="Settings_Loaded" xml:space="preserve"><value>Настройки загружены</value></data>
   <data name="Settings_Saved" xml:space="preserve"><value>Настройки сохранены</value></data>
   <data name="Settings_Load_Error" xml:space="preserve"><value>Настройки загружаются...</value></data>
+  <data name="Recommendation_Status_Needs_Manual_Update" xml:space="preserve"><value>Статус рекомендации: требуется ручное обновление.</value></data>
+  <data name="Recommendation_Status_No_Manual_Update" xml:space="preserve"><value>Статус рекомендации: ручное обновление сейчас не требуется.</value></data>
+  <data name="Verification_Return_Title" xml:space="preserve"><value>Возврат для проверки после ручного обновления</value></data>
+  <data name="Verification_Return_Action" xml:space="preserve"><value>Проверить возврат (повторный анализ)</value></data>
+  <data name="Verification_Return_Readiness_Ready" xml:space="preserve"><value>готово к повторной проверке</value></data>
+  <data name="Verification_Return_Readiness_Waiting" xml:space="preserve"><value>ожидание ручного обновления</value></data>
 </root>

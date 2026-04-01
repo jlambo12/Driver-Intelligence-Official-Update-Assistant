@@ -18,7 +18,10 @@
         </Grid.RowDefinitions>
 
         <TextBlock Text="{Binding State.StatusText}" FontSize="18" Margin="0 0 0 14" />
-        <Button Grid.Row="1" Content="{Binding State.ScanButtonText}" Command="{Binding ScanCommand}" Width="220" Height="42" HorizontalAlignment="Left"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Button Content="{Binding State.ScanButtonText}" Command="{Binding ScanCommand}" Width="220" Height="42" HorizontalAlignment="Left"/>
+            <Button Content="{Binding State.Results.VerificationReturn.VerifyActionText}" Command="{Binding VerifyReturnCommand}" Width="320" Height="42" Margin="10 0 0 0" HorizontalAlignment="Left"/>
+        </StackPanel>
         <Border Grid.Row="2" BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 12 0 0">
             <StackPanel>
                 <TextBlock Text="{x:Static localization:UiStrings.SettingsTitle}" FontWeight="SemiBold" Margin="0 0 0 8"/>
@@ -80,6 +83,7 @@
                                         <StackPanel>
                                             <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding DeviceSummary}" Margin="0 4 0 0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding RecommendationStatus}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding Summary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding InstalledDriverSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                             <TextBlock Text="{Binding CandidateSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
@@ -98,6 +102,10 @@
 
                 <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12">
                     <StackPanel>
+                        <TextBlock Text="{Binding State.Results.VerificationReturn.Title}" FontWeight="SemiBold" Margin="0 0 0 6"/>
+                        <TextBlock Text="{Binding State.Results.VerificationReturn.ReadinessLabel}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding State.Results.VerificationReturn.Status}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding State.Results.VerificationReturn.Guidance}" Margin="0 0 0 12" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding State.Results.ActionFlowTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
                         <TextBlock Text="{Binding State.Results.SafetyNotice}" Margin="0 0 0 10" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding State.Results.UserGuidedSteps}">

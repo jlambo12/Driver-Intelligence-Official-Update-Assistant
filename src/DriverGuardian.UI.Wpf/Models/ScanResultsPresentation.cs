@@ -12,6 +12,7 @@ public sealed record ScanResultsPresentation(
     string OfficialSourceSummary,
     string ActionFlowTitle,
     string SafetyNotice,
+    VerificationReturnPresentation VerificationReturn,
     IReadOnlyCollection<RecommendationDetailPresentation> RecommendationDetails,
     IReadOnlyCollection<UserGuidedActionStepPresentation> UserGuidedSteps)
 {
@@ -25,6 +26,7 @@ public sealed record ScanResultsPresentation(
             string.Empty,
             string.Empty,
             string.Empty,
+            VerificationReturnPresentation.Empty(),
             Array.Empty<RecommendationDetailPresentation>(),
             Array.Empty<UserGuidedActionStepPresentation>());
 
@@ -42,6 +44,7 @@ public sealed record ScanResultsPresentation(
             OfficialSourceSummary: BuildOfficialSourceSummary(result.OfficialSourceAction),
             ActionFlowTitle: UiStrings.ActionFlowTitle,
             SafetyNotice: UiStrings.ActionFlowSafetyNotice,
+            VerificationReturn: BuildVerificationReturnPresentation(result.VerificationReturn),
             RecommendationDetails: result.RecommendationDetails.Select(MapDetail).ToArray(),
             UserGuidedSteps: BuildUserGuidedSteps(hasRecommendation, hasReadyHandoff, result.OfficialSourceAction.IsReady));
     }
@@ -64,6 +67,7 @@ public sealed record ScanResultsPresentation(
         return new RecommendationDetailPresentation(
             recommendationTitle,
             string.Format(UiStrings.RecommendationDeviceFormat, detail.DeviceId),
+            detail.HasRecommendation ? UiStrings.RecommendationStatusNeedsManualUpdate : UiStrings.RecommendationStatusNoManualUpdate,
             reasonSummary,
             string.Format(UiStrings.RecommendationInstalledDriverFormat, detail.InstalledVersion, detail.InstalledProvider ?? UiStrings.RecommendationProviderUnknown),
             candidateSummary,
@@ -72,6 +76,20 @@ public sealed record ScanResultsPresentation(
             string.Format(UiStrings.RecommendationVerificationFormat, detail.VerificationAvailable ? UiStrings.ActionStatusReturn : UiStrings.ActionStatusWait),
             string.Format(UiStrings.RecommendationVerificationStatusFormat, detail.VerificationStatus),
             nextStep);
+    }
+
+    private static VerificationReturnPresentation BuildVerificationReturnPresentation(VerificationReturnResult verificationReturn)
+    {
+        var readiness = verificationReturn.IsReadyForVerificationReturn
+            ? UiStrings.VerificationReturnReadinessReady
+            : UiStrings.VerificationReturnReadinessWaiting;
+
+        return new VerificationReturnPresentation(
+            UiStrings.VerificationReturnTitle,
+            verificationReturn.Status,
+            verificationReturn.Guidance,
+            UiStrings.VerificationReturnAction,
+            readiness);
     }
 
     private static string BuildOfficialSourceSummary(OpenOfficialSourceActionResult officialSourceAction)

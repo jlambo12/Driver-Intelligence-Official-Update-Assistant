@@ -40,6 +40,8 @@ public sealed class MainScreenWorkflowTests
         Assert.Equal("ru-RU", result.UiCulture);
         Assert.Single(result.RecommendationDetails);
         Assert.False(result.OfficialSourceAction.IsReady);
+        Assert.True(result.VerificationReturn.IsReadyForVerificationReturn);
+        Assert.Equal(1, result.VerificationReturn.PendingDeviceCount);
         Assert.Equal(3, historyRepository.Entries.Count);
         Assert.Contains(historyRepository.Entries, entry => entry is ScanHistoryEntry);
         Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);

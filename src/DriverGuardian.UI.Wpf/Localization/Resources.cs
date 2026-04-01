@@ -46,6 +46,8 @@ public static class Resources
     public static string Recommendation_Verification_Status_Format => GetString(nameof(Recommendation_Verification_Status_Format));
     public static string Recommendation_Title_Recommended => GetString(nameof(Recommendation_Title_Recommended));
     public static string Recommendation_Title_Not_Recommended => GetString(nameof(Recommendation_Title_Not_Recommended));
+    public static string Recommendation_Status_Needs_Manual_Update => GetString(nameof(Recommendation_Status_Needs_Manual_Update));
+    public static string Recommendation_Status_No_Manual_Update => GetString(nameof(Recommendation_Status_No_Manual_Update));
     public static string Recommendation_Candidate_Version_Format => GetString(nameof(Recommendation_Candidate_Version_Format));
     public static string Recommendation_Candidate_Unavailable => GetString(nameof(Recommendation_Candidate_Unavailable));
     public static string Recommendation_Reason_Unavailable => GetString(nameof(Recommendation_Reason_Unavailable));
@@ -63,6 +65,10 @@ public static class Resources
     public static string Settings_Loaded => GetString(nameof(Settings_Loaded));
     public static string Settings_Saved => GetString(nameof(Settings_Saved));
     public static string Settings_Load_Error => GetString(nameof(Settings_Load_Error));
+    public static string Verification_Return_Title => GetString(nameof(Verification_Return_Title));
+    public static string Verification_Return_Action => GetString(nameof(Verification_Return_Action));
+    public static string Verification_Return_Readiness_Ready => GetString(nameof(Verification_Return_Readiness_Ready));
+    public static string Verification_Return_Readiness_Waiting => GetString(nameof(Verification_Return_Readiness_Waiting));
 
     private static string GetString(string key)
     {

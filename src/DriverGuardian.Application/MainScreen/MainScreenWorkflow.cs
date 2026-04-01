@@ -28,6 +28,7 @@ public sealed class MainScreenWorkflow(
         var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
         var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
         var verificationSummary = BuildVerificationSummary(recommendationDetails);
+        var verificationReturn = BuildVerificationReturn(recommendationDetails);
 
         var occurredAtUtc = scanResult.Session.CompletedAtUtc ?? DateTimeOffset.UtcNow;
         await resultHistoryRepository.SaveAsync(
@@ -65,7 +66,8 @@ public sealed class MainScreenWorkflow(
             UiCulture: settings.UiCulture,
             ScanSessionId: scanResult.Session.Id,
             RecommendationDetails: recommendationDetails,
-            OfficialSourceAction: officialSourceAction);
+            OfficialSourceAction: officialSourceAction,
+            VerificationReturn: verificationReturn);
     }
 
     private static IReadOnlyCollection<RecommendationDetailResult> BuildRecommendationDetails(
@@ -134,5 +136,28 @@ public sealed class MainScreenWorkflow(
                 : "Открытие официального источника требует ручной проверки.",
             ApprovedOfficialSourceUrl: decision.Link?.OfficialSourceUri.ToString(),
             BlockReason: decision.Blockers.FirstOrDefault()?.Reason.ToString());
+    }
+
+    private static VerificationReturnResult BuildVerificationReturn(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)
+    {
+        var pendingCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
+        var completedCount = recommendationDetails.Count(detail => !detail.ManualActionRequired && detail.VerificationAvailable);
+
+        if (pendingCount > 0)
+        {
+            return new VerificationReturnResult(
+                IsReadyForVerificationReturn: true,
+                PendingDeviceCount: pendingCount,
+                CompletedDeviceCount: completedCount,
+                Status: $"Готово к проверке возврата: ожидаются ручные обновления по устройствам {pendingCount}.",
+                Guidance: "После ручной установки вне приложения снова запустите анализ, чтобы проверить изменения по версиям драйверов.");
+        }
+
+        return new VerificationReturnResult(
+            IsReadyForVerificationReturn: false,
+            PendingDeviceCount: 0,
+            CompletedDeviceCount: completedCount,
+            Status: "Ожидание возврата не требуется: активных задач на ручное обновление нет.",
+            Guidance: "Если вы уже обновили драйверы вручную, запустите повторный анализ для фиксации результата проверки.");
     }
 }

@@ -41,6 +41,8 @@ public static class UiStrings
     public static string RecommendationVerificationStatusFormat => Resources.Recommendation_Verification_Status_Format;
     public static string RecommendationTitleRecommended => Resources.Recommendation_Title_Recommended;
     public static string RecommendationTitleNotRecommended => Resources.Recommendation_Title_Not_Recommended;
+    public static string RecommendationStatusNeedsManualUpdate => Resources.Recommendation_Status_Needs_Manual_Update;
+    public static string RecommendationStatusNoManualUpdate => Resources.Recommendation_Status_No_Manual_Update;
     public static string RecommendationCandidateVersionFormat => Resources.Recommendation_Candidate_Version_Format;
     public static string RecommendationCandidateUnavailable => Resources.Recommendation_Candidate_Unavailable;
     public static string RecommendationReasonUnavailable => Resources.Recommendation_Reason_Unavailable;
@@ -58,4 +60,8 @@ public static class UiStrings
     public static string SettingsLoaded => Resources.Settings_Loaded;
     public static string SettingsSaved => Resources.Settings_Saved;
     public static string SettingsLoadError => Resources.Settings_Load_Error;
+    public static string VerificationReturnTitle => Resources.Verification_Return_Title;
+    public static string VerificationReturnAction => Resources.Verification_Return_Action;
+    public static string VerificationReturnReadinessReady => Resources.Verification_Return_Readiness_Ready;
+    public static string VerificationReturnReadinessWaiting => Resources.Verification_Return_Readiness_Waiting;
 }
