@@ -8,4 +8,7 @@ public interface IScanOrchestrator
     Task<ScanResult> RunAsync(CancellationToken cancellationToken);
 }
 
-public sealed record ScanResult(ScanSession Session, IReadOnlyCollection<InstalledDriverSnapshot> Drivers);
+public sealed record ScanResult(
+    ScanSession Session,
+    int DiscoveredDeviceCount,
+    IReadOnlyCollection<InstalledDriverSnapshot> Drivers);

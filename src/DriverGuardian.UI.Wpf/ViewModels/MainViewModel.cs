@@ -43,12 +43,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         State = State with
         {
             StatusText = UiStrings.StatusReady,
-            LastScanSummary = string.Format(
-                UiStrings.LastScanSummaryFormat,
-                result.DriverCount,
-                result.RecommendationCount,
-                result.ProviderCount,
-                result.UiCulture)
+            Results = ScanResultsPresentation.FromResult(result)
         };
     }
 

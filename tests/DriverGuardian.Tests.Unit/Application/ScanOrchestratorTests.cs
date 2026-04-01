@@ -20,6 +20,7 @@ public sealed class ScanOrchestratorTests
         var result = await orchestrator.RunAsync(CancellationToken.None);
 
         Assert.Single(result.Drivers);
+        Assert.Equal(1, result.DiscoveredDeviceCount);
         Assert.NotNull(result.Session.CompletedAtUtc);
         Assert.Equal(1, inspector.CallCount);
     }
@@ -36,6 +37,7 @@ public sealed class ScanOrchestratorTests
         var result = await orchestrator.RunAsync(CancellationToken.None);
 
         Assert.Empty(result.Drivers);
+        Assert.Equal(0, result.DiscoveredDeviceCount);
         Assert.Equal(0, inspector.CallCount);
     }
 

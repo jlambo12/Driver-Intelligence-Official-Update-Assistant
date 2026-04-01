@@ -6,8 +6,13 @@ public interface IMainScreenWorkflow
 }
 
 public sealed record MainScreenWorkflowResult(
-    int DriverCount,
-    int RecommendationCount,
+    int DiscoveredDeviceCount,
+    int InspectedDriverCount,
+    int RecommendedCount,
+    int NotRecommendedCount,
     int ProviderCount,
+    int ManualHandoffReadyCount,
+    int ManualHandoffUserActionCount,
+    string VerificationSummary,
     string UiCulture,
     Guid ScanSessionId);

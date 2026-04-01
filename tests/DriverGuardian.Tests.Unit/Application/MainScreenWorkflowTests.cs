@@ -23,9 +23,14 @@ public sealed class MainScreenWorkflowTests
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
-        Assert.Equal(1, result.DriverCount);
-        Assert.Equal(1, result.RecommendationCount);
+        Assert.Equal(2, result.DiscoveredDeviceCount);
+        Assert.Equal(1, result.InspectedDriverCount);
+        Assert.Equal(1, result.RecommendedCount);
+        Assert.Equal(0, result.NotRecommendedCount);
         Assert.Equal(3, result.ProviderCount);
+        Assert.Equal(0, result.ManualHandoffReadyCount);
+        Assert.Equal(1, result.ManualHandoffUserActionCount);
+        Assert.False(string.IsNullOrWhiteSpace(result.VerificationSummary));
         Assert.Equal("ru-RU", result.UiCulture);
         Assert.Single(auditWriter.Entries);
     }
@@ -45,7 +50,7 @@ public sealed class MainScreenWorkflowTests
                     "Test")
             ];
 
-            return Task.FromResult(new ScanResult(session, drivers));
+            return Task.FromResult(new ScanResult(session, 2, drivers));
         }
     }
 
