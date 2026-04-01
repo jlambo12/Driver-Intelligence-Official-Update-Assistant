@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>Driver Guardian</value></data>
+  <data name="MainHeader" xml:space="preserve"><value>Безопасный анализ драйверов</value></data>
+  <data name="ScanButton" xml:space="preserve"><value>Сканировать драйверы</value></data>
+  <data name="StatusIdle" xml:space="preserve"><value>Система готова к сканированию.</value></data>
+  <data name="StatusScanning" xml:space="preserve"><value>Сканирование выполняется...</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Сканирование завершено.</value></data>
+  <data name="StatusError" xml:space="preserve"><value>Произошла ошибка при сканировании.</value></data>
+  <data name="ResultsHeader" xml:space="preserve"><value>Сводка рекомендаций</value></data>
+  <data name="ResultsPlaceholder" xml:space="preserve"><value>Результаты появятся после завершения сканирования.</value></data>
+</root>
