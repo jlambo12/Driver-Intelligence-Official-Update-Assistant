@@ -50,7 +50,7 @@ public partial class App : Application
             resultHistoryRepository,
             openOfficialSourceActionEvaluator);
 
-        var vm = new MainViewModel(mainScreenWorkflow);
+        var vm = new MainViewModel(mainScreenWorkflow, settingsRepository);
         var window = new MainWindow { DataContext = vm };
         window.Show();
     }

@@ -48,4 +48,14 @@
   <data name="Recommendation_Next_Step_Deferred" xml:space="preserve"><value>Повторите анализ позже или после обновления каталога источников.</value></data>
   <data name="Recommendation_Installed_Driver_Format" xml:space="preserve"><value>Текущий драйвер: {0}; поставщик: {1}</value></data>
   <data name="Recommendation_Provider_Unknown" xml:space="preserve"><value>не указан</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Settings_History_Retention_Label" xml:space="preserve"><value>Максимум записей в истории:</value></data>
+  <data name="Settings_Report_Format_Label" xml:space="preserve"><value>Формат отчёта по умолчанию:</value></data>
+  <data name="Settings_Report_Format_Markdown" xml:space="preserve"><value>Markdown</value></data>
+  <data name="Settings_Report_Format_PlainText" xml:space="preserve"><value>Обычный текст</value></data>
+  <data name="Settings_Verification_Hint_Label" xml:space="preserve"><value>Показывать подсказки по проверке после установки</value></data>
+  <data name="Settings_Save_Action" xml:space="preserve"><value>Сохранить настройки</value></data>
+  <data name="Settings_Loaded" xml:space="preserve"><value>Настройки загружены</value></data>
+  <data name="Settings_Saved" xml:space="preserve"><value>Настройки сохранены</value></data>
+  <data name="Settings_Load_Error" xml:space="preserve"><value>Настройки загружаются...</value></data>
 </root>

@@ -47,4 +47,14 @@ public static class UiStrings
     public static string RecommendationNextStepDeferred => Resources.Recommendation_Next_Step_Deferred;
     public static string RecommendationInstalledDriverFormat => Resources.Recommendation_Installed_Driver_Format;
     public static string RecommendationProviderUnknown => Resources.Recommendation_Provider_Unknown;
+    public static string SettingsTitle => Resources.Settings_Title;
+    public static string SettingsHistoryRetentionLabel => Resources.Settings_History_Retention_Label;
+    public static string SettingsReportFormatLabel => Resources.Settings_Report_Format_Label;
+    public static string SettingsReportFormatMarkdown => Resources.Settings_Report_Format_Markdown;
+    public static string SettingsReportFormatPlainText => Resources.Settings_Report_Format_PlainText;
+    public static string SettingsVerificationHintLabel => Resources.Settings_Verification_Hint_Label;
+    public static string SettingsSaveAction => Resources.Settings_Save_Action;
+    public static string SettingsLoaded => Resources.Settings_Loaded;
+    public static string SettingsSaved => Resources.Settings_Saved;
+    public static string SettingsLoadError => Resources.Settings_Load_Error;
 }
