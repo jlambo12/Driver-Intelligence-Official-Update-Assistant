@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DriverGuardian.Domain\DriverGuardian.Domain.csproj" />
+    <ProjectReference Include="..\DriverGuardian.Contracts\DriverGuardian.Contracts.csproj" />
+    <ProjectReference Include="..\DriverGuardian.ProviderAdapters.Abstractions\DriverGuardian.ProviderAdapters.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+  </ItemGroup>
+</Project>
