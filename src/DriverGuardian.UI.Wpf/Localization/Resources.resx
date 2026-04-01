@@ -59,4 +59,13 @@
   <data name="Settings_Loaded" xml:space="preserve"><value>Настройки загружены</value></data>
   <data name="Settings_Saved" xml:space="preserve"><value>Настройки сохранены</value></data>
   <data name="Settings_Load_Error" xml:space="preserve"><value>Настройки загружаются...</value></data>
+  <data name="Report_Export_Title" xml:space="preserve"><value>Экспорт отчёта</value></data>
+  <data name="Report_Export_Hint" xml:space="preserve"><value>Сформируйте отчёт по текущим результатам и сохраните его вручную в выбранный файл.</value></data>
+  <data name="Report_Export_Action" xml:space="preserve"><value>Экспортировать отчёт</value></data>
+  <data name="Report_Export_Status_No_Data" xml:space="preserve"><value>Сначала запустите анализ, чтобы подготовить отчёт.</value></data>
+  <data name="Report_Export_Status_Ready" xml:space="preserve"><value>Отчёт подготовлен. Выберите «Экспортировать отчёт» для сохранения.</value></data>
+  <data name="Report_Export_Status_Saved" xml:space="preserve"><value>Отчёт сохранён вручную.</value></data>
+  <data name="Report_Export_Status_Canceled" xml:space="preserve"><value>Сохранение отчёта отменено пользователем.</value></data>
+  <data name="Report_Export_Markdown_Filter" xml:space="preserve"><value>Markdown файл (*.md)|*.md</value></data>
+  <data name="Report_Export_Text_Filter" xml:space="preserve"><value>Текстовый файл (*.txt)|*.txt</value></data>
 </root>

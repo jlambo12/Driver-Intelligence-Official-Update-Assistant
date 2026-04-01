@@ -3,6 +3,7 @@ using System.Windows;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Application.Recommendations;
+using DriverGuardian.Application.Reports;
 using DriverGuardian.Application.Scanning;
 using DriverGuardian.Application.History;
 using DriverGuardian.Application.OfficialSources;
@@ -41,6 +42,7 @@ public partial class App : Application
         IAuditWriter auditWriter = new InMemoryAuditWriter();
         IResultHistoryRepository resultHistoryRepository = new InMemoryResultHistoryRepository();
         var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
+        IShareableReportBuilder reportBuilder = new ShareableReportBuilder();
         IMainScreenWorkflow mainScreenWorkflow = new MainScreenWorkflow(
             scanOrchestrator,
             recommendationPipeline,
@@ -48,9 +50,10 @@ public partial class App : Application
             settingsRepository,
             auditWriter,
             resultHistoryRepository,
-            openOfficialSourceActionEvaluator);
+            openOfficialSourceActionEvaluator,
+            reportBuilder);
 
-        var vm = new MainViewModel(mainScreenWorkflow, settingsRepository);
+        var vm = new MainViewModel(mainScreenWorkflow, settingsRepository, new ReportFileSaveService());
         var window = new MainWindow { DataContext = vm };
         window.Show();
     }

@@ -3,6 +3,7 @@ using DriverGuardian.Application.History;
 using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Application.OfficialSources;
+using DriverGuardian.Application.Reports;
 using DriverGuardian.Domain.Devices;
 using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
@@ -25,7 +26,8 @@ public sealed class MainScreenWorkflowTests
             new FakeSettingsRepository(),
             auditWriter,
             historyRepository,
-            new OpenOfficialSourceActionEvaluator());
+            new OpenOfficialSourceActionEvaluator(),
+            new ShareableReportBuilder());
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
@@ -38,6 +40,9 @@ public sealed class MainScreenWorkflowTests
         Assert.Equal(1, result.ManualHandoffUserActionCount);
         Assert.False(string.IsNullOrWhiteSpace(result.VerificationSummary));
         Assert.Equal("ru-RU", result.UiCulture);
+        Assert.False(string.IsNullOrWhiteSpace(result.ReportExportPayload.FileNameBase));
+        Assert.False(string.IsNullOrWhiteSpace(result.ReportExportPayload.PlainTextContent));
+        Assert.Contains("DriverGuardian Scan Report", result.ReportExportPayload.MarkdownContent);
         Assert.Single(result.RecommendationDetails);
         Assert.False(result.OfficialSourceAction.IsReady);
         Assert.Equal(3, historyRepository.Entries.Count);

@@ -63,6 +63,15 @@ public static class Resources
     public static string Settings_Loaded => GetString(nameof(Settings_Loaded));
     public static string Settings_Saved => GetString(nameof(Settings_Saved));
     public static string Settings_Load_Error => GetString(nameof(Settings_Load_Error));
+    public static string Report_Export_Title => GetString(nameof(Report_Export_Title));
+    public static string Report_Export_Hint => GetString(nameof(Report_Export_Hint));
+    public static string Report_Export_Action => GetString(nameof(Report_Export_Action));
+    public static string Report_Export_Status_No_Data => GetString(nameof(Report_Export_Status_No_Data));
+    public static string Report_Export_Status_Ready => GetString(nameof(Report_Export_Status_Ready));
+    public static string Report_Export_Status_Saved => GetString(nameof(Report_Export_Status_Saved));
+    public static string Report_Export_Status_Canceled => GetString(nameof(Report_Export_Status_Canceled));
+    public static string Report_Export_Markdown_Filter => GetString(nameof(Report_Export_Markdown_Filter));
+    public static string Report_Export_Text_Filter => GetString(nameof(Report_Export_Text_Filter));
 
     private static string GetString(string key)
     {

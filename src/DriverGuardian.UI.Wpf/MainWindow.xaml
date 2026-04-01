@@ -58,6 +58,16 @@
                             Command="{Binding SaveSettingsCommand}" />
                     <TextBlock Text="{Binding SettingsStatusText}" Margin="12 8 0 0"/>
                 </StackPanel>
+                <Separator Margin="0 10 0 10"/>
+                <TextBlock Text="{x:Static localization:UiStrings.ReportExportTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
+                <TextBlock Text="{x:Static localization:UiStrings.ReportExportHint}" TextWrapping="Wrap" Margin="0 0 0 8"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="{x:Static localization:UiStrings.ReportExportAction}"
+                            Width="220"
+                            Height="34"
+                            Command="{Binding ExportReportCommand}" />
+                    <TextBlock Text="{Binding ReportExportStatusText}" Margin="12 8 0 0" TextWrapping="Wrap"/>
+                </StackPanel>
             </StackPanel>
         </Border>
 
