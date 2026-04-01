@@ -19,11 +19,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore solution
-        run: dotnet restore DriverGuardian.sln
+      - name: Restore WPF app project
+        run: dotnet restore src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj
 
-      - name: Build solution (Release)
-        run: dotnet build DriverGuardian.sln --configuration Release --no-restore
+      - name: Build WPF app project (Release)
+        run: dotnet build src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj --configuration Release --no-restore
 
       - name: Publish WPF app (win-x64 portable)
         run: >
