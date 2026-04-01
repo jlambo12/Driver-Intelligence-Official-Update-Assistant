@@ -13,7 +13,8 @@ public sealed record ProviderCandidate(
     string? CandidateVersion,
     string? ReleaseDateIso,
     CompatibilityConfidence CompatibilityConfidence,
-    SourceEvidence SourceEvidence);
+    SourceEvidence SourceEvidence,
+    Uri? DownloadUri);
 
 public sealed record ProviderLookupResponse(
     string ProviderCode,

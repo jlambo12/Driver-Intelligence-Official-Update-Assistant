@@ -99,5 +99,6 @@ public sealed class RecommendationEvaluatorTests
                     "Test Publisher",
                     trustLevel,
                     isOfficialSource,
-                    "unit-test")));
+                    "unit-test"),
+                DownloadUri: new Uri("https://example.test/downloads/driver.cab")));
 }
