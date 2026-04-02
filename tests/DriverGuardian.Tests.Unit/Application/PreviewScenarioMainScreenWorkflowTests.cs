@@ -43,4 +43,38 @@ public sealed class PreviewScenarioMainScreenWorkflowTests
         Assert.NotEmpty(result.RecentHistory);
         Assert.NotEmpty(result.ReportExportPayload.PlainTextContent);
     }
+
+    [Fact]
+    public async Task RunScanAsync_LimitedEvidenceScenario_ShouldNotRequireManualActionBeforeSourceValidation()
+    {
+        var workflow = new PreviewScenarioMainScreenWorkflow();
+
+        workflow.SelectScenario(PreviewScenarioId.RecommendationWithLimitedEvidence);
+        var result = await workflow.RunScanAsync(CancellationToken.None);
+
+        Assert.Equal(0, result.ManualHandoffReadyCount);
+        Assert.Equal(0, result.ManualHandoffUserActionCount);
+        Assert.All(result.RecommendationDetails, detail =>
+        {
+            Assert.False(detail.ManualHandoffReady);
+            Assert.False(detail.ManualActionRequired);
+            Assert.False(detail.VerificationAvailable);
+        });
+    }
+
+    [Fact]
+    public async Task RunScanAsync_PopulatedHistoryScenario_ShouldKeepAggregateCountsConsistentWithActionableRecommendations()
+    {
+        var workflow = new PreviewScenarioMainScreenWorkflow();
+
+        workflow.SelectScenario(PreviewScenarioId.PopulatedHistoryAndExport);
+        var result = await workflow.RunScanAsync(CancellationToken.None);
+
+        Assert.Equal(
+            result.RecommendationDetails.Count(detail => detail.ManualHandoffReady),
+            result.ManualHandoffReadyCount);
+        Assert.Equal(
+            result.RecommendationDetails.Count(detail => detail.ManualActionRequired),
+            result.ManualHandoffUserActionCount);
+    }
 }
