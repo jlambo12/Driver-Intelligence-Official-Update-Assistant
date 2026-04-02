@@ -38,18 +38,18 @@ public partial class App : WpfApplication
 
         var previewModeEnabled = IsPreviewModeEnabled(e.Args);
         ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
-        var defaultLogDirectory = Path.Combine(
+        var defaultLogsDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "DriverGuardian",
             "Logs");
         IDiagnosticLogger diagnosticLogger = previewModeEnabled
-            ? new NoOpDiagnosticLogger(defaultLogDirectory)
-            : new FileDiagnosticLogger(settingsRepository, defaultLogDirectory);
+            ? new NoOpDiagnosticLogger()
+            : new FileDiagnosticLogger(defaultLogsDirectory);
         IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
             ? new PreviewScenarioMainScreenWorkflow()
             : BuildProductionWorkflow(settingsRepository, diagnosticLogger);
 
-        var vm = new MainViewModel(mainScreenWorkflow, settingsRepository, new ReportFileSaveService(), diagnosticLogger);
+        var vm = new MainViewModel(mainScreenWorkflow, settingsRepository, new ReportFileSaveService());
         var window = new MainWindow { DataContext = vm };
         window.Show();
     }

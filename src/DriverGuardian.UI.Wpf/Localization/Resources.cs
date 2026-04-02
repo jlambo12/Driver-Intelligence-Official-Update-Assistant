@@ -11,7 +11,6 @@ public static class Resources
     public static string Status_Initial => GetString(nameof(Status_Initial));
     public static string Status_Ready => GetString(nameof(Status_Ready));
     public static string Status_Scanning => GetString(nameof(Status_Scanning));
-    public static string Status_Scan_Failed => GetString(nameof(Status_Scan_Failed));
     public static string Status_Scan_Completed_Ready => GetString(nameof(Status_Scan_Completed_Ready));
     public static string Status_Scan_Completed_No_Action => GetString(nameof(Status_Scan_Completed_No_Action));
     public static string Scan_Action => GetString(nameof(Scan_Action));
@@ -115,15 +114,10 @@ public static class Resources
     public static string Settings_Report_Format_Markdown => GetString(nameof(Settings_Report_Format_Markdown));
     public static string Settings_Report_Format_PlainText => GetString(nameof(Settings_Report_Format_PlainText));
     public static string Settings_Verification_Hint_Label => GetString(nameof(Settings_Verification_Hint_Label));
-    public static string Settings_Diagnostic_Logging_Enabled_Label => GetString(nameof(Settings_Diagnostic_Logging_Enabled_Label));
-    public static string Settings_Diagnostic_Logging_Folder_Label => GetString(nameof(Settings_Diagnostic_Logging_Folder_Label));
-    public static string Settings_Open_Logs_Folder_Action => GetString(nameof(Settings_Open_Logs_Folder_Action));
     public static string Settings_Save_Action => GetString(nameof(Settings_Save_Action));
     public static string Settings_Loaded => GetString(nameof(Settings_Loaded));
     public static string Settings_Saved => GetString(nameof(Settings_Saved));
     public static string Settings_Load_Error => GetString(nameof(Settings_Load_Error));
-    public static string Settings_Logs_Open_Success => GetString(nameof(Settings_Logs_Open_Success));
-    public static string Settings_Logs_Open_Failed => GetString(nameof(Settings_Logs_Open_Failed));
     public static string Report_Export_Title => GetString(nameof(Report_Export_Title));
     public static string Report_Export_Hint => GetString(nameof(Report_Export_Hint));
     public static string Report_Export_Action => GetString(nameof(Report_Export_Action));

@@ -23,15 +23,15 @@ public sealed class MainScreenWorkflow(
     {
         try
         {
-            await diagnosticLogger.LogInfoAsync("scan.workflow.start", "Запущен основной workflow анализа.", cancellationToken);
+            await diagnosticLogger.LogInfoAsync("scan.workflow.start", "Запущен workflow анализа.", cancellationToken);
             var scanResult = await scanOrchestrator.RunAsync(cancellationToken);
             await diagnosticLogger.LogInfoAsync(
                 "scan.discovery.completed",
-                $"Обнаружено устройств: {scanResult.DiscoveredDeviceCount}, после нормализации: {scanResult.DiscoveredDevices.Count}.",
+                $"Обнаружено записей: {scanResult.DiscoveredDeviceCount}; уникальных устройств: {scanResult.DiscoveredDevices.Count}.",
                 cancellationToken);
             await diagnosticLogger.LogInfoAsync(
                 "scan.inspection.completed",
-                $"Проверено драйверов: {scanResult.Drivers.Count}.",
+                $"Проинспектировано драйверов: {scanResult.Drivers.Count}.",
                 cancellationToken);
 
             var recommendations = await recommendationPipeline.BuildAsync(scanResult.Drivers, cancellationToken);
@@ -39,7 +39,7 @@ public sealed class MainScreenWorkflow(
             var notRecommendedCount = recommendations.Count - recommendedCount;
             await diagnosticLogger.LogInfoAsync(
                 "scan.recommendation.completed",
-                $"Рекомендаций: всего {recommendations.Count}, к ручному действию {recommendedCount}, отложено {notRecommendedCount}.",
+                $"Рекомендации: всего {recommendations.Count}; к ручному действию {recommendedCount}; отложено {notRecommendedCount}.",
                 cancellationToken);
 
             var providerCount = await providerCatalogSummaryService.GetProviderCountAsync(cancellationToken);
@@ -51,14 +51,14 @@ public sealed class MainScreenWorkflow(
             await diagnosticLogger.LogInfoAsync(
                 "scan.official_source.state",
                 officialSourceAction.IsReady
-                    ? "Официальный источник готов к ручному открытию."
+                    ? "Официальный источник подтверждён и доступен."
                     : $"Официальный источник заблокирован: {officialSourceAction.BlockReason ?? "причина не указана"}.",
                 cancellationToken);
 
             var verificationSummary = BuildVerificationSummary(recommendationDetails);
             var reportExportPayload = BuildReportExportPayload(scanResult, recommendations, reportBuilder);
-            var occurredAtUtc = scanResult.Session.CompletedAtUtc ?? DateTimeOffset.UtcNow;
 
+            var occurredAtUtc = scanResult.Session.CompletedAtUtc ?? DateTimeOffset.UtcNow;
             await resultHistoryRepository.SaveAsync(
                 ScanHistoryEntry.Create(Guid.NewGuid(), occurredAtUtc, scanResult.Session.Id, scanResult.DiscoveredDeviceCount, scanResult.Drivers.Count),
                 cancellationToken);
@@ -79,15 +79,14 @@ public sealed class MainScreenWorkflow(
                     manualHandoffUserActionCount > 0 ? VerificationHistoryStatus.Skipped : VerificationHistoryStatus.Passed,
                     verificationSummary),
                 cancellationToken);
-            await diagnosticLogger.LogInfoAsync("scan.history.completed", "История и отчет для анализа обновлены.", cancellationToken);
+            await diagnosticLogger.LogInfoAsync("scan.history_report.completed", "История и данные отчёта обновлены.", cancellationToken);
 
             var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
             var recentHistory = recentHistoryEntries.Select(MapHistoryEntry).ToArray();
 
             await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
-
             await diagnosticLogger.LogInfoAsync(
-                "scan.result.summary",
+                "scan.workflow.summary",
                 $"Сеанс {scanResult.Session.Id}; устройств {scanResult.DiscoveredDeviceCount}; драйверов {scanResult.Drivers.Count}; рекомендаций {recommendedCount}.",
                 cancellationToken);
 
@@ -109,7 +108,7 @@ public sealed class MainScreenWorkflow(
         }
         catch (Exception ex)
         {
-            await diagnosticLogger.LogErrorAsync("scan.workflow.failed", "Scan workflow завершился ошибкой.", ex, cancellationToken);
+            await diagnosticLogger.LogErrorAsync("scan.workflow.failed", "Ошибка выполнения workflow анализа.", ex, cancellationToken);
             throw;
         }
     }

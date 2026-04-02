@@ -4,6 +4,4 @@ public interface IDiagnosticLogger
 {
     Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken);
     Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken);
-    string GetEffectiveLogDirectory();
-    bool TryOpenEffectiveLogDirectory();
 }

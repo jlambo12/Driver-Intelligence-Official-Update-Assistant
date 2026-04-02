@@ -16,7 +16,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly IMainScreenWorkflow _mainScreenWorkflow;
     private readonly ISettingsRepository _settingsRepository;
     private readonly IReportFileSaveService _reportFileSaveService;
-    private readonly IDiagnosticLogger _diagnosticLogger;
     private readonly PreviewScenarioMainScreenWorkflow? _previewWorkflow;
     private MainUiState _state;
     private string _settingsStatusText;
@@ -30,8 +29,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private IReadOnlyCollection<RecentHistoryPresentation> _recentHistory;
     private PreviewScenarioOption? _selectedPreviewScenario;
     private bool _showSecondaryRecommendations;
-    private bool _diagnosticLoggingEnabled;
-    private string _customLogFolderPath;
 
     private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
     [
@@ -42,13 +39,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public MainViewModel(
         IMainScreenWorkflow mainScreenWorkflow,
         ISettingsRepository settingsRepository,
-        IReportFileSaveService reportFileSaveService,
-        IDiagnosticLogger diagnosticLogger)
+        IReportFileSaveService reportFileSaveService)
     {
         _mainScreenWorkflow = mainScreenWorkflow;
         _settingsRepository = settingsRepository;
         _reportFileSaveService = reportFileSaveService;
-        _diagnosticLogger = diagnosticLogger;
         _previewWorkflow = mainScreenWorkflow as PreviewScenarioMainScreenWorkflow;
         _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusInitial, UiStrings.ScanAction);
         _settingsStatusText = UiStrings.SettingsLoadError;
@@ -60,15 +55,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _reportPlainTextContent = string.Empty;
         _reportMarkdownContent = string.Empty;
         _recentHistory = Array.Empty<RecentHistoryPresentation>();
-        _diagnosticLoggingEnabled = AppSettings.Default.DiagnosticLogging.Enabled;
-        _customLogFolderPath = string.Empty;
         AvailablePreviewScenarios = BuildPreviewOptions();
         _selectedPreviewScenario = AvailablePreviewScenarios.FirstOrDefault();
         _showSecondaryRecommendations = false;
         ScanCommand = new AsyncRelayCommand(ScanAsync);
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
-        OpenLogsFolderCommand = new AsyncRelayCommand(OpenLogsFolderAsync);
         ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
         _ = InitializeAsync();
     }
@@ -78,7 +70,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand ScanCommand { get; }
     public ICommand SaveSettingsCommand { get; }
     public ICommand ExportReportCommand { get; }
-    public ICommand OpenLogsFolderCommand { get; }
     public ICommand ApplyPreviewScenarioCommand { get; }
     public IReadOnlyList<ReportFormatOption> AvailableReportFormats => ReportFormatItems;
 
@@ -205,38 +196,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool DiagnosticLoggingEnabled
-    {
-        get => _diagnosticLoggingEnabled;
-        set
-        {
-            if (_diagnosticLoggingEnabled == value)
-            {
-                return;
-            }
-
-            _diagnosticLoggingEnabled = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string CustomLogFolderPath
-    {
-        get => _customLogFolderPath;
-        set
-        {
-            if (_customLogFolderPath == value)
-            {
-                return;
-            }
-
-            _customLogFolderPath = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string EffectiveLogFolderPath => _diagnosticLogger.GetEffectiveLogDirectory();
-
     private async Task InitializeAsync()
     {
         await LoadSettingsAsync();
@@ -263,19 +222,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
             return;
         }
 
-        await _diagnosticLogger.LogInfoAsync("scan.user.start", "Пользователь запустил анализ из главного окна.", CancellationToken.None);
         State = State with { StatusText = UiStrings.StatusScanning };
 
-        try
-        {
-            var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
-            ApplyWorkflowResult(result, isPreview: false);
-        }
-        catch (Exception ex)
-        {
-            await _diagnosticLogger.LogErrorAsync("scan.ui.failed", "Ошибка выполнения анализа на уровне ViewModel.", ex, CancellationToken.None);
-            State = State with { StatusText = UiStrings.StatusScanFailed };
-        }
+        var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
+        ApplyWorkflowResult(result, isPreview: false);
     }
 
     private async Task ApplyPreviewScenarioAsync()
@@ -341,9 +291,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         HistoryMaxEntries = settings.History.MaxEntries;
         ShowVerificationHints = settings.WorkflowGuidance.ShowPostInstallVerificationHints;
         SelectedReportFormat = ReportFormatItems.First(option => option.Value == settings.Reports.DefaultFormat);
-        DiagnosticLoggingEnabled = settings.DiagnosticLogging.Enabled;
-        CustomLogFolderPath = settings.DiagnosticLogging.CustomFolderPath ?? string.Empty;
-        OnPropertyChanged(nameof(EffectiveLogFolderPath));
         SettingsStatusText = UiStrings.SettingsLoaded;
     }
 
@@ -354,25 +301,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             History = current.History with { MaxEntries = HistoryMaxEntries },
             Reports = current.Reports with { DefaultFormat = SelectedReportFormat.Value },
-            WorkflowGuidance = current.WorkflowGuidance with { ShowPostInstallVerificationHints = ShowVerificationHints },
-            DiagnosticLogging = current.DiagnosticLogging with
-            {
-                Enabled = DiagnosticLoggingEnabled,
-                CustomFolderPath = string.IsNullOrWhiteSpace(CustomLogFolderPath) ? null : CustomLogFolderPath.Trim()
-            }
+            WorkflowGuidance = current.WorkflowGuidance with { ShowPostInstallVerificationHints = ShowVerificationHints }
         };
 
         await _settingsRepository.SaveAsync(updated, CancellationToken.None);
         SettingsStatusText = UiStrings.SettingsSaved;
-        OnPropertyChanged(nameof(EffectiveLogFolderPath));
-    }
-
-    private async Task OpenLogsFolderAsync()
-    {
-        await Task.Yield();
-        SettingsStatusText = _diagnosticLogger.TryOpenEffectiveLogDirectory()
-            ? UiStrings.SettingsLogsOpenSuccess
-            : UiStrings.SettingsLogsOpenFailed;
     }
 
     private async Task ExportReportAsync()

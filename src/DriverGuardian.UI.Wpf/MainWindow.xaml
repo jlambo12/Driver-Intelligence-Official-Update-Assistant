@@ -632,30 +632,6 @@
                             <CheckBox Content="{x:Static localization:UiStrings.SettingsVerificationHintLabel}"
                                       IsChecked="{Binding ShowVerificationHints}"
                                       Margin="0 0 0 8"/>
-                            <CheckBox Content="{x:Static localization:UiStrings.SettingsDiagnosticLoggingEnabledLabel}"
-                                      IsChecked="{Binding DiagnosticLoggingEnabled}"
-                                      Margin="0 0 0 6"/>
-                            <Grid Margin="0 0 0 6">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="230"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0"
-                                           Text="{x:Static localization:UiStrings.SettingsDiagnosticLoggingFolderLabel}"
-                                           Margin="0 0 8 0"
-                                           VerticalAlignment="Center"/>
-                                <TextBox Grid.Column="1"
-                                         Width="220"
-                                         HorizontalAlignment="Left"
-                                         Text="{Binding CustomLogFolderPath, UpdateSourceTrigger=PropertyChanged}"/>
-                            </Grid>
-                            <TextBlock Text="{Binding EffectiveLogFolderPath}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#475569"/>
-                            <Button Content="{x:Static localization:UiStrings.SettingsOpenLogsFolderAction}"
-                                    Width="220"
-                                    Height="32"
-                                    Margin="0 0 0 8"
-                                    HorizontalAlignment="Left"
-                                    Command="{Binding OpenLogsFolderCommand}" />
                             <Button Content="{x:Static localization:UiStrings.SettingsSaveAction}"
                                     Width="220"
                                     Height="32"
