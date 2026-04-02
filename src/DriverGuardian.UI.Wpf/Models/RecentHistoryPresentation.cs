@@ -15,14 +15,14 @@ public sealed record RecentHistoryPresentation(
 
     private static RecentHistoryPresentation Map(RecentHistoryEntryResult entry)
     {
-        var timestamp = entry.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+        var timestamp = entry.OccurredAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
 
         return entry.Kind switch
         {
             RecentHistoryEntryKind.Scan => new RecentHistoryPresentation(
                 timestamp,
                 UiStrings.RecentHistoryTypeScan,
-                string.Format(UiStrings.RecentHistoryScanSummaryFormat, entry.ScanSessionId),
+                string.Format(UiStrings.RecentHistoryScanSummaryFormat, FormatScanSessionId(entry.ScanSessionId)),
                 string.Format(UiStrings.RecentHistoryScanStatusFormat, entry.PrimaryCount, entry.SecondaryCount),
                 UiStrings.RecentHistoryScanGuidance),
             RecentHistoryEntryKind.Recommendation => new RecentHistoryPresentation(
@@ -45,6 +45,9 @@ public sealed record RecentHistoryPresentation(
                 UiStrings.RecentHistoryUnknownGuidance)
         };
     }
+
+    private static string FormatScanSessionId(Guid scanSessionId)
+        => $"#{scanSessionId.ToString("N")[..8]}";
 
     private static string MapVerificationStatus(string? statusCode)
         => statusCode switch

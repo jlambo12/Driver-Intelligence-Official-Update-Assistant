@@ -232,61 +232,61 @@
     <value>Текстовый файл (*.txt)|*.txt</value>
   </data>
   <data name="Recent_History_Section_Title" xml:space="preserve">
-    <value>Недавние шаги и результаты</value>
+    <value>Последние события анализа</value>
   </data>
   <data name="Recent_History_Empty_State" xml:space="preserve">
-    <value>История пока пуста. После анализа здесь появятся последние шаги, чтобы было проще продолжить работу.</value>
+    <value>Пока нет событий. Запустите анализ — здесь появятся этапы: сканирование, сводка рекомендаций и проверка после установки.</value>
   </data>
   <data name="Recent_History_Type_Scan" xml:space="preserve">
-    <value>Сканирование</value>
+    <value>Сканирование завершено</value>
   </data>
   <data name="Recent_History_Type_Recommendation" xml:space="preserve">
-    <value>Сводка рекомендаций</value>
+    <value>Сводка рекомендаций обновлена</value>
   </data>
   <data name="Recent_History_Type_Verification" xml:space="preserve">
     <value>Проверка после установки</value>
   </data>
   <data name="Recent_History_Type_Unknown" xml:space="preserve">
-    <value>История</value>
+    <value>Событие истории</value>
   </data>
   <data name="Recent_History_Scan_Summary_Format" xml:space="preserve">
-    <value>Сеанс: {0}</value>
+    <value>Что произошло: завершён сеанс анализа {0}.</value>
   </data>
   <data name="Recent_History_Scan_Status_Format" xml:space="preserve">
-    <value>Проанализировано системных записей: {0}; проинспектировано драйверов: {1}.</value>
+    <value>Текущий статус: обнаружено устройств {0}; проверено драйверов {1}.</value>
   </data>
   <data name="Recent_History_Recommendation_Summary" xml:space="preserve">
-    <value>Сформирована сводка рекомендаций по текущему анализу.</value>
+    <value>Что произошло: сформирована сводка рекомендаций по текущему анализу.</value>
   </data>
   <data name="Recent_History_Recommendation_Status_Format" xml:space="preserve">
-    <value>По итогам анализа: релевантных пунктов {0}; требуют ручной проверки {1}; без безопасной рекомендации {2}.</value>
+    <value>Текущий статус: релевантных записей {0}; требуют ручной проверки {1}; отложено как небезопасно {2}.</value>
   </data>
   <data name="Recent_History_Verification_Summary" xml:space="preserve">
-    <value>Контекст возврата пользователя для проверки после ручной установки.</value>
+    <value>Что произошло: зафиксирован результат возврата для проверки после ручной установки.</value>
   </data>
   <data name="Recent_History_Verification_Status_Format" xml:space="preserve">
-    <value>Статус: {0}; заметка: {1}.</value>
+    <value>Текущий статус: {0}; заметка пользователя: {1}.</value>
   </data>
   <data name="Recent_History_Verification_Status_Passed" xml:space="preserve">
-    <value>проверка пройдена</value>
+    <value>изменения подтверждены</value>
   </data>
   <data name="Recent_History_Verification_Status_Failed" xml:space="preserve">
     <value>обнаружены расхождения</value>
   </data>
   <data name="Recent_History_Verification_Status_Skipped" xml:space="preserve">
-    <value>ожидается возврат пользователя</value>
+    <value>ожидается повторный анализ</value>
   </data>
   <data name="Recent_History_Verification_Status_Unknown" xml:space="preserve">
     <value>статус не определён</value>
   </data>
   <data name="Recent_History_Verification_Note_Empty" xml:space="preserve">
-    <value>без дополнительной заметки</value>
+    <value>заметка не добавлена</value>
   </data>
   <data name="Recent_History_Unknown_Summary" xml:space="preserve">
-    <value>Тип записи истории не распознан.</value>
+    <value>Что произошло: тип события не распознан.</value>
   </data>
   <data name="Recent_History_Unknown_Status" xml:space="preserve">
-    <value>Сведения недоступны.</value>
+    <value>Текущий статус: сведения недоступны.</value>
   </data>
   <data name="Scan_Overview_Title" xml:space="preserve">
     <value>Что обнаружено на этом анализе</value>
@@ -367,19 +367,19 @@
     <value>Когда выполните ручную установку в будущем, вернитесь и запустите анализ повторно.</value>
   </data>
   <data name="Recent_History_Section_Hint" xml:space="preserve">
-    <value>История помогает продолжить безопасный сценарий: что уже проверено и какой шаг следующий.</value>
+    <value>Короткая лента последних шагов: что произошло, текущий статус и что сделать дальше.</value>
   </data>
   <data name="Recent_History_Scan_Guidance" xml:space="preserve">
-    <value>Используйте запись, чтобы подтвердить исходную точку перед ручными действиями.</value>
+    <value>Что сделать дальше: используйте этот результат как отправную точку перед ручными действиями.</value>
   </data>
   <data name="Recent_History_Recommendation_Guidance" xml:space="preserve">
-    <value>Сверьте рекомендации с официальным источником перед загрузкой пакета.</value>
+    <value>Что сделать дальше: сверяйте рекомендации с официальным источником перед загрузкой пакета.</value>
   </data>
   <data name="Recent_History_Verification_Guidance" xml:space="preserve">
-    <value>Эта запись показывает результат возврата после ручной установки.</value>
+    <value>Что сделать дальше: если результат спорный, выполните повторный анализ после проверки ручных шагов.</value>
   </data>
   <data name="Recent_History_Unknown_Guidance" xml:space="preserve">
-    <value>Проверьте новый анализ, чтобы получить структурированную запись.</value>
+    <value>Что сделать дальше: выполните новый анализ, чтобы получить структурированную запись.</value>
   </data>
 <data name="Status_Initial" xml:space="preserve"><value>Готово к первому анализу. Нажмите «Запустить анализ», чтобы получить безопасную сводку.</value></data><data name="Status_Scan_Completed_Ready" xml:space="preserve"><value>Анализ завершён: доступны безопасные рекомендации для ручной проверки.</value></data><data name="Status_Scan_Completed_No_Action" xml:space="preserve"><value>Анализ завершён: сейчас нет безопасных рекомендаций для ручного действия.</value></data><data name="Scan_Overview_Empty_State" xml:space="preserve"><value>После первого анализа здесь появится сводка: что проверено, есть ли безопасные рекомендации и какие ручные шаги имеют подтверждение.</value></data><data name="Recommendation_Empty_State_Pre_Scan" xml:space="preserve"><value>Запустите первый анализ, чтобы увидеть понятные выводы по устройствам, ограничения безопасности и следующий ручной шаг.</value></data><data name="Recommendation_Empty_State_No_Action" xml:space="preserve"><value>По текущему анализу безопасных рекомендаций для ручного обновления нет. Это осторожный результат: для действия пока недостаточно подтверждений от источников.</value></data><data name="Manual_Section_Empty_State" xml:space="preserve"><value>Пока ручные шаги не сформированы. Сначала выполните анализ и проверьте, есть ли безопасная рекомендация.</value></data><data name="Verification_Section_Empty_State_Pre_Scan" xml:space="preserve"><value>Проверка становится актуальной после ручной установки драйвера вне приложения.</value></data><data name="Verification_Section_Empty_State_No_Action" xml:space="preserve"><value>Сейчас возвращаться для проверки не требуется: сначала нужен подтверждённый сценарий ручной установки.</value></data><data name="Preview_Window_Title" xml:space="preserve"><value>DriverGuardian — режим предпросмотра</value></data><data name="Preview_Mode_Section_Title" xml:space="preserve"><value>Режим предпросмотра продукта</value></data><data name="Preview_Mode_Banner" xml:space="preserve"><value>Показаны демонстрационные сценарии. Эти данные не являются результатом реального анализа системы.</value></data><data name="Preview_Mode_Scenario_Label" xml:space="preserve"><value>Сценарий предпросмотра</value></data><data name="Preview_Apply_Scenario_Action" xml:space="preserve"><value>Применить сценарий предпросмотра</value></data><data name="Preview_Mode_Status_Format" xml:space="preserve"><value>Предпросмотр: {0}. Данные демонстрационные и не относятся к этому устройству.</value></data><data name="Preview_Scenario_First_Run" xml:space="preserve"><value>1) Первый запуск / до анализа</value></data><data name="Preview_Scenario_No_Action" xml:space="preserve"><value>2) Рекомендаций для действия нет</value></data><data name="Preview_Scenario_Limited_Evidence" xml:space="preserve"><value>3) Рекомендация есть, но доказательств недостаточно</value></data><data name="Preview_Scenario_Manual_Ready" xml:space="preserve"><value>4) Рекомендация готова к безопасному ручному действию</value></data><data name="Preview_Scenario_Verification_Return" xml:space="preserve"><value>5) Возврат для проверки / повторный анализ</value></data><data name="Preview_Scenario_History_Export" xml:space="preserve"><value>6) Заполненная история и готовность экспорта отчёта</value></data><data name="Recommendation_Secondary_Summary_Format" xml:space="preserve"><value>Показаны наиболее важные позиции. Остальные записи (ещё {0}) скрыты в этом представлении, чтобы не перегружать основной сценарий.</value></data>
   <data name="Recommendation_Primary_Summary_Format" xml:space="preserve">
