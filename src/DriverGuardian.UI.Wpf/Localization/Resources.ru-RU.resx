@@ -175,13 +175,28 @@
     <value>Показывать подсказки по проверке после установки</value>
   </data>
   <data name="Settings_Diagnostic_Logging_Label" xml:space="preserve">
-    <value>Включить диагностическое журналирование</value>
+    <value>Диагностическое журналирование (для устранения неполадок)</value>
+  </data>
+  <data name="Settings_Diagnostic_Logging_Hint" xml:space="preserve">
+    <value>Используйте только для диагностики проблем. Это не меняет процесс ручной установки драйверов.</value>
   </data>
   <data name="Settings_Diagnostic_Custom_Log_Folder_Label" xml:space="preserve">
-    <value>Папка журналов (необязательно):</value>
+    <value>Пользовательская папка журналов (необязательно):</value>
+  </data>
+  <data name="Settings_Diagnostic_Custom_Log_Folder_Hint" xml:space="preserve">
+    <value>Укажите путь, если журналы должны сохраняться в конкретную папку.</value>
+  </data>
+  <data name="Settings_Diagnostic_Custom_Log_Folder_Default_Hint" xml:space="preserve">
+    <value>Путь не задан — будет использоваться стандартная папка приложения.</value>
+  </data>
+  <data name="Settings_Diagnostic_Custom_Log_Folder_Disabled_Hint" xml:space="preserve">
+    <value>Поле недоступно, пока диагностическое журналирование отключено.</value>
   </data>
   <data name="Settings_Diagnostic_Effective_Log_Folder_Label" xml:space="preserve">
-    <value>Итоговая папка журналов:</value>
+    <value>Фактически используемая папка журналов:</value>
+  </data>
+  <data name="Settings_Diagnostic_Effective_Log_Folder_Hint" xml:space="preserve">
+    <value>Эта папка будет использоваться после сохранения настроек.</value>
   </data>
   <data name="Settings_Open_Logs_Folder_Action" xml:space="preserve">
     <value>Открыть папку журналов</value>
