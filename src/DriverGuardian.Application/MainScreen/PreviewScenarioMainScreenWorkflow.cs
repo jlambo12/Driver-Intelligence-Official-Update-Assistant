@@ -1,4 +1,5 @@
 using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Application.OfficialSources;
 
 namespace DriverGuardian.Application.MainScreen;
 
@@ -69,7 +70,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             ScanSessionId: Guid.Empty,
             ReportExportPayload: new ReportExportPayload("driverguardian-preview-first-run", string.Empty, string.Empty),
             RecommendationDetails: [],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(false, "Официальный источник недоступен до появления рекомендаций.", null, null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(false, OfficialSourceResolutionKind.InsufficientEvidence, "Официальный источник недоступен до появления рекомендаций.", null, null),
             RecentHistory: []);
 
     private static MainScreenWorkflowResult BuildNoActionableRecommendation()
@@ -93,6 +94,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                 new RecommendationDetailResult(
                     "Сетевой адаптер Intel Ethernet",
                     "PCI\\VEN_8086&DEV_51A3",
+                    2,
                     false,
                     "Официальные источники не предоставили подтверждённого более нового пакета драйвера.",
                     "31.0.101.4577",
@@ -101,9 +103,10 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     false,
                     false,
                     false,
-                    "Проверка после установки не требуется.")
+                    "Проверка после установки не требуется.",
+                    OfficialSourceResolutionKind.InsufficientEvidence)
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(false, "Нет доступных рекомендаций для перехода к источнику.", null, null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(false, OfficialSourceResolutionKind.InsufficientEvidence, "Нет доступных рекомендаций для перехода к источнику.", null, null),
             RecentHistory: []);
 
     private static MainScreenWorkflowResult BuildRecommendationWithLimitedEvidence()
@@ -127,6 +130,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                 new RecommendationDetailResult(
                     "Контроллер Realtek PCIe GbE",
                     "PCI\\VEN_10EC&DEV_8168",
+                    0,
                     true,
                     "Найден кандидат версии 10.64.1120.2025, но доверие к ссылке источника не подтверждено автоматически.",
                     "10.63.1014.2024",
@@ -135,9 +139,10 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     false,
                     true,
                     true,
-                    "Ожидается возврат пользователя после ручной установки.")
+                    "Ожидается возврат пользователя после ручной установки.",
+                    OfficialSourceResolutionKind.InsufficientEvidence)
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(false, "Требуется ручная проверка официальности источника.", null, "Недостаточно подтверждённых признаков источника"),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(false, OfficialSourceResolutionKind.InsufficientEvidence, "Требуется ручная проверка официальности источника.", null, "Недостаточно подтверждённых признаков источника"),
             RecentHistory: []);
 
     private static MainScreenWorkflowResult BuildRecommendationReadyForManualAction()
@@ -161,6 +166,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                 new RecommendationDetailResult(
                     "Видеокарта NVIDIA GeForce",
                     "PCI\\VEN_10DE&DEV_28A1",
+                    0,
                     true,
                     "Официальная страница производителя подтверждена и доступна для ручного перехода.",
                     "552.22",
@@ -169,9 +175,10 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     true,
                     true,
                     true,
-                    "Ожидается возврат пользователя после ручной установки.")
+                    "Ожидается возврат пользователя после ручной установки.",
+                    OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed)
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(true, "Официальный источник подтверждён для ручного открытия.", "https://www.nvidia.com/download/index.aspx", null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(true, OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed, "Официальный источник подтверждён для ручного открытия.", "https://www.nvidia.com/download/index.aspx", null),
             RecentHistory: []);
 
     private static MainScreenWorkflowResult BuildVerificationReturnGuidance()
@@ -195,6 +202,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                 new RecommendationDetailResult(
                     "Графический адаптер Intel",
                     "PCI\\VEN_8086&DEV_A0F0",
+                    0,
                     true,
                     "Ранее был предложен переход на официальную версию; ожидается подтверждение после повторного анализа.",
                     "31.0.101.5330",
@@ -203,9 +211,10 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     true,
                     true,
                     true,
-                    "Пользователь сообщил о ручной установке. Нужен контрольный анализ.")
+                    "Пользователь сообщил о ручной установке. Нужен контрольный анализ.",
+                    OfficialSourceResolutionKind.VendorSupportPageConfirmed)
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(true, "Официальный источник подтверждён.", "https://www.intel.com/content/www/us/en/download-center/home.html", null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(true, OfficialSourceResolutionKind.VendorSupportPageConfirmed, "Официальный источник подтверждён.", "https://www.intel.com/content/www/us/en/download-center/home.html", null),
             RecentHistory:
             [
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddMinutes(-45), RecentHistoryEntryKind.Scan, Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), 4, 4, 0, null, null),
@@ -233,6 +242,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                 new RecommendationDetailResult(
                     "Видеокарта NVIDIA GeForce",
                     "PCI\\VEN_10DE&DEV_1C8D",
+                    0,
                     true,
                     "Подтверждён безопасный ручной путь через официальный каталог.",
                     "536.67",
@@ -241,10 +251,12 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     true,
                     true,
                     true,
-                    "Ожидается возврат пользователя после ручной установки."),
+                    "Ожидается возврат пользователя после ручной установки.",
+                    OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed),
                 new RecommendationDetailResult(
                     "Графический адаптер Intel",
                     "PCI\\VEN_8086&DEV_1911",
+                    0,
                     true,
                     "Есть кандидат, но ссылка требует дополнительной ручной проверки.",
                     "30.0.101.1191",
@@ -253,9 +265,10 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     false,
                     true,
                     true,
-                    "Ожидается подтверждение после повторного анализа.")
+                    "Ожидается подтверждение после повторного анализа.",
+                    OfficialSourceResolutionKind.InsufficientEvidence)
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(true, "Официальный источник для первого устройства подтверждён.", "https://www.nvidia.com/download/index.aspx", null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(true, OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed, "Официальный источник для первого устройства подтверждён.", "https://www.nvidia.com/download/index.aspx", null),
             RecentHistory:
             [
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddHours(-5), RecentHistoryEntryKind.Scan, Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), 8, 8, 0, null, null),

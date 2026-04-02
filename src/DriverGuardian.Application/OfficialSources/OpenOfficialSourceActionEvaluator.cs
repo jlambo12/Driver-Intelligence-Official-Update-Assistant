@@ -18,6 +18,7 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.InsufficientEvidence,
+                OfficialSourceResolutionKind.InsufficientEvidence,
                 null,
                 blockers);
         }
@@ -30,6 +31,7 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.NonOfficialSource,
+                OfficialSourceResolutionKind.InsufficientEvidence,
                 null,
                 blockers);
         }
@@ -42,6 +44,7 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.MissingUrl,
+                OfficialSourceResolutionKind.InsufficientEvidence,
                 null,
                 blockers);
         }
@@ -54,6 +57,7 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.Blocked,
+                OfficialSourceResolutionKind.InsufficientEvidence,
                 null,
                 blockers);
         }
@@ -66,12 +70,34 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.Blocked,
+                OfficialSourceResolutionKind.InsufficientEvidence,
+                null,
+                blockers);
+        }
+
+        var resolution = request.SourceEvidence.TrustLevel switch
+        {
+            SourceTrustLevel.OfficialPublisherSite => OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed,
+            SourceTrustLevel.OemSupportPortal => OfficialSourceResolutionKind.VendorSupportPageConfirmed,
+            _ => OfficialSourceResolutionKind.InsufficientEvidence
+        };
+
+        if (resolution == OfficialSourceResolutionKind.InsufficientEvidence)
+        {
+            blockers.Add(new OpenOfficialSourceBlocker(
+                OpenOfficialSourceBlockedReason.TrustLevelNotSupportedForOfficialSourceAction,
+                "Open official source action is blocked because source trust level does not confirm a direct official or vendor support page."));
+
+            return new OpenOfficialSourceActionDecision(
+                OpenOfficialSourceActionOutcome.InsufficientEvidence,
+                OfficialSourceResolutionKind.InsufficientEvidence,
                 null,
                 blockers);
         }
 
         return new OpenOfficialSourceActionDecision(
             OpenOfficialSourceActionOutcome.Allowed,
+            resolution,
             new ApprovedOfficialSourceLink(
                 request.ProviderCode,
                 request.DriverIdentifier,

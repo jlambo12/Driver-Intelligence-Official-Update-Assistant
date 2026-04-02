@@ -1,3 +1,5 @@
+using DriverGuardian.Application.OfficialSources;
+
 namespace DriverGuardian.Application.Abstractions;
 
 public interface IMainScreenWorkflow
@@ -38,10 +40,12 @@ public sealed record RecommendationDetailResult(
     bool ManualHandoffReady,
     bool ManualActionRequired,
     bool VerificationAvailable,
-    string VerificationStatus);
+    string VerificationStatus,
+    OfficialSourceResolutionKind OfficialSourceResolution);
 
 public sealed record OpenOfficialSourceActionResult(
     bool IsReady,
+    OfficialSourceResolutionKind Resolution,
     string Status,
     string? ApprovedOfficialSourceUrl,
     string? BlockReason);

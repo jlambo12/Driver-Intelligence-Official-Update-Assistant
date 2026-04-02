@@ -1,4 +1,5 @@
 using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.UI.Wpf.Localization;
 
 namespace DriverGuardian.UI.Wpf.Models;
@@ -226,26 +227,32 @@ public sealed record ScanResultsPresentation(
             return (UiStrings.RecommendationStateInsufficientEvidence, UiStrings.RecommendationStateInsufficientEvidenceHint);
         }
 
-        if (detail.ManualHandoffReady)
+        return detail.OfficialSourceResolution switch
         {
-            return (UiStrings.RecommendationStateReadyForManualAction, UiStrings.RecommendationStateReadyForManualActionHint);
-        }
-
-        return (UiStrings.RecommendationStateBlocked, UiStrings.RecommendationStateBlockedHint);
+            OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed => (UiStrings.RecommendationStateReadyForManualAction, "Подтверждена прямая официальная страница драйвера."),
+            OfficialSourceResolutionKind.VendorSupportPageConfirmed => (UiStrings.RecommendationStateReadyForManualAction, "Подтверждена страница поддержки производителя (не прямая страница драйвера)."),
+            _ when detail.ManualHandoffReady => (UiStrings.RecommendationStateReadyForManualAction, UiStrings.RecommendationStateReadyForManualActionHint),
+            _ => (UiStrings.RecommendationStateBlocked, "Недостаточно доказательств официального источника для безопасного перехода.")
+        };
     }
 
     private static string BuildOfficialSourceSummary(OpenOfficialSourceActionResult officialSourceAction)
     {
-        if (officialSourceAction.IsReady)
+        if (!officialSourceAction.IsReady)
         {
-            var url = officialSourceAction.ApprovedOfficialSourceUrl ?? UiStrings.OfficialSourceUrlUnavailable;
-            return string.Format(UiStrings.OfficialSourceSummaryReadyFormat, url);
+            var reason = string.IsNullOrWhiteSpace(officialSourceAction.BlockReason)
+                ? UiStrings.OfficialSourceBlockedNoReason
+                : officialSourceAction.BlockReason;
+            return string.Format(UiStrings.OfficialSourceSummaryBlockedFormat, reason);
         }
 
-        var reason = string.IsNullOrWhiteSpace(officialSourceAction.BlockReason)
-            ? UiStrings.OfficialSourceBlockedNoReason
-            : officialSourceAction.BlockReason;
-        return string.Format(UiStrings.OfficialSourceSummaryBlockedFormat, reason);
+        var url = officialSourceAction.ApprovedOfficialSourceUrl ?? UiStrings.OfficialSourceUrlUnavailable;
+        return officialSourceAction.Resolution switch
+        {
+            OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed => $"Подтверждена прямая официальная страница драйвера: {url}",
+            OfficialSourceResolutionKind.VendorSupportPageConfirmed => $"Подтверждена страница поддержки производителя: {url}",
+            _ => string.Format(UiStrings.OfficialSourceSummaryReadyFormat, url)
+        };
     }
 
     private static string BuildWorkflowHeadline(bool hasRecommendation, bool officialSourceReady, bool hasReadyHandoff)

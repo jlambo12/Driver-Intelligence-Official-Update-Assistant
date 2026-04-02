@@ -45,15 +45,15 @@ public sealed class MainScreenWorkflow(
 
             var providerCount = await providerCatalogSummaryService.GetProviderCountAsync(cancellationToken);
             var settings = await settingsRepository.GetAsync(cancellationToken);
-            var recommendationDetails = BuildRecommendationDetails(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations);
+            var recommendationDetails = BuildRecommendationDetails(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations, openOfficialSourceActionEvaluator);
             var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
             var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
-            var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
+            var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, recommendations, openOfficialSourceActionEvaluator);
             await diagnosticLogger.LogInfoAsync(
                 "scan.official_source.state",
                 officialSourceAction.IsReady
-                    ? "Официальный источник подтверждён и доступен."
-                    : $"Официальный источник заблокирован: {officialSourceAction.BlockReason ?? "причина не указана"}.",
+                    ? $"Официальный источник подтверждён ({officialSourceAction.Resolution})."
+                    : $"Официальный источник не подтверждён: {officialSourceAction.BlockReason ?? "причина не указана"}.",
                 cancellationToken);
 
             var verificationSummary = BuildVerificationSummary(recommendationDetails);
@@ -179,7 +179,8 @@ public sealed class MainScreenWorkflow(
     private static IReadOnlyCollection<RecommendationDetailResult> BuildRecommendationDetails(
         IReadOnlyCollection<DiscoveredDevice> discoveredDevices,
         IReadOnlyCollection<Domain.Drivers.InstalledDriverSnapshot> drivers,
-        IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations)
+        IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations,
+        OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator)
     {
         var byDevice = recommendations.ToDictionary(item => item.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
         var discoveredById = discoveredDevices.ToDictionary(
@@ -192,6 +193,10 @@ public sealed class MainScreenWorkflow(
                 var hasRecommendation = byDevice.TryGetValue(driver.DeviceIdentity.InstanceId, out var recommendation) && recommendation.HasRecommendation;
                 discoveredById.TryGetValue(driver.DeviceIdentity.InstanceId, out var discoveredDevice);
                 var displayName = DevicePresentationHeuristics.BuildUserFacingName(discoveredDevice, driver.DeviceIdentity.InstanceId);
+                var officialSourceDecision = recommendation is null
+                    ? null
+                    : EvaluateOfficialSourceResolution(recommendation, driver.DeviceIdentity.InstanceId, openOfficialSourceActionEvaluator);
+                var manualHandoffReady = hasRecommendation && (officialSourceDecision?.IsReadyForOpen ?? false);
 
                 return new RecommendationDetailResult(
                     DeviceDisplayName: displayName,
@@ -202,12 +207,13 @@ public sealed class MainScreenWorkflow(
                     InstalledVersion: driver.DriverVersion,
                     InstalledProvider: driver.ProviderName,
                     RecommendedVersion: recommendation?.RecommendedVersion,
-                    ManualHandoffReady: false,
+                    ManualHandoffReady: manualHandoffReady,
                     ManualActionRequired: hasRecommendation,
                     VerificationAvailable: hasRecommendation,
                     VerificationStatus: hasRecommendation
                         ? "Ожидается возврат пользователя после ручной установки."
-                        : "Проверка после установки сейчас не требуется.");
+                        : "Проверка после установки сейчас не требуется.",
+                    OfficialSourceResolution: officialSourceDecision?.Resolution ?? OfficialSourceResolutionKind.InsufficientEvidence);
             })
             .Where(detail =>
             {
@@ -228,6 +234,38 @@ public sealed class MainScreenWorkflow(
             .ToArray();
     }
 
+    private static OpenOfficialSourceActionDecision? EvaluateOfficialSourceResolution(
+        Domain.Recommendations.RecommendationSummary recommendation,
+        string deviceId,
+        OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator)
+    {
+        if (recommendation.EvidenceSourceUri is null ||
+            string.IsNullOrWhiteSpace(recommendation.EvidencePublisherName) ||
+            recommendation.EvidenceTrustLevel is null ||
+            recommendation.EvidenceIsOfficialSource is null)
+        {
+            return null;
+        }
+
+        var trustLevel = Enum.IsDefined(typeof(SourceTrustLevel), recommendation.EvidenceTrustLevel.Value)
+            ? (SourceTrustLevel)recommendation.EvidenceTrustLevel.Value
+            : SourceTrustLevel.Unknown;
+
+        var sourceEvidence = new SourceEvidence(
+            recommendation.EvidenceSourceUri,
+            recommendation.EvidencePublisherName,
+            trustLevel,
+            recommendation.EvidenceIsOfficialSource.Value,
+            recommendation.EvidenceNote ?? "not-provided");
+
+        return openOfficialSourceActionEvaluator.Evaluate(
+            new OpenOfficialSourceActionRequest(
+                recommendation.ProviderCode ?? "unknown-provider",
+                deviceId,
+                sourceEvidence,
+                recommendation.OfficialSourceUri));
+    }
+
     private static string BuildVerificationSummary(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)
     {
         var waitingForReturnCount = recommendationDetails.Count(detail => detail.VerificationAvailable);
@@ -238,6 +276,7 @@ public sealed class MainScreenWorkflow(
 
     private static OpenOfficialSourceActionResult BuildOfficialSourceAction(
         IReadOnlyCollection<RecommendationDetailResult> recommendationDetails,
+        IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations,
         OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator)
     {
         var targetRecommendation = recommendationDetails.FirstOrDefault(item => item.ManualActionRequired);
@@ -245,26 +284,45 @@ public sealed class MainScreenWorkflow(
         {
             return new OpenOfficialSourceActionResult(
                 IsReady: false,
+                Resolution: OfficialSourceResolutionKind.InsufficientEvidence,
                 Status: "Нет рекомендаций для перехода к официальному источнику.",
                 ApprovedOfficialSourceUrl: null,
                 BlockReason: null);
         }
 
-        var sourceEvidence = new SourceEvidence(
-            new Uri("https://pending.official-source.local"),
-            "Не определено",
-            SourceTrustLevel.Unknown,
-            false,
-            "Требуется подтверждение официального источника пользователем.");
+        var recommendation = recommendations.FirstOrDefault(item => string.Equals(item.DeviceIdentity.InstanceId, targetRecommendation.DeviceId, StringComparison.OrdinalIgnoreCase));
+        if (recommendation is null)
+        {
+            return new OpenOfficialSourceActionResult(
+                IsReady: false,
+                Resolution: OfficialSourceResolutionKind.InsufficientEvidence,
+                Status: "Недостаточно данных для подтверждения официального источника.",
+                ApprovedOfficialSourceUrl: null,
+                BlockReason: OpenOfficialSourceBlockedReason.SourceTrustUnverified.ToString());
+        }
 
-        var decision = openOfficialSourceActionEvaluator.Evaluate(
-            new OpenOfficialSourceActionRequest("pending-provider", targetRecommendation.DeviceId, sourceEvidence, null));
+        var decision = EvaluateOfficialSourceResolution(recommendation, targetRecommendation.DeviceId, openOfficialSourceActionEvaluator);
+        if (decision is null)
+        {
+            return new OpenOfficialSourceActionResult(
+                IsReady: false,
+                Resolution: OfficialSourceResolutionKind.InsufficientEvidence,
+                Status: "Недостаточно подтверждённых сведений об официальном источнике.",
+                ApprovedOfficialSourceUrl: null,
+                BlockReason: OpenOfficialSourceBlockedReason.SourceTrustUnverified.ToString());
+        }
+
+        var status = decision.Resolution switch
+        {
+            OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed => "Подтверждена прямая официальная страница драйвера.",
+            OfficialSourceResolutionKind.VendorSupportPageConfirmed => "Подтверждена страница поддержки производителя.",
+            _ => "Недостаточно доказательств для подтверждения официального источника."
+        };
 
         return new OpenOfficialSourceActionResult(
-            IsReady: decision.IsAllowed,
-            Status: decision.IsAllowed
-                ? "Официальный источник подтверждён для ручного перехода."
-                : "Открытие официального источника требует ручной проверки.",
+            IsReady: decision.IsReadyForOpen,
+            Resolution: decision.Resolution,
+            Status: status,
             ApprovedOfficialSourceUrl: decision.Link?.OfficialSourceUri.ToString(),
             BlockReason: decision.Blockers.FirstOrDefault()?.Reason.ToString());
     }

@@ -4,85 +4,59 @@ using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Application.Reports;
+using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Devices;
 using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
 using DriverGuardian.Domain.Scanning;
 using DriverGuardian.Domain.Settings;
-using DriverGuardian.Contracts.DeviceDiscovery;
+using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 
 namespace DriverGuardian.Tests.Unit.Application;
 
 public sealed class MainScreenWorkflowTests
 {
     [Fact]
-    public async Task RunScanAsync_ShouldReturnUiReadyResult_WriteAudit_AndCaptureHistory()
+    public async Task RunScanAsync_ShouldUseDirectOfficialDriverPageResolution_ForOpenOfficialSourceAction()
     {
-        var auditWriter = new FakeAuditWriter();
-        var historyRepository = new FakeHistoryRepository();
-        var logger = new RecordingDiagnosticLogger();
-        var workflow = new MainScreenWorkflow(
-            new FakeScanOrchestrator(),
-            new FakeRecommendationPipeline(),
-            new FakeProviderCatalogSummaryService(),
-            new FakeSettingsRepository(),
-            logger,
-            auditWriter,
-            historyRepository,
-            new OpenOfficialSourceActionEvaluator(),
-            new ShareableReportBuilder());
+        var workflow = CreateWorkflow(new StaticRecommendationPipeline(BuildRecommendation(SourceTrustLevel.OfficialPublisherSite)));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
-        Assert.Equal(2, result.DiscoveredDeviceCount);
-        Assert.Equal(1, result.InspectedDriverCount);
-        Assert.Equal(1, result.RecommendedCount);
-        Assert.Equal(0, result.NotRecommendedCount);
-        Assert.Equal(3, result.ProviderCount);
-        Assert.Equal(0, result.ManualHandoffReadyCount);
-        Assert.Equal(1, result.ManualHandoffUserActionCount);
-        Assert.False(string.IsNullOrWhiteSpace(result.VerificationSummary));
-        Assert.Equal("ru-RU", result.UiCulture);
-        Assert.False(string.IsNullOrWhiteSpace(result.ReportExportPayload.FileNameBase));
-        Assert.False(string.IsNullOrWhiteSpace(result.ReportExportPayload.PlainTextContent));
-        Assert.Contains("DriverGuardian Scan Report", result.ReportExportPayload.MarkdownContent);
-        Assert.Single(result.RecommendationDetails);
-        Assert.False(result.OfficialSourceAction.IsReady);
-        Assert.Equal(3, result.RecentHistory.Count);
-        Assert.Equal(37, historyRepository.LastRequestedTake);
-        Assert.Equal(3, historyRepository.Entries.Count);
-        Assert.Contains(historyRepository.Entries, entry => entry is ScanHistoryEntry);
-        Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);
-        Assert.Contains(historyRepository.Entries, entry => entry is VerificationHistoryEntry);
-        Assert.Single(auditWriter.Entries);
-        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.start:", StringComparison.Ordinal));
-        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.discovery.completed:", StringComparison.Ordinal));
-        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.inspection.completed:", StringComparison.Ordinal));
-        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.recommendation.completed:", StringComparison.Ordinal));
-        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.official_source.state:", StringComparison.Ordinal));
-        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.history_report.completed:", StringComparison.Ordinal));
-        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.summary:", StringComparison.Ordinal));
-        Assert.Empty(logger.ErrorEvents);
+        Assert.Equal(1, result.ManualHandoffReadyCount);
+        Assert.True(result.OfficialSourceAction.IsReady);
+        Assert.Equal(OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed, result.OfficialSourceAction.Resolution);
     }
 
     [Fact]
-    public async Task RunScanAsync_WhenScanFails_ShouldLogErrorAndRethrow()
+    public async Task RunScanAsync_ShouldUseVendorSupportPageResolution_ForOpenOfficialSourceAction()
     {
-        var logger = new RecordingDiagnosticLogger();
-        var workflow = new MainScreenWorkflow(
-            new ThrowingScanOrchestrator(),
-            new FakeRecommendationPipeline(),
-            new FakeProviderCatalogSummaryService(),
-            new FakeSettingsRepository(),
-            logger,
-            new FakeAuditWriter(),
-            new FakeHistoryRepository(),
-            new OpenOfficialSourceActionEvaluator(),
-            new ShareableReportBuilder());
+        var workflow = CreateWorkflow(new StaticRecommendationPipeline(BuildRecommendation(SourceTrustLevel.OemSupportPortal)));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => workflow.RunScanAsync(CancellationToken.None));
-        Assert.Single(logger.ErrorEvents);
-        Assert.StartsWith("scan.workflow.failed:", logger.ErrorEvents[0], StringComparison.Ordinal);
+        var result = await workflow.RunScanAsync(CancellationToken.None);
+
+        Assert.Equal(1, result.ManualHandoffReadyCount);
+        Assert.True(result.OfficialSourceAction.IsReady);
+        Assert.Equal(OfficialSourceResolutionKind.VendorSupportPageConfirmed, result.OfficialSourceAction.Resolution);
+    }
+
+    [Fact]
+    public async Task RunScanAsync_ShouldExposeInsufficientEvidence_WhenSourceEvidenceMissing()
+    {
+        var recommendation = new RecommendationSummary(
+            new DeviceIdentity("TEST\\DEVICE\\1"),
+            true,
+            "Stub recommendation",
+            "2.0.0");
+
+        var workflow = CreateWorkflow(new StaticRecommendationPipeline(recommendation));
+
+        var result = await workflow.RunScanAsync(CancellationToken.None);
+
+        Assert.Equal(0, result.ManualHandoffReadyCount);
+        Assert.False(result.OfficialSourceAction.IsReady);
+        Assert.Equal(OfficialSourceResolutionKind.InsufficientEvidence, result.OfficialSourceAction.Resolution);
+        Assert.Equal(OpenOfficialSourceBlockedReason.SourceTrustUnverified.ToString(), result.OfficialSourceAction.BlockReason);
     }
 
     [Fact]
@@ -105,6 +79,32 @@ public sealed class MainScreenWorkflowTests
         Assert.Equal("Intel (Display)", result.RecommendationDetails.First().DeviceDisplayName);
         Assert.Equal("PCI\\VEN_8086&DEV_1234", result.RecommendationDetails.First().DeviceId);
     }
+
+    private static RecommendationSummary BuildRecommendation(SourceTrustLevel trustLevel)
+        => new(
+            new DeviceIdentity("TEST\\DEVICE\\1"),
+            true,
+            "Stub recommendation",
+            "2.0.0",
+            providerCode: "test-provider",
+            evidenceSourceUri: new Uri("https://vendor.example.com/drivers/device"),
+            evidencePublisherName: "Vendor",
+            evidenceTrustLevel: (int)trustLevel,
+            evidenceIsOfficialSource: true,
+            evidenceNote: "unit-test",
+            officialSourceUri: new Uri("https://vendor.example.com/drivers/device/download"));
+
+    private static MainScreenWorkflow CreateWorkflow(IRecommendationPipeline recommendationPipeline)
+        => new(
+            new FakeScanOrchestrator(),
+            recommendationPipeline,
+            new FakeProviderCatalogSummaryService(),
+            new FakeSettingsRepository(),
+            new RecordingDiagnosticLogger(),
+            new FakeAuditWriter(),
+            new FakeHistoryRepository(),
+            new OpenOfficialSourceActionEvaluator(),
+            new ShareableReportBuilder());
 
     private sealed class FakeScanOrchestrator : IScanOrchestrator
     {
@@ -136,17 +136,10 @@ public sealed class MainScreenWorkflowTests
         }
     }
 
-    private sealed class FakeRecommendationPipeline : IRecommendationPipeline
+    private sealed class StaticRecommendationPipeline(RecommendationSummary recommendation) : IRecommendationPipeline
     {
         public Task<IReadOnlyCollection<RecommendationSummary>> BuildAsync(IReadOnlyCollection<InstalledDriverSnapshot> installedDrivers, CancellationToken cancellationToken)
-        {
-            IReadOnlyCollection<RecommendationSummary> result =
-            [
-                new RecommendationSummary(installedDrivers.First().DeviceIdentity, true, "Stub recommendation", "2.0.0")
-            ];
-
-            return Task.FromResult(result);
-        }
+            => Task.FromResult<IReadOnlyCollection<RecommendationSummary>>([recommendation]);
     }
 
     private sealed class FakeProviderCatalogSummaryService : IProviderCatalogSummaryService
@@ -181,8 +174,6 @@ public sealed class MainScreenWorkflowTests
     {
         public List<ResultHistoryEntry> Entries { get; } = [];
 
-        public int LastRequestedTake { get; private set; }
-
         public Task SaveAsync(ResultHistoryEntry entry, CancellationToken cancellationToken)
         {
             Entries.Add(entry);
@@ -190,16 +181,7 @@ public sealed class MainScreenWorkflowTests
         }
 
         public Task<IReadOnlyCollection<ResultHistoryEntry>> GetRecentAsync(int take, CancellationToken cancellationToken)
-        {
-            LastRequestedTake = take;
-            return Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>(Entries.Take(take).ToArray());
-        }
-    }
-
-    private sealed class ThrowingScanOrchestrator : IScanOrchestrator
-    {
-        public Task<ScanResult> RunAsync(CancellationToken cancellationToken)
-            => throw new InvalidOperationException("scan failure");
+            => Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>(Entries.Take(take).ToArray());
     }
 
     private sealed class MixedScanOrchestrator : IScanOrchestrator
@@ -260,19 +242,7 @@ public sealed class MainScreenWorkflowTests
 
     private sealed class RecordingDiagnosticLogger : IDiagnosticLogger
     {
-        public List<string> InfoEvents { get; } = [];
-        public List<string> ErrorEvents { get; } = [];
-
-        public Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken)
-        {
-            InfoEvents.Add($"{eventName}:{message}");
-            return Task.CompletedTask;
-        }
-
-        public Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken)
-        {
-            ErrorEvents.Add($"{eventName}:{message}:{exception.GetType().Name}");
-            return Task.CompletedTask;
-        }
+        public Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

@@ -1,5 +1,12 @@
 namespace DriverGuardian.Application.OfficialSources;
 
+public enum OfficialSourceResolutionKind
+{
+    InsufficientEvidence = 0,
+    DirectOfficialDriverPageConfirmed = 1,
+    VendorSupportPageConfirmed = 2
+}
+
 public enum OpenOfficialSourceActionOutcome
 {
     Allowed = 0,
@@ -15,7 +22,8 @@ public enum OpenOfficialSourceBlockedReason
     UrlIsNotHttps = 1,
     SourceTrustUnverified = 2,
     SourceMarkedNonOfficial = 3,
-    UrlHostMismatch = 4
+    UrlHostMismatch = 4,
+    TrustLevelNotSupportedForOfficialSourceAction = 5
 }
 
 public sealed record OpenOfficialSourceBlocker(
@@ -29,8 +37,10 @@ public sealed record ApprovedOfficialSourceLink(
 
 public sealed record OpenOfficialSourceActionDecision(
     OpenOfficialSourceActionOutcome Outcome,
+    OfficialSourceResolutionKind Resolution,
     ApprovedOfficialSourceLink? Link,
     IReadOnlyCollection<OpenOfficialSourceBlocker> Blockers)
 {
     public bool IsAllowed => Outcome == OpenOfficialSourceActionOutcome.Allowed;
+    public bool IsReadyForOpen => IsAllowed && Resolution is OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed or OfficialSourceResolutionKind.VendorSupportPageConfirmed;
 }
