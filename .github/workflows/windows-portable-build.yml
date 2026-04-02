@@ -4,7 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - "**"
+  pull_request:
+    branches:
+      - "**"
 
 jobs:
   build-portable:
@@ -34,11 +37,11 @@ jobs:
           /p:PublishSingleFile=false
           /p:IncludeNativeLibrariesForSelfExtract=true
           /p:PublishReadyToRun=false
-          --output ${{ github.workspace }}\\artifacts\\DriverGuardian-win-x64
+          --output "${{ github.workspace }}\\artifacts\\DriverGuardian-win-x64"
 
       - name: Upload portable app artifact
         uses: actions/upload-artifact@v4
         with:
           name: DriverGuardian-win-x64-portable
-          path: ${{ github.workspace }}\\artifacts\\DriverGuardian-win-x64
+          path: "${{ github.workspace }}\\artifacts\\DriverGuardian-win-x64"
           if-no-files-found: error
