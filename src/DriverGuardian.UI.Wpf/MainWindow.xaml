@@ -37,6 +37,61 @@
             <Setter Property="Margin" Value="0 0 0 10" />
             <Setter Property="Background" Value="#FFFFFF" />
         </Style>
+
+        <Style x:Key="PrimaryWorkflowCardStyleWhenNoScanDataVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State.Results.HasScanData}" Value="False">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyleWhenSecondarySummaryVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowInnerCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State.Results.ShowSecondaryRecommendationSummary}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyleWhenRecommendationDetailsEmptyVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowInnerCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State.Results.RecommendationDetails.Count}" Value="0">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyleWhenUserGuidedStepsEmptyVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowInnerCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State.Results.UserGuidedSteps.Count}" Value="0">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyleWhenVerificationEmptyStateVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowInnerCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State.Results.ShowVerificationEmptyState}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -177,17 +232,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="0 0 12 0">
-                    <Border Style="{StaticResource PrimaryWorkflowCardStyle}">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding State.Results.HasScanData}" Value="False">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
+                    <Border Style="{StaticResource PrimaryWorkflowCardStyleWhenNoScanDataVisible}">
                         <StackPanel>
                             <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" FontSize="17" Margin="0 0 0 4" Foreground="#1E3A8A"/>
                             <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
@@ -322,17 +367,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="8" Margin="0 0 0 8" Background="#F8FAFC">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding State.Results.ShowSecondaryRecommendationSummary}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyleWhenSecondarySummaryVisible}" Padding="8" Margin="0 0 0 8" Background="#F8FAFC">
                                 <StackPanel>
                                     <ToggleButton IsChecked="{Binding ShowSecondaryRecommendations, Mode=TwoWay}"
                                                   Content="{Binding State.Results.SecondaryRecommendationToggleLabel}"
@@ -381,17 +416,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="10">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding State.Results.RecommendationDetails.Count}" Value="0">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyleWhenRecommendationDetailsEmptyVisible}" Padding="10">
                                 <StackPanel>
                                     <TextBlock Text="{Binding State.Results.RecommendationEmptyState}" TextWrapping="Wrap" FontWeight="SemiBold"/>
                                     <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155"/>
@@ -454,17 +479,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="10">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding State.Results.UserGuidedSteps.Count}" Value="0">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyleWhenUserGuidedStepsEmptyVisible}" Padding="10">
                                 <TextBlock Text="{Binding State.Results.ManualSectionEmptyState}" TextWrapping="Wrap" Foreground="#334155"/>
                             </Border>
                         </StackPanel>
@@ -500,17 +515,7 @@
                             <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 4">
                                 <TextBlock Text="{Binding State.Results.VerificationRescanHint}" TextWrapping="Wrap" Foreground="#0F172A"/>
                             </Border>
-                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding State.Results.ShowVerificationEmptyState}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyleWhenVerificationEmptyStateVisible}">
                                 <TextBlock Text="{Binding State.Results.VerificationEmptyState}" TextWrapping="Wrap" Foreground="#334155"/>
                             </Border>
                         </StackPanel>
