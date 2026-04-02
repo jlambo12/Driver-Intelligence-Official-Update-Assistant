@@ -27,6 +27,7 @@ public sealed record ReportExportPayload(
     string MarkdownContent);
 
 public sealed record RecommendationDetailResult(
+    string DeviceDisplayName,
     string DeviceId,
     bool HasRecommendation,
     string RecommendationReason,
