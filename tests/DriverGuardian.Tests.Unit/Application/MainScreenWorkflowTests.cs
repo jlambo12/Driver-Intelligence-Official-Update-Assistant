@@ -47,6 +47,7 @@ public sealed class MainScreenWorkflowTests
         Assert.Single(result.RecommendationDetails);
         Assert.False(result.OfficialSourceAction.IsReady);
         Assert.Equal(3, result.RecentHistory.Count);
+        Assert.Equal(37, historyRepository.LastRequestedTake);
         Assert.Equal(3, historyRepository.Entries.Count);
         Assert.Contains(historyRepository.Entries, entry => entry is ScanHistoryEntry);
         Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);
@@ -104,7 +105,12 @@ public sealed class MainScreenWorkflowTests
 
     private sealed class FakeSettingsRepository : ISettingsRepository
     {
-        public Task<AppSettings> GetAsync(CancellationToken cancellationToken) => Task.FromResult(AppSettings.Default with { Localization = new LocalizationPreferences("ru-RU") });
+        public Task<AppSettings> GetAsync(CancellationToken cancellationToken)
+            => Task.FromResult(AppSettings.Default with
+            {
+                Localization = new LocalizationPreferences("ru-RU"),
+                History = AppSettings.Default.History with { MaxEntries = 37 }
+            });
 
         public Task SaveAsync(AppSettings settings, CancellationToken cancellationToken) => Task.CompletedTask;
     }
@@ -124,6 +130,8 @@ public sealed class MainScreenWorkflowTests
     {
         public List<ResultHistoryEntry> Entries { get; } = [];
 
+        public int LastRequestedTake { get; private set; }
+
         public Task SaveAsync(ResultHistoryEntry entry, CancellationToken cancellationToken)
         {
             Entries.Add(entry);
@@ -131,6 +139,9 @@ public sealed class MainScreenWorkflowTests
         }
 
         public Task<IReadOnlyCollection<ResultHistoryEntry>> GetRecentAsync(int take, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>(Entries.Take(take).ToArray());
+        {
+            LastRequestedTake = take;
+            return Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>(Entries.Take(take).ToArray());
+        }
     }
 }

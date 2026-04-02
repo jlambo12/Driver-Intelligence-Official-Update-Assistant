@@ -32,8 +32,9 @@ public partial class App : WpfApplication
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
 
-        ISettingsRepository settingsRepository = new InMemorySettingsRepository();
-        IMainScreenWorkflow mainScreenWorkflow = IsPreviewModeEnabled(e.Args)
+        var previewModeEnabled = IsPreviewModeEnabled(e.Args);
+        ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
+        IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
             ? new PreviewScenarioMainScreenWorkflow()
             : BuildProductionWorkflow(settingsRepository);
 
@@ -44,6 +45,21 @@ public partial class App : WpfApplication
 
     private static bool IsPreviewModeEnabled(string[] args)
         => args.Any(arg => string.Equals(arg, "--demo", StringComparison.OrdinalIgnoreCase));
+
+    private static ISettingsRepository BuildSettingsRepository(bool previewModeEnabled)
+    {
+        if (previewModeEnabled)
+        {
+            return new InMemorySettingsRepository();
+        }
+
+        var settingsDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "DriverGuardian");
+        var settingsFilePath = Path.Combine(settingsDirectory, "settings.json");
+
+        return new JsonFileSettingsRepository(settingsFilePath);
+    }
 
     private static IMainScreenWorkflow BuildProductionWorkflow(ISettingsRepository settingsRepository)
     {

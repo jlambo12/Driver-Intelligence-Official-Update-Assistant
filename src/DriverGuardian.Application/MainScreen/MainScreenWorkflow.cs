@@ -18,8 +18,6 @@ public sealed class MainScreenWorkflow(
     OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator,
     IShareableReportBuilder reportBuilder) : IMainScreenWorkflow
 {
-    private const int RecentHistoryTake = 5;
-
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
     {
         var scanResult = await scanOrchestrator.RunAsync(cancellationToken);
@@ -57,7 +55,7 @@ public sealed class MainScreenWorkflow(
                 verificationSummary),
             cancellationToken);
 
-        var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(RecentHistoryTake, cancellationToken);
+        var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
         var recentHistory = recentHistoryEntries.Select(MapHistoryEntry).ToArray();
 
         await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
