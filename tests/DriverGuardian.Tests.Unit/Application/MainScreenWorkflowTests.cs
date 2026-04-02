@@ -10,6 +10,7 @@ using DriverGuardian.Domain.Recommendations;
 using DriverGuardian.Domain.Scanning;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.Contracts.DeviceDiscovery;
+using System.Text.RegularExpressions;
 
 namespace DriverGuardian.Tests.Unit.Application;
 
@@ -44,6 +45,11 @@ public sealed class MainScreenWorkflowTests
         Assert.False(string.IsNullOrWhiteSpace(result.VerificationSummary));
         Assert.Equal("ru-RU", result.UiCulture);
         Assert.False(string.IsNullOrWhiteSpace(result.ReportExportPayload.FileNameBase));
+        Assert.Matches(
+            new Regex(@"^driverguardian-scan-report-\d{8}-\d{6}Z-[a-f0-9]{32}$", RegexOptions.CultureInvariant),
+            result.ReportExportPayload.FileNameBase);
+        Assert.DoesNotContain(":", result.ReportExportPayload.FileNameBase, StringComparison.Ordinal);
+        Assert.DoesNotContain(" ", result.ReportExportPayload.FileNameBase, StringComparison.Ordinal);
         Assert.False(string.IsNullOrWhiteSpace(result.ReportExportPayload.PlainTextContent));
         Assert.Contains("DriverGuardian Shareable Scan Report", result.ReportExportPayload.MarkdownContent);
         Assert.Single(result.RecommendationDetails);
