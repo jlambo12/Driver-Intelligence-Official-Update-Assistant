@@ -91,6 +91,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
+                    "Сетевой адаптер Intel Ethernet",
                     "PCI\\VEN_8086&DEV_51A3",
                     false,
                     "Официальные источники не предоставили подтверждённого более нового пакета драйвера.",
@@ -124,6 +125,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
+                    "Контроллер Realtek PCIe GbE",
                     "PCI\\VEN_10EC&DEV_8168",
                     true,
                     "Найден кандидат версии 10.64.1120.2025, но доверие к ссылке источника не подтверждено автоматически.",
@@ -157,6 +159,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
+                    "Видеокарта NVIDIA GeForce",
                     "PCI\\VEN_10DE&DEV_28A1",
                     true,
                     "Официальная страница производителя подтверждена и доступна для ручного перехода.",
@@ -190,6 +193,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
+                    "Графический адаптер Intel",
                     "PCI\\VEN_8086&DEV_A0F0",
                     true,
                     "Ранее был предложен переход на официальную версию; ожидается подтверждение после повторного анализа.",
@@ -227,6 +231,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
+                    "Видеокарта NVIDIA GeForce",
                     "PCI\\VEN_10DE&DEV_1C8D",
                     true,
                     "Подтверждён безопасный ручной путь через официальный каталог.",
@@ -238,6 +243,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     true,
                     "Ожидается возврат пользователя после ручной установки."),
                 new RecommendationDetailResult(
+                    "Графический адаптер Intel",
                     "PCI\\VEN_8086&DEV_1911",
                     true,
                     "Есть кандидат, но ссылка требует дополнительной ручной проверки.",

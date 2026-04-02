@@ -2,6 +2,7 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.Downloads;
 using DriverGuardian.Application.Reports;
 using DriverGuardian.Application.Verification;
+using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Devices;
 using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
@@ -62,7 +63,7 @@ public sealed class ShareableReportBuilderTests
         var driver2 = BuildDriver("PCI\\VEN_2222", "1.5.0", "VendorB");
 
         return new ShareableReportRequest(
-            new ScanResult(session, [driver1, driver2]),
+            new ScanResult(session, 2, BuildDiscoveredDevices(driver1, driver2), [driver1, driver2]),
             [
                 new RecommendationSummary(new DeviceIdentity("PCI\\VEN_1111"), true, "Compatible upgrade available", "2.0.0"),
                 new RecommendationSummary(new DeviceIdentity("PCI\\VEN_2222"), false, "Already up to date", null)
@@ -77,6 +78,18 @@ public sealed class ShareableReportBuilderTests
             ],
             now);
     }
+
+    private static IReadOnlyCollection<DiscoveredDevice> BuildDiscoveredDevices(params InstalledDriverSnapshot[] drivers)
+        => drivers
+            .Select(driver => DiscoveredDevice.Create(
+                driver.DeviceIdentity.InstanceId,
+                driver.DeviceIdentity.InstanceId,
+                [driver.HardwareIdentifier.Value],
+                driver.ProviderName,
+                null,
+                DevicePresenceStatus.Present,
+                null))
+            .ToArray();
 
     private static InstalledDriverSnapshot BuildDriver(string instanceId, string version, string provider)
         => new(

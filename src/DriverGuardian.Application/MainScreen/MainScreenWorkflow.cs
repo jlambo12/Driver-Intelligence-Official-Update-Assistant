@@ -3,6 +3,7 @@ using DriverGuardian.Application.History;
 using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Application.Reports;
+using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 
 namespace DriverGuardian.Application.MainScreen;
@@ -27,7 +28,7 @@ public sealed class MainScreenWorkflow(
         var settings = await settingsRepository.GetAsync(cancellationToken);
         var recommendedCount = recommendations.Count(r => r.HasRecommendation);
         var notRecommendedCount = recommendations.Count - recommendedCount;
-        var recommendationDetails = BuildRecommendationDetails(scanResult.Drivers, recommendations);
+        var recommendationDetails = BuildRecommendationDetails(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations);
         var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
         var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
         var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
@@ -141,16 +142,23 @@ public sealed class MainScreenWorkflow(
     }
 
     private static IReadOnlyCollection<RecommendationDetailResult> BuildRecommendationDetails(
+        IReadOnlyCollection<DiscoveredDevice> discoveredDevices,
         IReadOnlyCollection<Domain.Drivers.InstalledDriverSnapshot> drivers,
         IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations)
     {
         var byDevice = recommendations.ToDictionary(item => item.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
+        var discoveredNames = discoveredDevices.ToDictionary(
+            device => device.Identity.InstanceId,
+            device => device.DisplayName,
+            StringComparer.OrdinalIgnoreCase);
 
         return drivers.Select(driver =>
             {
                 var hasRecommendation = byDevice.TryGetValue(driver.DeviceIdentity.InstanceId, out var recommendation) && recommendation.HasRecommendation;
+                var displayName = ResolveDeviceDisplayName(driver.DeviceIdentity.InstanceId, discoveredNames);
 
                 return new RecommendationDetailResult(
+                    DeviceDisplayName: displayName,
                     DeviceId: driver.DeviceIdentity.InstanceId,
                     HasRecommendation: hasRecommendation,
                     RecommendationReason: recommendation?.Reason ?? string.Empty,
@@ -165,6 +173,18 @@ public sealed class MainScreenWorkflow(
                         : "Проверка после установки сейчас не требуется.");
             })
             .ToArray();
+    }
+
+    private static string ResolveDeviceDisplayName(string instanceId, IReadOnlyDictionary<string, string> discoveredNames)
+    {
+        if (discoveredNames.TryGetValue(instanceId, out var displayName) &&
+            !string.IsNullOrWhiteSpace(displayName) &&
+            !StringComparer.OrdinalIgnoreCase.Equals(displayName, instanceId))
+        {
+            return displayName;
+        }
+
+        return instanceId;
     }
 
     private static string BuildVerificationSummary(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)

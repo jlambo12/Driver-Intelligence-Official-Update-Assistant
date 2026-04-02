@@ -9,6 +9,7 @@ using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
 using DriverGuardian.Domain.Scanning;
 using DriverGuardian.Domain.Settings;
+using DriverGuardian.Contracts.DeviceDiscovery;
 
 namespace DriverGuardian.Tests.Unit.Application;
 
@@ -67,8 +68,19 @@ public sealed class MainScreenWorkflowTests
                     null,
                     "Test")
             ];
+            IReadOnlyCollection<DiscoveredDevice> discoveredDevices =
+            [
+                DiscoveredDevice.Create(
+                    "TEST\\DEVICE\\1",
+                    "Тестовое устройство",
+                    ["PCI\\VEN_1234&DEV_ABCD"],
+                    "Test",
+                    "System",
+                    DevicePresenceStatus.Present,
+                    null)
+            ];
 
-            return Task.FromResult(new ScanResult(session, 2, drivers));
+            return Task.FromResult(new ScanResult(session, 2, discoveredDevices, drivers));
         }
     }
 

@@ -66,11 +66,11 @@ public sealed record ScanResultsPresentation(
 
         return new ScanResultsPresentation(
             HasScanData: true,
-            ScanSummary: string.Format(UiStrings.ScanSummaryFormat, result.ScanSessionId, result.UiCulture, result.ProviderCount),
+            ScanSummary: string.Format(UiStrings.ScanSummaryFormat, result.DiscoveredDeviceCount, result.InspectedDriverCount),
             ScanOverviewEmptyState: string.Empty,
             DiscoveryAndInspectionSummary: string.Format(UiStrings.DiscoveryInspectionSummaryFormat, result.DiscoveredDeviceCount, result.InspectedDriverCount),
-            RecommendationSummary: string.Format(UiStrings.RecommendationSummaryFormat, result.RecommendedCount, result.NotRecommendedCount),
-            ManualHandoffSummary: string.Format(UiStrings.ManualHandoffSummaryFormat, result.ManualHandoffReadyCount, result.ManualHandoffUserActionCount),
+            RecommendationSummary: string.Format(UiStrings.RecommendationSummaryFormat, result.RecommendedCount + result.NotRecommendedCount, result.ManualHandoffUserActionCount, result.RecommendedCount),
+            ManualHandoffSummary: string.Format(UiStrings.ManualHandoffSummaryFormat, result.ManualHandoffReadyCount, officialSourceReady ? UiStrings.ActionStatusAvailable : UiStrings.ActionStatusBlocked),
             VerificationSummary: string.Format(UiStrings.VerificationSummaryFormat, result.VerificationSummary),
             OfficialSourceSummary: BuildOfficialSourceSummary(result.OfficialSourceAction),
             ActionFlowTitle: UiStrings.ActionFlowTitle,
@@ -111,11 +111,14 @@ public sealed record ScanResultsPresentation(
 
         var state = ResolveDetailState(detail);
 
+        var deviceTitle = BuildDeviceTitle(detail);
+        var technicalSummary = BuildTechnicalIdentifierSummary(detail.DeviceId);
+
         return new RecommendationDetailPresentation(
             recommendationTitle,
             state.State,
             state.Hint,
-            string.Format(UiStrings.RecommendationDeviceFormat, detail.DeviceId),
+            string.Join(Environment.NewLine, [deviceTitle, technicalSummary]),
             reasonSummary,
             string.Format(UiStrings.RecommendationInstalledDriverFormat, detail.InstalledVersion, detail.InstalledProvider ?? UiStrings.RecommendationProviderUnknown),
             candidateSummary,
@@ -124,6 +127,47 @@ public sealed record ScanResultsPresentation(
             string.Format(UiStrings.RecommendationVerificationFormat, detail.VerificationAvailable ? UiStrings.ActionStatusReturn : UiStrings.ActionStatusWait),
             string.Format(UiStrings.RecommendationVerificationStatusFormat, detail.VerificationStatus),
             nextStep);
+    }
+
+    private static string BuildDeviceTitle(RecommendationDetailResult detail)
+    {
+        var preferredLabel = string.IsNullOrWhiteSpace(detail.DeviceDisplayName)
+            ? detail.DeviceId
+            : detail.DeviceDisplayName;
+        var cleaned = HumanizeDeviceLabel(preferredLabel);
+
+        return string.Format(UiStrings.RecommendationDeviceFormat, cleaned);
+    }
+
+    private static string BuildTechnicalIdentifierSummary(string deviceId)
+    {
+        return string.Format(UiStrings.RecommendationTechnicalIdFormat, deviceId);
+    }
+
+    private static string HumanizeDeviceLabel(string label)
+    {
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return UiStrings.RecommendationDeviceUnknown;
+        }
+
+        var trimmed = label.Trim();
+        if (LooksTechnical(trimmed))
+        {
+            return UiStrings.RecommendationDeviceGeneric;
+        }
+
+        return trimmed;
+    }
+
+    private static bool LooksTechnical(string value)
+    {
+        return value.StartsWith("SWD\\", StringComparison.OrdinalIgnoreCase) ||
+               value.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase) ||
+               value.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
+               value.Contains("VID_", StringComparison.OrdinalIgnoreCase) ||
+               value.Contains("VEN_", StringComparison.OrdinalIgnoreCase) ||
+               value.Contains("{", StringComparison.OrdinalIgnoreCase);
     }
 
     private static (string State, string Hint) ResolveDetailState(RecommendationDetailResult detail)

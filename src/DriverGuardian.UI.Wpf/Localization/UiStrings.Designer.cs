@@ -71,6 +71,9 @@ public static class UiStrings
     public static string OfficialSourceBlockedNoReason => Resources.Official_Source_Blocked_No_Reason;
     public static string OfficialSourceUrlUnavailable => Resources.Official_Source_Url_Unavailable;
     public static string RecommendationDeviceFormat => Resources.Recommendation_Device_Format;
+    public static string RecommendationTechnicalIdFormat => Resources.Recommendation_Technical_Id_Format;
+    public static string RecommendationDeviceGeneric => Resources.Recommendation_Device_Generic;
+    public static string RecommendationDeviceUnknown => Resources.Recommendation_Device_Unknown;
     public static string RecommendationManualHandoffFormat => Resources.Recommendation_Manual_Handoff_Format;
     public static string RecommendationManualActionFormat => Resources.Recommendation_Manual_Action_Format;
     public static string RecommendationVerificationFormat => Resources.Recommendation_Verification_Format;

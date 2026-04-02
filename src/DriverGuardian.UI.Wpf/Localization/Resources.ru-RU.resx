@@ -25,16 +25,16 @@
     <value>Запустить анализ</value>
   </data>
   <data name="Scan_Summary_Format" xml:space="preserve">
-    <value>Сводка сканирования: сеанс {0}; UI-культура: {1}; официальных провайдеров: {2}</value>
+    <value>Проанализировано системных записей: {0}; драйверов проверено: {1}.</value>
   </data>
   <data name="Discovery_Inspection_Summary_Format" xml:space="preserve">
     <value>Обнаружение и инспекция: устройств найдено {0}; драйверов проинспектировано {1}</value>
   </data>
   <data name="Recommendation_Summary_Format" xml:space="preserve">
-    <value>Рекомендации: к обновлению {0}; без рекомендации {1}</value>
+    <value>Для ручной проверки релевантно: {0}; требуют внимания: {1}; безопасных рекомендаций: {2}.</value>
   </data>
   <data name="Manual_Handoff_Summary_Format" xml:space="preserve">
-    <value>Готовность ручной установки: готово {0}; требуется действие пользователя {1}</value>
+    <value>Готово безопасных ручных шагов: {0}; статус подтверждения официального источника: {1}.</value>
   </data>
   <data name="Verification_Summary_Format" xml:space="preserve">
     <value>Проверка после установки: {0}</value>
@@ -107,6 +107,15 @@
   </data>
   <data name="Recommendation_Device_Format" xml:space="preserve">
     <value>Устройство: {0}</value>
+  </data>
+  <data name="Recommendation_Technical_Id_Format" xml:space="preserve">
+    <value>Технический идентификатор (для диагностики): {0}</value>
+  </data>
+  <data name="Recommendation_Device_Generic" xml:space="preserve">
+    <value>Системное устройство (требуется уточнение модели)</value>
+  </data>
+  <data name="Recommendation_Device_Unknown" xml:space="preserve">
+    <value>Устройство без читаемого имени</value>
   </data>
   <data name="Recommendation_Manual_Handoff_Format" xml:space="preserve">
     <value>Готовность ручной передачи: {0}</value>

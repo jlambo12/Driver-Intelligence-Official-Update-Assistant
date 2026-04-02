@@ -76,6 +76,9 @@ public static class Resources
     public static string Official_Source_Blocked_No_Reason => GetString(nameof(Official_Source_Blocked_No_Reason));
     public static string Official_Source_Url_Unavailable => GetString(nameof(Official_Source_Url_Unavailable));
     public static string Recommendation_Device_Format => GetString(nameof(Recommendation_Device_Format));
+    public static string Recommendation_Technical_Id_Format => GetString(nameof(Recommendation_Technical_Id_Format));
+    public static string Recommendation_Device_Generic => GetString(nameof(Recommendation_Device_Generic));
+    public static string Recommendation_Device_Unknown => GetString(nameof(Recommendation_Device_Unknown));
     public static string Recommendation_Manual_Handoff_Format => GetString(nameof(Recommendation_Manual_Handoff_Format));
     public static string Recommendation_Manual_Action_Format => GetString(nameof(Recommendation_Manual_Action_Format));
     public static string Recommendation_Verification_Format => GetString(nameof(Recommendation_Verification_Format));
