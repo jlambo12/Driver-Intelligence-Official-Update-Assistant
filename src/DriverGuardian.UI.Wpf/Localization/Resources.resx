@@ -177,11 +177,26 @@
   <data name="Settings_Diagnostic_Logging_Label" xml:space="preserve">
     <value>Включить диагностическое журналирование</value>
   </data>
+  <data name="Settings_Diagnostic_Logging_Hint" xml:space="preserve">
+    <value>Диагностическое журналирование помогает разбирать ошибки и спорные случаи анализа. Это служебные журналы для диагностики, а не автоматическое исправление драйверов.</value>
+  </data>
+  <data name="Settings_Diagnostic_Logging_State_Enabled" xml:space="preserve">
+    <value>Состояние: включено. Новые диагностические записи будут сохраняться.</value>
+  </data>
+  <data name="Settings_Diagnostic_Logging_State_Disabled" xml:space="preserve">
+    <value>Состояние: выключено. Новые диагностические записи не сохраняются.</value>
+  </data>
   <data name="Settings_Diagnostic_Custom_Log_Folder_Label" xml:space="preserve">
     <value>Папка журналов (необязательно):</value>
   </data>
+  <data name="Settings_Diagnostic_Custom_Log_Folder_Hint" xml:space="preserve">
+    <value>Если поле пустое, используется стандартная папка приложения для журналов.</value>
+  </data>
   <data name="Settings_Diagnostic_Effective_Log_Folder_Label" xml:space="preserve">
     <value>Итоговая папка журналов:</value>
+  </data>
+  <data name="Settings_Diagnostic_Effective_Log_Folder_Hint" xml:space="preserve">
+    <value>Итоговая папка — это путь, куда приложение фактически записывает журналы с учётом вашего выбора и значения по умолчанию.</value>
   </data>
   <data name="Settings_Open_Logs_Folder_Action" xml:space="preserve">
     <value>Открыть папку журналов</value>

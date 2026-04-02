@@ -636,25 +636,52 @@
                             <CheckBox Content="{x:Static localization:UiStrings.SettingsVerificationHintLabel}"
                                       IsChecked="{Binding ShowVerificationHints}"
                                       Margin="0 0 0 6"/>
-                            <CheckBox Content="{x:Static localization:UiStrings.SettingsDiagnosticLoggingLabel}"
-                                      IsChecked="{Binding IsDiagnosticLoggingEnabled}"
-                                      Margin="0 0 0 6"/>
-                            <Grid Margin="0 0 0 6">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="230"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{x:Static localization:UiStrings.SettingsDiagnosticCustomLogFolderLabel}" Margin="0 0 8 0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                <TextBox Grid.Column="1" Width="220" HorizontalAlignment="Left" Text="{Binding CustomDiagnosticLogFolderPath}"/>
-                            </Grid>
-                            <Grid Margin="0 0 0 8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="230"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{x:Static localization:UiStrings.SettingsDiagnosticEffectiveLogFolderLabel}" Margin="0 0 8 0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                <TextBlock Grid.Column="1" Width="220" HorizontalAlignment="Left" Text="{Binding EffectiveDiagnosticLogFolderPath}" TextWrapping="Wrap" Foreground="#334155"/>
-                            </Grid>
+                            <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0 0 0 8" Background="#F8FAFC">
+                                <StackPanel>
+                                    <CheckBox Content="{x:Static localization:UiStrings.SettingsDiagnosticLoggingLabel}"
+                                              IsChecked="{Binding IsDiagnosticLoggingEnabled}"
+                                              Margin="0 0 0 4"/>
+                                    <TextBlock Text="{x:Static localization:UiStrings.SettingsDiagnosticLoggingHint}"
+                                               Foreground="#475569"
+                                               TextWrapping="Wrap"
+                                               Margin="0 0 0 6"/>
+                                    <TextBlock Margin="0 0 0 8" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{x:Static localization:UiStrings.SettingsDiagnosticLoggingStateDisabled}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDiagnosticLoggingEnabled}" Value="True">
+                                                        <Setter Property="Text" Value="{x:Static localization:UiStrings.SettingsDiagnosticLoggingStateEnabled}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <Grid Margin="0 0 0 4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="230"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{x:Static localization:UiStrings.SettingsDiagnosticCustomLogFolderLabel}" Margin="0 0 8 0" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                        <TextBox Grid.Column="1" Width="220" HorizontalAlignment="Left" Text="{Binding CustomDiagnosticLogFolderPath}"/>
+                                    </Grid>
+                                    <TextBlock Text="{x:Static localization:UiStrings.SettingsDiagnosticCustomLogFolderHint}"
+                                               Foreground="#475569"
+                                               TextWrapping="Wrap"
+                                               Margin="0 0 0 6"/>
+                                    <Grid Margin="0 0 0 4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="230"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{x:Static localization:UiStrings.SettingsDiagnosticEffectiveLogFolderLabel}" Margin="0 0 8 0" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Column="1" Width="220" HorizontalAlignment="Left" Text="{Binding EffectiveDiagnosticLogFolderPath}" TextWrapping="Wrap" Foreground="#334155"/>
+                                    </Grid>
+                                    <TextBlock Text="{x:Static localization:UiStrings.SettingsDiagnosticEffectiveLogFolderHint}"
+                                               Foreground="#475569"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
                             <StackPanel Orientation="Horizontal" Margin="0 0 0 0">
                                 <Button Content="{x:Static localization:UiStrings.SettingsSaveAction}"
                                         Width="220"
