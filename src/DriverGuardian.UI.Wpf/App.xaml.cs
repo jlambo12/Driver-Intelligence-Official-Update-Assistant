@@ -103,7 +103,7 @@ public partial class App : WpfApplication
     {
         IClock clock = new SystemClock();
         IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService();
-        IDriverMetadataInspector inspector = new WindowsDriverMetadataInspectorStub();
+        IDriverMetadataInspector inspector = new WindowsDriverMetadataInspector();
         IDriverInspectionOrchestrator inspectionOrchestrator = new DriverInspectionOrchestrator(inspector);
         IScanOrchestrator scanOrchestrator = new ScanOrchestrator(discovery, inspectionOrchestrator, clock);
         IRecommendationPipeline recommendationPipeline = new RecommendationPipeline();
