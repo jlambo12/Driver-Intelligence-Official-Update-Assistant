@@ -145,9 +145,20 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#60A5FA" BorderThickness="1.8" CornerRadius="8" Padding="13" Margin="0 0 0 10" Background="#F0F7FF">
+                    <Border BorderBrush="#3B82F6" BorderThickness="2" CornerRadius="8" Padding="13" Margin="0 0 0 10" Background="#EFF6FF">
                         <StackPanel>
-                            <DockPanel LastChildFill="True" Margin="0 0 0 6">
+                            <DockPanel LastChildFill="True" Margin="0 0 0 8">
+                                <Border DockPanel.Dock="Left"
+                                        CornerRadius="10"
+                                        Background="#1D4ED8"
+                                        Padding="8 2"
+                                        Margin="0 0 8 0"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="1"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Foreground="White"/>
+                                </Border>
                                 <Border DockPanel.Dock="Left"
                                         CornerRadius="10"
                                         Background="#DBEAFE"
@@ -162,6 +173,13 @@
                                 <TextBlock Text="{Binding State.Results.RecommendationSectionTitle}" FontWeight="SemiBold" FontSize="17" Foreground="#1E3A8A"/>
                             </DockPanel>
                             <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
+                            <Border BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="10" Background="White" Margin="0 0 0 8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding State.Results.RecommendationSummary}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#0F172A"/>
+                                    <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155"/>
+                                    <TextBlock Text="{Binding State.Results.ManualSectionHint}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155"/>
+                                </StackPanel>
+                            </Border>
                             <ItemsControl ItemsSource="{Binding State.Results.RecommendationDetails}">
                                 <ItemsControl.Style>
                                     <Style TargetType="ItemsControl">
@@ -204,6 +222,7 @@
                                 </Border.Style>
                                 <StackPanel>
                                     <TextBlock Text="{Binding State.Results.RecommendationEmptyState}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding State.Results.OfficialSourceSummary}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155"/>
                                     <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155"/>
                                     <TextBlock Text="{Binding State.Results.ManualSectionHint}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155"/>
                                 </StackPanel>
@@ -214,6 +233,17 @@
                     <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#FCFDFF">
                         <StackPanel>
                             <DockPanel LastChildFill="True" Margin="0 0 0 6">
+                                <Border DockPanel.Dock="Left"
+                                        CornerRadius="10"
+                                        Background="#1D4ED8"
+                                        Padding="8 2"
+                                        Margin="0 0 8 0"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="2"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Foreground="White"/>
+                                </Border>
                                 <Border DockPanel.Dock="Left"
                                         CornerRadius="10"
                                         Background="#E0E7FF"
@@ -228,6 +258,9 @@
                                 <TextBlock Text="{Binding State.Results.ManualSectionTitle}" FontWeight="SemiBold" FontSize="16" Foreground="#1E3A8A"/>
                             </DockPanel>
                             <TextBlock Text="{Binding State.Results.ManualSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
+                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="6" Padding="9" Background="White" Margin="0 0 0 8">
+                                <TextBlock Text="{Binding State.Results.RecommendationSummary}" TextWrapping="Wrap" Foreground="#334155"/>
+                            </Border>
                             <ItemsControl ItemsSource="{Binding State.Results.UserGuidedSteps}">
                                 <ItemsControl.Style>
                                     <Style TargetType="ItemsControl">
@@ -276,6 +309,17 @@
                             <DockPanel LastChildFill="True" Margin="0 0 0 6">
                                 <Border DockPanel.Dock="Left"
                                         CornerRadius="10"
+                                        Background="#1D4ED8"
+                                        Padding="8 2"
+                                        Margin="0 0 8 0"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="3"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Foreground="White"/>
+                                </Border>
+                                <Border DockPanel.Dock="Left"
+                                        CornerRadius="10"
                                         Background="#E0F2FE"
                                         Padding="8 2"
                                         Margin="0 0 8 0"
@@ -289,6 +333,9 @@
                             </DockPanel>
                             <TextBlock Text="{Binding State.Results.VerificationSummary}" Margin="0 0 0 5" TextWrapping="Wrap"/>
                             <TextBlock Text="{Binding State.Results.VerificationSectionHint}" Margin="0 0 0 4" TextWrapping="Wrap" Foreground="#1E293B"/>
+                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="6" Padding="9" Background="#F8FAFC" Margin="0 0 0 4">
+                                <TextBlock Text="{Binding State.Results.ManualSectionHint}" TextWrapping="Wrap" Foreground="#334155"/>
+                            </Border>
                             <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="6" Padding="9" Background="White" Margin="0 0 0 4">
                                 <TextBlock Text="{Binding State.Results.VerificationRescanHint}" TextWrapping="Wrap" Foreground="#0F172A"/>
                             </Border>
