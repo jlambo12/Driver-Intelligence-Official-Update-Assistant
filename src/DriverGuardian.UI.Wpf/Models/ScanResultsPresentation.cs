@@ -229,10 +229,10 @@ public sealed record ScanResultsPresentation(
 
         return detail.OfficialSourceResolution switch
         {
-            OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed => (UiStrings.RecommendationStateReadyForManualAction, "Подтверждена прямая официальная страница драйвера."),
-            OfficialSourceResolutionKind.VendorSupportPageConfirmed => (UiStrings.RecommendationStateReadyForManualAction, "Подтверждена страница поддержки производителя (не прямая страница драйвера)."),
+            OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed => (UiStrings.RecommendationStateReadyForManualAction, UiStrings.OfficialSourceDetailDirectHint),
+            OfficialSourceResolutionKind.VendorSupportPageConfirmed => (UiStrings.RecommendationStateReadyForManualAction, UiStrings.OfficialSourceDetailVendorHint),
             _ when detail.ManualHandoffReady => (UiStrings.RecommendationStateReadyForManualAction, UiStrings.RecommendationStateReadyForManualActionHint),
-            _ => (UiStrings.RecommendationStateBlocked, "Недостаточно доказательств официального источника для безопасного перехода.")
+            _ => (UiStrings.RecommendationStateBlocked, UiStrings.OfficialSourceDetailInsufficientHint)
         };
     }
 
@@ -249,8 +249,8 @@ public sealed record ScanResultsPresentation(
         var url = officialSourceAction.ApprovedOfficialSourceUrl ?? UiStrings.OfficialSourceUrlUnavailable;
         return officialSourceAction.Resolution switch
         {
-            OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed => $"Подтверждена прямая официальная страница драйвера: {url}",
-            OfficialSourceResolutionKind.VendorSupportPageConfirmed => $"Подтверждена страница поддержки производителя: {url}",
+            OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed => string.Format(UiStrings.OfficialSourceSummaryDirectFormat, url),
+            OfficialSourceResolutionKind.VendorSupportPageConfirmed => string.Format(UiStrings.OfficialSourceSummaryVendorFormat, url),
             _ => string.Format(UiStrings.OfficialSourceSummaryReadyFormat, url)
         };
     }

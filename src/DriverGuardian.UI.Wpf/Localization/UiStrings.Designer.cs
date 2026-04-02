@@ -74,6 +74,11 @@ public static class UiStrings
     public static string OfficialSourceSummaryBlockedFormat => Resources.Official_Source_Summary_Blocked_Format;
     public static string OfficialSourceBlockedNoReason => Resources.Official_Source_Blocked_No_Reason;
     public static string OfficialSourceUrlUnavailable => Resources.Official_Source_Url_Unavailable;
+    public static string OfficialSourceSummaryDirectFormat => Resources.Official_Source_Summary_Direct_Format;
+    public static string OfficialSourceSummaryVendorFormat => Resources.Official_Source_Summary_Vendor_Format;
+    public static string OfficialSourceDetailDirectHint => Resources.Official_Source_Detail_Direct_Hint;
+    public static string OfficialSourceDetailVendorHint => Resources.Official_Source_Detail_Vendor_Hint;
+    public static string OfficialSourceDetailInsufficientHint => Resources.Official_Source_Detail_Insufficient_Hint;
     public static string RecommendationDeviceFormat => Resources.Recommendation_Device_Format;
     public static string RecommendationTechnicalIdFormat => Resources.Recommendation_Technical_Id_Format;
     public static string RecommendationDeviceGeneric => Resources.Recommendation_Device_Generic;

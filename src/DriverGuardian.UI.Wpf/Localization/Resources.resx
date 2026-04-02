@@ -105,6 +105,21 @@
   <data name="Official_Source_Url_Unavailable" xml:space="preserve">
     <value>ссылка недоступна</value>
   </data>
+  <data name="Official_Source_Summary_Direct_Format" xml:space="preserve">
+    <value>Подтверждена прямая официальная страница драйвера: {0}</value>
+  </data>
+  <data name="Official_Source_Summary_Vendor_Format" xml:space="preserve">
+    <value>Подтверждена страница поддержки производителя: {0}</value>
+  </data>
+  <data name="Official_Source_Detail_Direct_Hint" xml:space="preserve">
+    <value>Подтверждена прямая официальная страница драйвера для ручного перехода.</value>
+  </data>
+  <data name="Official_Source_Detail_Vendor_Hint" xml:space="preserve">
+    <value>Подтверждена страница поддержки производителя; проверьте соответствие модели перед загрузкой.</value>
+  </data>
+  <data name="Official_Source_Detail_Insufficient_Hint" xml:space="preserve">
+    <value>Недостаточно подтверждений официального источника для безопасного перехода.</value>
+  </data>
   <data name="Recommendation_Device_Format" xml:space="preserve">
     <value>Устройство: {0}</value>
   </data>

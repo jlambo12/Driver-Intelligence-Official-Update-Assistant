@@ -9,13 +9,7 @@ public sealed record RecommendationSummary
         bool hasRecommendation,
         string reason,
         string? recommendedVersion,
-        string? providerCode = null,
-        Uri? evidenceSourceUri = null,
-        string? evidencePublisherName = null,
-        int? evidenceTrustLevel = null,
-        bool? evidenceIsOfficialSource = null,
-        string? evidenceNote = null,
-        Uri? officialSourceUri = null)
+        RecommendationSourceEvidence? sourceEvidence = null)
     {
         if (string.IsNullOrWhiteSpace(reason))
         {
@@ -26,24 +20,12 @@ public sealed record RecommendationSummary
         HasRecommendation = hasRecommendation;
         Reason = reason.Trim();
         RecommendedVersion = recommendedVersion;
-        ProviderCode = providerCode;
-        EvidenceSourceUri = evidenceSourceUri;
-        EvidencePublisherName = evidencePublisherName;
-        EvidenceTrustLevel = evidenceTrustLevel;
-        EvidenceIsOfficialSource = evidenceIsOfficialSource;
-        EvidenceNote = evidenceNote;
-        OfficialSourceUri = officialSourceUri;
+        SourceEvidence = sourceEvidence;
     }
 
     public DeviceIdentity DeviceIdentity { get; }
     public bool HasRecommendation { get; }
     public string Reason { get; }
     public string? RecommendedVersion { get; }
-    public string? ProviderCode { get; }
-    public Uri? EvidenceSourceUri { get; }
-    public string? EvidencePublisherName { get; }
-    public int? EvidenceTrustLevel { get; }
-    public bool? EvidenceIsOfficialSource { get; }
-    public string? EvidenceNote { get; }
-    public Uri? OfficialSourceUri { get; }
+    public RecommendationSourceEvidence? SourceEvidence { get; }
 }

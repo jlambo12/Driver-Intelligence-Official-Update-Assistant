@@ -23,7 +23,7 @@ public enum OpenOfficialSourceBlockedReason
     SourceTrustUnverified = 2,
     SourceMarkedNonOfficial = 3,
     UrlHostMismatch = 4,
-    TrustLevelNotSupportedForOfficialSourceAction = 5
+    UnsupportedTrustLevel = 5
 }
 
 public sealed record OpenOfficialSourceBlocker(

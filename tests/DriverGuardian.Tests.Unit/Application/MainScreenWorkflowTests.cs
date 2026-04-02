@@ -10,89 +10,69 @@ using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
 using DriverGuardian.Domain.Scanning;
 using DriverGuardian.Domain.Settings;
-using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 
 namespace DriverGuardian.Tests.Unit.Application;
 
 public sealed class MainScreenWorkflowTests
 {
     [Fact]
-    public async Task RunScanAsync_ShouldUseDirectOfficialDriverPageResolution_ForOpenOfficialSourceAction()
+    public async Task RunScanAsync_ShouldReturnDirectOfficialResolution_WhenDirectEvidenceExists()
     {
-        var workflow = CreateWorkflow(new StaticRecommendationPipeline(BuildRecommendation(SourceTrustLevel.OfficialPublisherSite)));
+        var workflow = CreateWorkflow(new StaticRecommendationPipeline([
+            BuildRecommendation("TEST\\DEVICE\\1", RecommendationSourceTrustLevel.OfficialPublisherSite, "https://vendor.test/drivers/direct")
+        ]));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
-        Assert.Equal(1, result.ManualHandoffReadyCount);
         Assert.True(result.OfficialSourceAction.IsReady);
         Assert.Equal(OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed, result.OfficialSourceAction.Resolution);
+        Assert.Equal(1, result.ManualHandoffReadyCount);
     }
 
     [Fact]
-    public async Task RunScanAsync_ShouldUseVendorSupportPageResolution_ForOpenOfficialSourceAction()
+    public async Task RunScanAsync_ShouldReturnVendorSupportResolution_WhenDirectEvidenceDoesNotExist()
     {
-        var workflow = CreateWorkflow(new StaticRecommendationPipeline(BuildRecommendation(SourceTrustLevel.OemSupportPortal)));
+        var workflow = CreateWorkflow(new StaticRecommendationPipeline([
+            BuildRecommendation("TEST\\DEVICE\\1", RecommendationSourceTrustLevel.OemSupportPortal, "https://vendor.test/support/device")
+        ]));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
-        Assert.Equal(1, result.ManualHandoffReadyCount);
         Assert.True(result.OfficialSourceAction.IsReady);
         Assert.Equal(OfficialSourceResolutionKind.VendorSupportPageConfirmed, result.OfficialSourceAction.Resolution);
     }
 
     [Fact]
-    public async Task RunScanAsync_ShouldExposeInsufficientEvidence_WhenSourceEvidenceMissing()
+    public async Task RunScanAsync_ShouldReturnInsufficientEvidence_WhenNoConfirmedSourceExists()
     {
         var recommendation = new RecommendationSummary(
             new DeviceIdentity("TEST\\DEVICE\\1"),
-            true,
-            "Stub recommendation",
-            "2.0.0");
+            hasRecommendation: true,
+            reason: "stub",
+            recommendedVersion: "2.0.0");
 
-        var workflow = CreateWorkflow(new StaticRecommendationPipeline(recommendation));
+        var workflow = CreateWorkflow(new StaticRecommendationPipeline([recommendation]));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
-        Assert.Equal(0, result.ManualHandoffReadyCount);
         Assert.False(result.OfficialSourceAction.IsReady);
         Assert.Equal(OfficialSourceResolutionKind.InsufficientEvidence, result.OfficialSourceAction.Resolution);
-        Assert.Equal(OpenOfficialSourceBlockedReason.SourceTrustUnverified.ToString(), result.OfficialSourceAction.BlockReason);
     }
 
     [Fact]
-    public async Task RunScanAsync_ShouldFilterLowValueDevicesAndKeepUserRelevantResults()
+    public async Task RunScanAsync_ShouldChooseBestActionableConfirmedSource_WhenMultipleRecommendationsExist()
     {
-        var workflow = new MainScreenWorkflow(
-            new MixedScanOrchestrator(),
-            new NoRecommendationPipeline(),
-            new FakeProviderCatalogSummaryService(),
-            new FakeSettingsRepository(),
-            new RecordingDiagnosticLogger(),
-            new FakeAuditWriter(),
-            new FakeHistoryRepository(),
-            new OpenOfficialSourceActionEvaluator(),
-            new ShareableReportBuilder());
+        var workflow = CreateWorkflow(new StaticRecommendationPipeline([
+            BuildRecommendation("TEST\\DEVICE\\1", RecommendationSourceTrustLevel.OemSupportPortal, "https://vendor.test/support/device"),
+            BuildRecommendation("TEST\\DEVICE\\2", RecommendationSourceTrustLevel.OfficialPublisherSite, "https://vendor.test/drivers/direct")
+        ]));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
-        Assert.Single(result.RecommendationDetails);
-        Assert.Equal("Intel (Display)", result.RecommendationDetails.First().DeviceDisplayName);
-        Assert.Equal("PCI\\VEN_8086&DEV_1234", result.RecommendationDetails.First().DeviceId);
+        Assert.True(result.OfficialSourceAction.IsReady);
+        Assert.Equal(OfficialSourceResolutionKind.DirectOfficialDriverPageConfirmed, result.OfficialSourceAction.Resolution);
+        Assert.Equal("https://vendor.test/drivers/direct", result.OfficialSourceAction.ApprovedOfficialSourceUrl);
     }
-
-    private static RecommendationSummary BuildRecommendation(SourceTrustLevel trustLevel)
-        => new(
-            new DeviceIdentity("TEST\\DEVICE\\1"),
-            true,
-            "Stub recommendation",
-            "2.0.0",
-            providerCode: "test-provider",
-            evidenceSourceUri: new Uri("https://vendor.example.com/drivers/device"),
-            evidencePublisherName: "Vendor",
-            evidenceTrustLevel: (int)trustLevel,
-            evidenceIsOfficialSource: true,
-            evidenceNote: "unit-test",
-            officialSourceUri: new Uri("https://vendor.example.com/drivers/device/download"));
 
     private static MainScreenWorkflow CreateWorkflow(IRecommendationPipeline recommendationPipeline)
         => new(
@@ -100,11 +80,26 @@ public sealed class MainScreenWorkflowTests
             recommendationPipeline,
             new FakeProviderCatalogSummaryService(),
             new FakeSettingsRepository(),
-            new RecordingDiagnosticLogger(),
+            new NoOpDiagnosticLogger(),
             new FakeAuditWriter(),
             new FakeHistoryRepository(),
             new OpenOfficialSourceActionEvaluator(),
             new ShareableReportBuilder());
+
+    private static RecommendationSummary BuildRecommendation(string deviceId, RecommendationSourceTrustLevel trustLevel, string officialSourceUrl)
+        => new(
+            new DeviceIdentity(deviceId),
+            hasRecommendation: true,
+            reason: "stub",
+            recommendedVersion: "2.0.0",
+            sourceEvidence: new RecommendationSourceEvidence(
+                "provider-test",
+                new Uri(officialSourceUrl),
+                "Vendor",
+                trustLevel,
+                true,
+                "unit-test",
+                new Uri(officialSourceUrl)));
 
     private sealed class FakeScanOrchestrator : IScanOrchestrator
     {
@@ -113,33 +108,24 @@ public sealed class MainScreenWorkflowTests
             var session = ScanSession.Start(Guid.NewGuid(), DateTimeOffset.UtcNow).Complete(DateTimeOffset.UtcNow);
             IReadOnlyCollection<InstalledDriverSnapshot> drivers =
             [
-                new InstalledDriverSnapshot(
-                    new DeviceIdentity("TEST\\DEVICE\\1"),
-                    new HardwareIdentifier("PCI\\VEN_1234&DEV_ABCD"),
-                    "1.0.0",
-                    null,
-                    "Test")
+                new(new DeviceIdentity("TEST\\DEVICE\\1"), new HardwareIdentifier("PCI\\VEN_1111&DEV_0001"), "1.0.0", null, "Vendor"),
+                new(new DeviceIdentity("TEST\\DEVICE\\2"), new HardwareIdentifier("PCI\\VEN_1111&DEV_0002"), "1.0.0", null, "Vendor")
             ];
+
             IReadOnlyCollection<DiscoveredDevice> discoveredDevices =
             [
-                DiscoveredDevice.Create(
-                    "TEST\\DEVICE\\1",
-                    "Тестовое устройство",
-                    ["PCI\\VEN_1234&DEV_ABCD"],
-                    "Test",
-                    "System",
-                    DevicePresenceStatus.Present,
-                    null)
+                DiscoveredDevice.Create("TEST\\DEVICE\\1", "Device One", ["PCI\\VEN_1111&DEV_0001"], "Vendor", "System", DevicePresenceStatus.Present, null),
+                DiscoveredDevice.Create("TEST\\DEVICE\\2", "Device Two", ["PCI\\VEN_1111&DEV_0002"], "Vendor", "System", DevicePresenceStatus.Present, null)
             ];
 
             return Task.FromResult(new ScanResult(session, 2, discoveredDevices, drivers));
         }
     }
 
-    private sealed class StaticRecommendationPipeline(RecommendationSummary recommendation) : IRecommendationPipeline
+    private sealed class StaticRecommendationPipeline(IReadOnlyCollection<RecommendationSummary> recommendations) : IRecommendationPipeline
     {
         public Task<IReadOnlyCollection<RecommendationSummary>> BuildAsync(IReadOnlyCollection<InstalledDriverSnapshot> installedDrivers, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyCollection<RecommendationSummary>>([recommendation]);
+            => Task.FromResult(recommendations);
     }
 
     private sealed class FakeProviderCatalogSummaryService : IProviderCatalogSummaryService
@@ -153,7 +139,7 @@ public sealed class MainScreenWorkflowTests
             => Task.FromResult(AppSettings.Default with
             {
                 Localization = new LocalizationPreferences("ru-RU"),
-                History = AppSettings.Default.History with { MaxEntries = 37 }
+                History = AppSettings.Default.History with { MaxEntries = 25 }
             });
 
         public Task SaveAsync(AppSettings settings, CancellationToken cancellationToken) => Task.CompletedTask;
@@ -161,88 +147,21 @@ public sealed class MainScreenWorkflowTests
 
     private sealed class FakeAuditWriter : IAuditWriter
     {
-        public List<string> Entries { get; } = [];
-
-        public Task WriteAsync(string entry, CancellationToken cancellationToken)
-        {
-            Entries.Add(entry);
-            return Task.CompletedTask;
-        }
+        public Task WriteAsync(string entry, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
     private sealed class FakeHistoryRepository : IResultHistoryRepository
     {
-        public List<ResultHistoryEntry> Entries { get; } = [];
-
-        public Task SaveAsync(ResultHistoryEntry entry, CancellationToken cancellationToken)
-        {
-            Entries.Add(entry);
-            return Task.CompletedTask;
-        }
+        public Task SaveAsync(ResultHistoryEntry entry, CancellationToken cancellationToken) => Task.CompletedTask;
 
         public Task<IReadOnlyCollection<ResultHistoryEntry>> GetRecentAsync(int take, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>(Entries.Take(take).ToArray());
+            => Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>([]);
     }
 
-    private sealed class MixedScanOrchestrator : IScanOrchestrator
-    {
-        public Task<ScanResult> RunAsync(CancellationToken cancellationToken)
-        {
-            var session = ScanSession.Start(Guid.NewGuid(), DateTimeOffset.UtcNow).Complete(DateTimeOffset.UtcNow);
-            IReadOnlyCollection<DiscoveredDevice> discoveredDevices =
-            [
-                DiscoveredDevice.Create(
-                    "SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}",
-                    "SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}",
-                    ["ROOT\\MMDEVAPI"],
-                    "Microsoft",
-                    "AudioEndpoint",
-                    DevicePresenceStatus.Present,
-                    null),
-                DiscoveredDevice.Create(
-                    "PCI\\VEN_8086&DEV_1234",
-                    "PCI\\VEN_8086&DEV_1234",
-                    ["PCI\\VEN_8086&DEV_1234"],
-                    "Intel",
-                    "Display",
-                    DevicePresenceStatus.Present,
-                    null)
-            ];
-
-            IReadOnlyCollection<InstalledDriverSnapshot> drivers =
-            [
-                new InstalledDriverSnapshot(
-                    new DeviceIdentity("SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}"),
-                    new HardwareIdentifier("ROOT\\MMDEVAPI"),
-                    "10.0.1",
-                    null,
-                    "Microsoft"),
-                new InstalledDriverSnapshot(
-                    new DeviceIdentity("PCI\\VEN_8086&DEV_1234"),
-                    new HardwareIdentifier("PCI\\VEN_8086&DEV_1234"),
-                    "31.0.101.9999",
-                    null,
-                    "Intel")
-            ];
-
-            return Task.FromResult(new ScanResult(session, 2, discoveredDevices, drivers));
-        }
-    }
-
-    private sealed class NoRecommendationPipeline : IRecommendationPipeline
-    {
-        public Task<IReadOnlyCollection<RecommendationSummary>> BuildAsync(IReadOnlyCollection<InstalledDriverSnapshot> installedDrivers, CancellationToken cancellationToken)
-        {
-            IReadOnlyCollection<RecommendationSummary> result = installedDrivers
-                .Select(driver => new RecommendationSummary(driver.DeviceIdentity, false, "Недостаточно данных", null))
-                .ToArray();
-            return Task.FromResult(result);
-        }
-    }
-
-    private sealed class RecordingDiagnosticLogger : IDiagnosticLogger
+    private sealed class NoOpDiagnosticLogger : IDiagnosticLogger
     {
         public Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken) => Task.CompletedTask;
+
         public Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

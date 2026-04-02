@@ -85,8 +85,8 @@ public sealed class OpenOfficialSourceActionEvaluator
         if (resolution == OfficialSourceResolutionKind.InsufficientEvidence)
         {
             blockers.Add(new OpenOfficialSourceBlocker(
-                OpenOfficialSourceBlockedReason.TrustLevelNotSupportedForOfficialSourceAction,
-                "Open official source action is blocked because source trust level does not confirm a direct official or vendor support page."));
+                OpenOfficialSourceBlockedReason.UnsupportedTrustLevel,
+                "Open official source action is blocked because trust level is insufficient for official driver page confirmation."));
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.InsufficientEvidence,
