@@ -87,6 +87,20 @@
                     </StackPanel>
                 </Border>
 
+                <Border BorderBrush="#C7D2FE"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10"
+                        Margin="0 8 0 0"
+                        Background="#F8FAFF">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static localization:UiStrings.ActionFlowTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
+                        <TextBlock Text="{Binding State.Results.SafetyNotice}" TextWrapping="Wrap" Foreground="#1E293B" Margin="0 0 0 4"/>
+                        <TextBlock Text="{x:Static localization:UiStrings.ActionStepOpenOfficialSourceHint}" TextWrapping="Wrap" Foreground="#334155" Margin="0 0 0 4"/>
+                        <TextBlock Text="{x:Static localization:UiStrings.VerificationSectionHint}" TextWrapping="Wrap" Foreground="#334155"/>
+                    </StackPanel>
+                </Border>
+
                 <Border BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0 8 0 0" Background="#FFFBEB">
                     <Border.Style>
                         <Style TargetType="Border">
@@ -137,6 +151,32 @@
 
                 <StackPanel Grid.Column="0" Margin="0 0 10 0">
                     <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#F8FBFF">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding State.Results.HasScanData}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" FontSize="17" Margin="0 0 0 4" Foreground="#1E3A8A"/>
+                            <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
+                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="9" Margin="0 0 0 6">
+                                <TextBlock Text="{Binding State.Results.ScanOverviewEmptyState}" TextWrapping="Wrap" Foreground="#0F172A"/>
+                            </Border>
+                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="9">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" TextWrapping="Wrap" Foreground="#0F172A"/>
+                                    <TextBlock Text="{Binding State.Results.ManualSectionHint}" TextWrapping="Wrap" Margin="0 4 0 0" Foreground="#334155"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#F8FBFF">
                         <StackPanel>
                             <TextBlock Text="{Binding State.Results.ActionFlowTitle}" FontWeight="SemiBold" FontSize="17" Margin="0 0 0 4" Foreground="#1E3A8A"/>
                             <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" Margin="0 0 0 4" TextWrapping="Wrap" Foreground="#0F172A"/>
@@ -162,6 +202,29 @@
                                 </Border>
                             </UniformGrid>
                             <TextBlock Text="{Binding State.Results.SafetyNotice}" TextWrapping="Wrap" Foreground="#0F172A"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderBrush="#FCD34D" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#FFFBEB">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding State.Results.HasScanData}" Value="True"/>
+                                            <Condition Binding="{Binding State.Results.UserGuidedSteps.Count}" Value="0"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" FontSize="16" Foreground="#92400E" Margin="0 0 0 4"/>
+                            <TextBlock Text="{Binding State.Results.RecommendationEmptyState}" TextWrapping="Wrap" Foreground="#78350F" Margin="0 0 0 4"/>
+                            <TextBlock Text="{Binding State.Results.WorkflowHint}" TextWrapping="Wrap" Foreground="#78350F" Margin="0 0 0 4"/>
+                            <TextBlock Text="{Binding State.Results.VerificationRescanHint}" TextWrapping="Wrap" Foreground="#78350F"/>
                         </StackPanel>
                     </Border>
 
