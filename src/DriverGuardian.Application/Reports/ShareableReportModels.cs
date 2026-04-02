@@ -79,6 +79,8 @@ public sealed record ManualInstallHandoffReportSection(
     string Outcome,
     bool IsReady,
     string? PackageUri,
+    string OfficialSourceConfidence,
+    string OfficialSourceGuidance,
     IReadOnlyCollection<string> Reasons);
 
 public sealed record VerificationReportSection(

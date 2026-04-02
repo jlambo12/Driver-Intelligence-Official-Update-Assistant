@@ -62,27 +62,29 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
 
         var lines = new List<string>
         {
-            "DriverGuardian Scan Report",
+            "DriverGuardian Shareable Scan Report",
             $"Scan Session: {report.Metadata.ScanSessionId}",
             $"Scan Started (UTC): {report.Metadata.ScanStartedAtUtc:O}",
             $"Scan Completed (UTC): {report.Metadata.ScanCompletedAtUtc:O}",
             $"Generated (UTC): {report.Metadata.GeneratedAtUtc:O}",
             string.Empty,
-            "Scan Summary",
+            "1) Scan Summary",
             $"- Total Devices: {report.ScanSummary.TotalDevices}",
             string.Empty,
-            "Recommendation Summary",
+            "2) Recommendation State",
             $"- Total: {report.RecommendationSummary.TotalRecommendations}",
             $"- Recommended: {report.RecommendationSummary.RecommendedCount}",
             $"- Not Recommended: {report.RecommendationSummary.NotRecommendedCount}",
+            "- Safety Note: DriverGuardian provides analysis and recommendations only. Installation is always manual and user-controlled.",
             string.Empty,
-            "Manual Install Handoff Summary",
+            "3) Manual Next-Step Guidance",
             $"- Total: {report.ManualInstallHandoffSummary.TotalHandoffs}",
             $"- Ready: {report.ManualInstallHandoffSummary.ReadyCount}",
             $"- Requires Action: {report.ManualInstallHandoffSummary.RequiresActionCount}",
             $"- Not Ready: {report.ManualInstallHandoffSummary.NotReadyCount}",
+            "- User Action: Follow vendor instructions manually, then return for verification.",
             string.Empty,
-            "Verification Summary",
+            "4) Verification State",
             $"- Total: {report.VerificationSummary.TotalVerifications}",
             $"- Verified Changed: {report.VerificationSummary.VerifiedChangedCount}",
             $"- Partial: {report.VerificationSummary.PartialCount}",
@@ -90,7 +92,7 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
             $"- Device Missing: {report.VerificationSummary.DeviceMissingCount}",
             $"- Insufficient Evidence: {report.VerificationSummary.InsufficientEvidenceCount}",
             string.Empty,
-            "Device Details"
+            "5) Device-Level Details"
         };
 
         foreach (var device in report.Devices)
@@ -110,6 +112,12 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
             if (device.ManualInstallHandoff is not null)
             {
                 lines.Add($"  Handoff Outcome: {device.ManualInstallHandoff.Outcome}");
+                lines.Add($"  Official Source Confidence: {device.ManualInstallHandoff.OfficialSourceConfidence}");
+                lines.Add($"  Source Guidance: {device.ManualInstallHandoff.OfficialSourceGuidance}");
+                if (!string.IsNullOrWhiteSpace(device.ManualInstallHandoff.PackageUri))
+                {
+                    lines.Add($"  Candidate Package URL: {device.ManualInstallHandoff.PackageUri}");
+                }
             }
 
             if (device.Verification is not null)
@@ -153,6 +161,8 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
                     handoff.Decision.Outcome.ToString(),
                     handoff.Decision.IsHandoffReady,
                     handoff.Decision.PackageReference?.PackageUri.ToString(),
+                    MapOfficialSourceConfidence(handoff),
+                    BuildOfficialSourceGuidance(handoff),
                     handoff.Decision.Reasons.Select(reason => reason.Message).ToArray()),
             verification is null
                 ? null
@@ -162,6 +172,39 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
                     verification.Result.IsVerifiedChanged,
                     verification.Result.Message,
                     verification.Result.Comparison?.Differences.Select(difference => difference.Description).ToArray() ?? []));
+    }
+
+    private static string MapOfficialSourceConfidence(ManualInstallHandoffReportItem handoff)
+    {
+        var evidence = handoff.Decision.PackageReference?.Evidence;
+        if (evidence is null)
+        {
+            return "Unconfirmed";
+        }
+
+        if (evidence.IsOfficiallyConfirmed &&
+            evidence.TrustLevel == ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.OfficialPublisherSite)
+        {
+            return "Confirmed official publisher source";
+        }
+
+        return evidence.TrustLevel switch
+        {
+            ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.OfficialPublisherSite => "Likely official source (not confirmed)",
+            ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.AggregatorOrMirror => "Unconfirmed third-party source",
+            _ => "Unconfirmed"
+        };
+    }
+
+    private static string BuildOfficialSourceGuidance(ManualInstallHandoffReportItem handoff)
+    {
+        var evidence = handoff.Decision.PackageReference?.Evidence;
+        if (evidence?.IsOfficiallyConfirmed == true)
+        {
+            return "Review the vendor page and complete installation manually.";
+        }
+
+        return "Do not treat this link as confirmed official. Verify publisher ownership manually before downloading.";
     }
 
     private static RecommendationSummarySection BuildRecommendationSummary(ShareableReportRequest request)
