@@ -49,6 +49,7 @@ public sealed class MainScreenWorkflowTests
         Assert.Single(result.RecommendationDetails);
         Assert.False(result.OfficialSourceAction.IsReady);
         Assert.Equal(3, result.RecentHistory.Count);
+        Assert.Equal(37, historyRepository.LastTrimMaxEntries);
         Assert.Equal(37, historyRepository.LastRequestedTake);
         Assert.Equal(3, historyRepository.Entries.Count);
         Assert.Contains(historyRepository.Entries, entry => entry is ScanHistoryEntry);
@@ -183,6 +184,8 @@ public sealed class MainScreenWorkflowTests
 
         public int LastRequestedTake { get; private set; }
 
+        public int LastTrimMaxEntries { get; private set; }
+
         public Task SaveAsync(ResultHistoryEntry entry, CancellationToken cancellationToken)
         {
             Entries.Add(entry);
@@ -193,6 +196,12 @@ public sealed class MainScreenWorkflowTests
         {
             LastRequestedTake = take;
             return Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>(Entries.Take(take).ToArray());
+        }
+
+        public Task TrimToMaxEntriesAsync(int maxEntries, CancellationToken cancellationToken)
+        {
+            LastTrimMaxEntries = maxEntries;
+            return Task.CompletedTask;
         }
     }
 

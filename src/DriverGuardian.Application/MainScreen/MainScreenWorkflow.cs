@@ -80,6 +80,7 @@ public sealed class MainScreenWorkflow(
                     manualHandoffUserActionCount > 0 ? VerificationHistoryStatus.Skipped : VerificationHistoryStatus.Passed,
                     verificationSummary),
                 cancellationToken);
+            await resultHistoryRepository.TrimToMaxEntriesAsync(settings.History.MaxEntries, cancellationToken);
             await diagnosticLogger.LogInfoAsync("scan.history_report.completed", "История и данные отчёта обновлены.", cancellationToken);
 
             var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
