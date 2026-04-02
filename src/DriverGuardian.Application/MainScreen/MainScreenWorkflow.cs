@@ -144,14 +144,14 @@ public sealed class MainScreenWorkflow(
         IReadOnlyCollection<Domain.Drivers.InstalledDriverSnapshot> drivers,
         IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations)
     {
-        var byDevice = recommendations.ToDictionary(item => item.DeviceIdentity.Value, StringComparer.OrdinalIgnoreCase);
+        var byDevice = recommendations.ToDictionary(item => item.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
 
         return drivers.Select(driver =>
             {
-                var hasRecommendation = byDevice.TryGetValue(driver.DeviceIdentity.Value, out var recommendation) && recommendation.HasRecommendation;
+                var hasRecommendation = byDevice.TryGetValue(driver.DeviceIdentity.InstanceId, out var recommendation) && recommendation.HasRecommendation;
 
                 return new RecommendationDetailResult(
-                    DeviceId: driver.DeviceIdentity.Value,
+                    DeviceId: driver.DeviceIdentity.InstanceId,
                     HasRecommendation: hasRecommendation,
                     RecommendationReason: recommendation?.Reason ?? string.Empty,
                     InstalledVersion: driver.DriverVersion,
