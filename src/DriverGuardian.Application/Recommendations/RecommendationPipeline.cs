@@ -13,9 +13,9 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
         var result = installedDrivers
             .Select(driver => new RecommendationSummary(
                 driver.DeviceIdentity,
-                HasRecommendation: false,
-                Reason: "No provider integration in stage 0.",
-                RecommendedVersion: null))
+                hasRecommendation: false,
+                reason: "No provider integration in stage 0.",
+                recommendedVersion: null))
             .ToArray();
 
         return Task.FromResult<IReadOnlyCollection<RecommendationSummary>>(result);
