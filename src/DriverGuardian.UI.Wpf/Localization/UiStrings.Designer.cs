@@ -6,6 +6,7 @@ public static class UiStrings
     public static string StatusInitial => Resources.Status_Initial;
     public static string StatusReady => Resources.Status_Ready;
     public static string StatusScanning => Resources.Status_Scanning;
+    public static string StatusScanFailed => Resources.Status_Scan_Failed;
     public static string StatusScanCompletedReady => Resources.Status_Scan_Completed_Ready;
     public static string StatusScanCompletedNoAction => Resources.Status_Scan_Completed_No_Action;
     public static string ScanAction => Resources.Scan_Action;
@@ -109,10 +110,15 @@ public static class UiStrings
     public static string SettingsReportFormatMarkdown => Resources.Settings_Report_Format_Markdown;
     public static string SettingsReportFormatPlainText => Resources.Settings_Report_Format_PlainText;
     public static string SettingsVerificationHintLabel => Resources.Settings_Verification_Hint_Label;
+    public static string SettingsDiagnosticLoggingEnabledLabel => Resources.Settings_Diagnostic_Logging_Enabled_Label;
+    public static string SettingsDiagnosticLoggingFolderLabel => Resources.Settings_Diagnostic_Logging_Folder_Label;
+    public static string SettingsOpenLogsFolderAction => Resources.Settings_Open_Logs_Folder_Action;
     public static string SettingsSaveAction => Resources.Settings_Save_Action;
     public static string SettingsLoaded => Resources.Settings_Loaded;
     public static string SettingsSaved => Resources.Settings_Saved;
     public static string SettingsLoadError => Resources.Settings_Load_Error;
+    public static string SettingsLogsOpenSuccess => Resources.Settings_Logs_Open_Success;
+    public static string SettingsLogsOpenFailed => Resources.Settings_Logs_Open_Failed;
     public static string ReportExportTitle => Resources.Report_Export_Title;
     public static string ReportExportHint => Resources.Report_Export_Hint;
     public static string ReportExportAction => Resources.Report_Export_Action;

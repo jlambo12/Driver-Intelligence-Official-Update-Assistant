@@ -13,6 +13,7 @@ public sealed class MainScreenWorkflow(
     IRecommendationPipeline recommendationPipeline,
     IProviderCatalogSummaryService providerCatalogSummaryService,
     ISettingsRepository settingsRepository,
+    IDiagnosticLogger diagnosticLogger,
     IAuditWriter auditWriter,
     IResultHistoryRepository resultHistoryRepository,
     OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator,
@@ -20,61 +21,97 @@ public sealed class MainScreenWorkflow(
 {
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
     {
-        var scanResult = await scanOrchestrator.RunAsync(cancellationToken);
-        var recommendations = await recommendationPipeline.BuildAsync(scanResult.Drivers, cancellationToken);
-        var providerCount = await providerCatalogSummaryService.GetProviderCountAsync(cancellationToken);
-        var settings = await settingsRepository.GetAsync(cancellationToken);
-        var recommendedCount = recommendations.Count(r => r.HasRecommendation);
-        var notRecommendedCount = recommendations.Count - recommendedCount;
-        var recommendationDetails = BuildRecommendationDetails(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations);
-        var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
-        var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
-        var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
-        var verificationSummary = BuildVerificationSummary(recommendationDetails);
-        var reportExportPayload = BuildReportExportPayload(scanResult, recommendations, reportBuilder);
+        try
+        {
+            await diagnosticLogger.LogInfoAsync("scan.workflow.start", "Запущен основной workflow анализа.", cancellationToken);
+            var scanResult = await scanOrchestrator.RunAsync(cancellationToken);
+            await diagnosticLogger.LogInfoAsync(
+                "scan.discovery.completed",
+                $"Обнаружено устройств: {scanResult.DiscoveredDeviceCount}, после нормализации: {scanResult.DiscoveredDevices.Count}.",
+                cancellationToken);
+            await diagnosticLogger.LogInfoAsync(
+                "scan.inspection.completed",
+                $"Проверено драйверов: {scanResult.Drivers.Count}.",
+                cancellationToken);
 
-        var occurredAtUtc = scanResult.Session.CompletedAtUtc ?? DateTimeOffset.UtcNow;
-        await resultHistoryRepository.SaveAsync(
-            ScanHistoryEntry.Create(Guid.NewGuid(), occurredAtUtc, scanResult.Session.Id, scanResult.DiscoveredDeviceCount, scanResult.Drivers.Count),
-            cancellationToken);
-        await resultHistoryRepository.SaveAsync(
-            RecommendationSummaryHistoryEntry.Create(
-                Guid.NewGuid(),
-                occurredAtUtc,
-                scanResult.Session.Id,
-                recommendations.Count,
-                manualHandoffUserActionCount,
-                notRecommendedCount),
-            cancellationToken);
-        await resultHistoryRepository.SaveAsync(
-            VerificationHistoryEntry.Create(
-                Guid.NewGuid(),
-                occurredAtUtc,
-                scanResult.Session.Id,
-                manualHandoffUserActionCount > 0 ? VerificationHistoryStatus.Skipped : VerificationHistoryStatus.Passed,
-                verificationSummary),
-            cancellationToken);
+            var recommendations = await recommendationPipeline.BuildAsync(scanResult.Drivers, cancellationToken);
+            var recommendedCount = recommendations.Count(r => r.HasRecommendation);
+            var notRecommendedCount = recommendations.Count - recommendedCount;
+            await diagnosticLogger.LogInfoAsync(
+                "scan.recommendation.completed",
+                $"Рекомендаций: всего {recommendations.Count}, к ручному действию {recommendedCount}, отложено {notRecommendedCount}.",
+                cancellationToken);
 
-        var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
-        var recentHistory = recentHistoryEntries.Select(MapHistoryEntry).ToArray();
+            var providerCount = await providerCatalogSummaryService.GetProviderCountAsync(cancellationToken);
+            var settings = await settingsRepository.GetAsync(cancellationToken);
+            var recommendationDetails = BuildRecommendationDetails(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations);
+            var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
+            var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
+            var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
+            await diagnosticLogger.LogInfoAsync(
+                "scan.official_source.state",
+                officialSourceAction.IsReady
+                    ? "Официальный источник готов к ручному открытию."
+                    : $"Официальный источник заблокирован: {officialSourceAction.BlockReason ?? "причина не указана"}.",
+                cancellationToken);
 
-        await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
+            var verificationSummary = BuildVerificationSummary(recommendationDetails);
+            var reportExportPayload = BuildReportExportPayload(scanResult, recommendations, reportBuilder);
+            var occurredAtUtc = scanResult.Session.CompletedAtUtc ?? DateTimeOffset.UtcNow;
 
-        return new MainScreenWorkflowResult(
-            DiscoveredDeviceCount: scanResult.DiscoveredDeviceCount,
-            InspectedDriverCount: scanResult.Drivers.Count,
-            RecommendedCount: recommendedCount,
-            NotRecommendedCount: notRecommendedCount,
-            ProviderCount: providerCount,
-            ManualHandoffReadyCount: manualHandoffReadyCount,
-            ManualHandoffUserActionCount: manualHandoffUserActionCount,
-            VerificationSummary: verificationSummary,
-            UiCulture: settings.UiCulture,
-            ScanSessionId: scanResult.Session.Id,
-            ReportExportPayload: reportExportPayload,
-            RecommendationDetails: recommendationDetails,
-            OfficialSourceAction: officialSourceAction,
-            RecentHistory: recentHistory);
+            await resultHistoryRepository.SaveAsync(
+                ScanHistoryEntry.Create(Guid.NewGuid(), occurredAtUtc, scanResult.Session.Id, scanResult.DiscoveredDeviceCount, scanResult.Drivers.Count),
+                cancellationToken);
+            await resultHistoryRepository.SaveAsync(
+                RecommendationSummaryHistoryEntry.Create(
+                    Guid.NewGuid(),
+                    occurredAtUtc,
+                    scanResult.Session.Id,
+                    recommendations.Count,
+                    manualHandoffUserActionCount,
+                    notRecommendedCount),
+                cancellationToken);
+            await resultHistoryRepository.SaveAsync(
+                VerificationHistoryEntry.Create(
+                    Guid.NewGuid(),
+                    occurredAtUtc,
+                    scanResult.Session.Id,
+                    manualHandoffUserActionCount > 0 ? VerificationHistoryStatus.Skipped : VerificationHistoryStatus.Passed,
+                    verificationSummary),
+                cancellationToken);
+            await diagnosticLogger.LogInfoAsync("scan.history.completed", "История и отчет для анализа обновлены.", cancellationToken);
+
+            var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
+            var recentHistory = recentHistoryEntries.Select(MapHistoryEntry).ToArray();
+
+            await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
+
+            await diagnosticLogger.LogInfoAsync(
+                "scan.result.summary",
+                $"Сеанс {scanResult.Session.Id}; устройств {scanResult.DiscoveredDeviceCount}; драйверов {scanResult.Drivers.Count}; рекомендаций {recommendedCount}.",
+                cancellationToken);
+
+            return new MainScreenWorkflowResult(
+                DiscoveredDeviceCount: scanResult.DiscoveredDeviceCount,
+                InspectedDriverCount: scanResult.Drivers.Count,
+                RecommendedCount: recommendedCount,
+                NotRecommendedCount: notRecommendedCount,
+                ProviderCount: providerCount,
+                ManualHandoffReadyCount: manualHandoffReadyCount,
+                ManualHandoffUserActionCount: manualHandoffUserActionCount,
+                VerificationSummary: verificationSummary,
+                UiCulture: settings.UiCulture,
+                ScanSessionId: scanResult.Session.Id,
+                ReportExportPayload: reportExportPayload,
+                RecommendationDetails: recommendationDetails,
+                OfficialSourceAction: officialSourceAction,
+                RecentHistory: recentHistory);
+        }
+        catch (Exception ex)
+        {
+            await diagnosticLogger.LogErrorAsync("scan.workflow.failed", "Scan workflow завершился ошибкой.", ex, cancellationToken);
+            throw;
+        }
     }
 
     private static RecentHistoryEntryResult MapHistoryEntry(ResultHistoryEntry entry)

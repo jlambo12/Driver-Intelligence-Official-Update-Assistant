@@ -25,6 +25,7 @@ public sealed class MainScreenWorkflowTests
             new FakeRecommendationPipeline(),
             new FakeProviderCatalogSummaryService(),
             new FakeSettingsRepository(),
+            new FakeDiagnosticLogger(),
             auditWriter,
             historyRepository,
             new OpenOfficialSourceActionEvaluator(),
@@ -124,6 +125,17 @@ public sealed class MainScreenWorkflowTests
             Entries.Add(entry);
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class FakeDiagnosticLogger : IDiagnosticLogger
+    {
+        public Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public string GetEffectiveLogDirectory() => Path.GetTempPath();
+
+        public bool TryOpenEffectiveLogDirectory() => true;
     }
 
     private sealed class FakeHistoryRepository : IResultHistoryRepository

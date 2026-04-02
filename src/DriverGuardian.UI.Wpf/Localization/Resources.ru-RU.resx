@@ -21,6 +21,9 @@
   <data name="Status_Scanning" xml:space="preserve">
     <value>Выполняется анализ...</value>
   </data>
+  <data name="Status_Scan_Failed" xml:space="preserve">
+    <value>Анализ завершился с ошибкой. Проверьте настройки журналирования и повторите попытку.</value>
+  </data>
   <data name="Scan_Action" xml:space="preserve">
     <value>Запустить анализ</value>
   </data>
@@ -174,6 +177,15 @@
   <data name="Settings_Verification_Hint_Label" xml:space="preserve">
     <value>Показывать подсказки по проверке после установки</value>
   </data>
+  <data name="Settings_Diagnostic_Logging_Enabled_Label" xml:space="preserve">
+    <value>Включить диагностическое журналирование анализа</value>
+  </data>
+  <data name="Settings_Diagnostic_Logging_Folder_Label" xml:space="preserve">
+    <value>Папка журналов (необязательно):</value>
+  </data>
+  <data name="Settings_Open_Logs_Folder_Action" xml:space="preserve">
+    <value>Открыть папку журналов</value>
+  </data>
   <data name="Settings_Save_Action" xml:space="preserve">
     <value>Сохранить настройки</value>
   </data>
@@ -185,6 +197,12 @@
   </data>
   <data name="Settings_Load_Error" xml:space="preserve">
     <value>Настройки загружаются...</value>
+  </data>
+  <data name="Settings_Logs_Open_Success" xml:space="preserve">
+    <value>Папка журналов открыта.</value>
+  </data>
+  <data name="Settings_Logs_Open_Failed" xml:space="preserve">
+    <value>Не удалось открыть папку журналов. Проверьте путь и права доступа.</value>
   </data>
   <data name="Report_Export_Title" xml:space="preserve">
     <value>Экспорт отчёта</value>
