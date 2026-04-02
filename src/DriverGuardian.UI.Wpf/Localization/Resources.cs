@@ -52,6 +52,7 @@ public static class Resources
     public static string Workflow_Hint_Manual_Action_Limited => GetString(nameof(Workflow_Hint_Manual_Action_Limited));
     public static string Recommendation_Section_Title => GetString(nameof(Recommendation_Section_Title));
     public static string Recommendation_Section_Hint => GetString(nameof(Recommendation_Section_Hint));
+    public static string Recommendation_Secondary_Summary_Format => GetString(nameof(Recommendation_Secondary_Summary_Format));
     public static string Recommendation_Empty_State_Pre_Scan => GetString(nameof(Recommendation_Empty_State_Pre_Scan));
     public static string Recommendation_Empty_State_No_Action => GetString(nameof(Recommendation_Empty_State_No_Action));
     public static string Recommendation_Empty_State => GetString(nameof(Recommendation_Empty_State));
