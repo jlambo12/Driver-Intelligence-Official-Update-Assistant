@@ -276,18 +276,22 @@
                                 <TextBlock Text="{Binding State.Results.RecommendationSectionTitle}" FontWeight="SemiBold" FontSize="17" Foreground="#1E3A8A"/>
                             </DockPanel>
                             <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
-                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 8">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding State.Results.ShowSecondaryRecommendationSummary}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <TextBlock Text="{Binding State.Results.SecondaryRecommendationSummary}" TextWrapping="Wrap" Foreground="#334155"/>
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 8" Background="#EFF6FF">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding State.Results.PrimaryRecommendationSummary}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#1E3A8A"/>
+                                    <TextBlock Text="{Binding State.Results.SecondaryRecommendationSummary}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding State.Results.ShowSecondaryRecommendationSummary}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
                             </Border>
                             <ItemsControl ItemsSource="{Binding State.Results.RecommendationDetails}">
                                 <ItemsControl.Style>
@@ -318,6 +322,65 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="8" Margin="0 0 0 8" Background="#F8FAFC">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding State.Results.ShowSecondaryRecommendationSummary}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <ToggleButton IsChecked="{Binding ShowSecondaryRecommendations, Mode=TwoWay}"
+                                                  Content="{Binding State.Results.SecondaryRecommendationToggleLabel}"
+                                                  HorizontalAlignment="Left"
+                                                  Padding="10 5"
+                                                  BorderBrush="#CBD5E1"
+                                                  Background="#F1F5F9"
+                                                  Foreground="#334155"
+                                                  FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding State.Results.SecondaryRecommendationHideLabel}" Margin="0 5 0 0" Foreground="#64748B" TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ShowSecondaryRecommendations}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <ItemsControl ItemsSource="{Binding State.Results.SecondaryRecommendationDetails}" Margin="0 8 0 0">
+                                        <ItemsControl.Style>
+                                            <Style TargetType="ItemsControl">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ShowSecondaryRecommendations}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ItemsControl.Style>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0 0 0 6" Background="#FFFFFF">
+                                                    <StackPanel>
+                                                        <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding WorkflowState}" Margin="0 2 0 0" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding DeviceSummary}" Margin="0 3 0 0" TextWrapping="Wrap" Foreground="#334155"/>
+                                                        <TextBlock Text="{Binding Summary}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#475569"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
                             <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="10">
                                 <Border.Style>
                                     <Style TargetType="Border">
