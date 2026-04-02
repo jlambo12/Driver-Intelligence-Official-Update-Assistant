@@ -1,4 +1,5 @@
 using System.Globalization;
+using WpfApplication = System.Windows.Application;
 using System.Windows;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.History;
@@ -22,7 +23,7 @@ using DriverGuardian.UI.Wpf.ViewModels;
 
 namespace DriverGuardian.UI.Wpf;
 
-public partial class App : Application
+public partial class App : WpfApplication
 {
     protected override void OnStartup(StartupEventArgs e)
     {
