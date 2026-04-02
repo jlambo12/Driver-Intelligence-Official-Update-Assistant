@@ -44,7 +44,6 @@ jobs:
           --runtime win-x64
           --self-contained false
           --no-restore
-          /p:UseAppHost=false
           --output "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}"
 
       - name: Upload portable app artifact
