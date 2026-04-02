@@ -36,12 +36,16 @@ jobs:
         run: New-Item -ItemType Directory -Path "${{ github.workspace }}/${{ env.LOG_PATH }}" -Force | Out-Null
 
       - name: Restore solution (win-x64)
+        id: restore
+        shell: pwsh
         run: |
           & dotnet restore "${{ env.SOLUTION_PATH }}" --runtime win-x64 *>&1 `
             | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/restore.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build WPF app project (Release)
+        id: build
+        shell: pwsh
         run: |
           & dotnet build "${{ env.PROJECT_PATH }}" --configuration Release --runtime win-x64 --no-restore `
             -bl:"${{ github.workspace }}/${{ env.LOG_PATH }}/build.binlog" *>&1 `
@@ -49,22 +53,83 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Publish WPF app (win-x64 portable)
+        id: publish
+        shell: pwsh
         run: |
-          & dotnet publish "${{ env.PROJECT_PATH }}"
-          --configuration Release
-          --runtime win-x64
-          --self-contained false
-          --no-restore
-          --output "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}" *>&1
-          | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/publish.log"
+          & dotnet publish "${{ env.PROJECT_PATH }}" `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained false `
+            --no-restore `
+            --output "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}" *>&1 `
+            | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/publish.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Inspect publish and artifact directories
+        if: always()
+        id: inspect_output
+        shell: pwsh
+        run: |
+          $publishDir = "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}"
+          $logDir = "${{ github.workspace }}/${{ env.LOG_PATH }}"
+          $publishDirReport = Join-Path $logDir "publish-directory.txt"
+          $artifactDirReport = Join-Path $logDir "artifact-directory.txt"
+
+          "Publish step conclusion: ${{ steps.publish.conclusion }}" | Out-File -FilePath $publishDirReport -Encoding utf8
+          "Publish output directory: $publishDir" | Out-File -FilePath $publishDirReport -Append -Encoding utf8
+          "" | Out-File -FilePath $publishDirReport -Append -Encoding utf8
+
+          if (Test-Path $publishDir) {
+            "Publish output directory exists: true" | Out-File -FilePath $publishDirReport -Append -Encoding utf8
+            "Publish output contents:" | Out-File -FilePath $publishDirReport -Append -Encoding utf8
+            Get-ChildItem -Path $publishDir -Force | Sort-Object Name | Format-Table Mode,Length,LastWriteTime,Name -AutoSize `
+              | Out-String -Width 4096 | Out-File -FilePath $publishDirReport -Append -Encoding utf8
+          }
+          else {
+            "Publish output directory exists: false" | Out-File -FilePath $publishDirReport -Append -Encoding utf8
+          }
+
+          $artifactFileCount = 0
+          if (Test-Path $publishDir) {
+            $artifactFileCount = (Get-ChildItem -Path $publishDir -Recurse -File | Measure-Object).Count
+          }
+
+          "Artifact directory: $publishDir" | Out-File -FilePath $artifactDirReport -Encoding utf8
+          "Artifact directory exists: $(Test-Path $publishDir)" | Out-File -FilePath $artifactDirReport -Append -Encoding utf8
+          "Artifact file count: $artifactFileCount" | Out-File -FilePath $artifactDirReport -Append -Encoding utf8
+          "" | Out-File -FilePath $artifactDirReport -Append -Encoding utf8
+
+          if (Test-Path $publishDir) {
+            "Artifact directory recursive listing:" | Out-File -FilePath $artifactDirReport -Append -Encoding utf8
+            Get-ChildItem -Path $publishDir -Recurse -Force | Sort-Object FullName | Select-Object FullName,Length,LastWriteTime `
+              | Format-Table -AutoSize | Out-String -Width 4096 | Out-File -FilePath $artifactDirReport -Append -Encoding utf8
+          }
+
+          "artifact_dir_exists=$(Test-Path $publishDir)" >> $env:GITHUB_OUTPUT
+          "artifact_file_count=$artifactFileCount" >> $env:GITHUB_OUTPUT
+
+      - name: Add build diagnostics to job summary
+        if: always()
+        shell: pwsh
+        run: |
+          @"
+          ## Windows portable build diagnostics
+          | Phase | Conclusion |
+          | --- | --- |
+          | Restore | ${{ steps.restore.conclusion }} |
+          | Build | ${{ steps.build.conclusion }} |
+          | Publish | ${{ steps.publish.conclusion }} |
+          | Publish output directory exists | ${{ steps.inspect_output.outputs.artifact_dir_exists }} |
+          | Artifact file count | ${{ steps.inspect_output.outputs.artifact_file_count }} |
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
       - name: Upload portable app artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: DriverGuardian-win-x64-portable
           path: ${{ github.workspace }}/${{ env.ARTIFACT_PATH }}
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Upload build logs artifact
         if: always()
