@@ -174,6 +174,21 @@
   <data name="Settings_Verification_Hint_Label" xml:space="preserve">
     <value>Показывать подсказки по проверке после установки</value>
   </data>
+  <data name="Settings_Diagnostic_Logging_Label" xml:space="preserve">
+    <value>Включить диагностическое журналирование</value>
+  </data>
+  <data name="Settings_Diagnostic_Custom_Log_Folder_Label" xml:space="preserve">
+    <value>Папка журналов (необязательно):</value>
+  </data>
+  <data name="Settings_Diagnostic_Effective_Log_Folder_Label" xml:space="preserve">
+    <value>Итоговая папка журналов:</value>
+  </data>
+  <data name="Settings_Open_Logs_Folder_Action" xml:space="preserve">
+    <value>Открыть папку журналов</value>
+  </data>
+  <data name="Settings_Logs_Folder_Open_Failed" xml:space="preserve">
+    <value>Не удалось открыть папку журналов. Проверьте путь и права доступа.</value>
+  </data>
   <data name="Settings_Save_Action" xml:space="preserve">
     <value>Сохранить настройки</value>
   </data>
