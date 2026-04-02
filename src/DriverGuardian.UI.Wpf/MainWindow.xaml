@@ -131,30 +131,54 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2.1*" />
-                    <ColumnDefinition Width="1.3*" />
+                    <ColumnDefinition Width="2.25*" />
+                    <ColumnDefinition Width="1.15*" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="0 0 10 0">
-                    <Border BorderBrush="#93C5FD" BorderThickness="1.5" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#EFF6FF">
+                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#F8FBFF">
                         <StackPanel>
-                            <TextBlock Text="{Binding State.Results.ActionFlowTitle}" FontWeight="SemiBold" FontSize="17" Margin="0 0 0 5" Foreground="#1E3A8A"/>
-                            <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" Margin="0 0 0 3" TextWrapping="Wrap" Foreground="#0F172A"/>
-                            <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
-                            <TextBlock Text="{Binding State.Results.SafetyNotice}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.ActionFlowTitle}" FontWeight="SemiBold" FontSize="17" Margin="0 0 0 4" Foreground="#1E3A8A"/>
+                            <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" Margin="0 0 0 4" TextWrapping="Wrap" Foreground="#0F172A"/>
+                            <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 0 0 8" TextWrapping="Wrap"/>
+                            <UniformGrid Columns="3" Margin="0 0 0 8">
+                                <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="8" Margin="0 0 6 0">
+                                    <StackPanel>
+                                        <TextBlock Text="1" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                                        <TextBlock Text="{x:Static localization:UiStrings.ActionStepReviewRecommendation}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#1E293B"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="8" Margin="0 0 6 0">
+                                    <StackPanel>
+                                        <TextBlock Text="2" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                                        <TextBlock Text="{x:Static localization:UiStrings.ActionStepInstallOutsideApp}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#1E293B"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="8">
+                                    <StackPanel>
+                                        <TextBlock Text="3" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                                        <TextBlock Text="{x:Static localization:UiStrings.ActionStepReturnForVerification}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#1E293B"/>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                            <TextBlock Text="{Binding State.Results.SafetyNotice}" TextWrapping="Wrap" Foreground="#0F172A"/>
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#60A5FA" BorderThickness="1.8" CornerRadius="8" Padding="13" Margin="0 0 0 10" Background="#F0F7FF">
+                    <Border BorderBrush="#60A5FA" BorderThickness="1.4" CornerRadius="8" Padding="13" Margin="0 0 0 8" Background="#F0F7FF">
                         <StackPanel>
                             <DockPanel LastChildFill="True" Margin="0 0 0 6">
                                 <Border DockPanel.Dock="Left"
-                                        CornerRadius="10"
+                                        Width="22"
+                                        Height="22"
+                                        CornerRadius="11"
                                         Background="#DBEAFE"
-                                        Padding="8 2"
+                                        Padding="0"
                                         Margin="0 0 8 0"
                                         VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Static localization:UiStrings.ActionStepReviewRecommendation}"
+                                    <TextBlock Text="1"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="#1E3A8A"/>
@@ -210,17 +234,26 @@
                             </Border>
                         </StackPanel>
                     </Border>
+                    <TextBlock Text="↓"
+                               FontSize="16"
+                               Foreground="#64748B"
+                               HorizontalAlignment="Center"
+                               Margin="0 0 0 8"/>
 
-                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#FCFDFF">
+                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 8" Background="#FCFDFF">
                         <StackPanel>
                             <DockPanel LastChildFill="True" Margin="0 0 0 6">
                                 <Border DockPanel.Dock="Left"
-                                        CornerRadius="10"
+                                        Width="22"
+                                        Height="22"
+                                        CornerRadius="11"
                                         Background="#E0E7FF"
-                                        Padding="8 2"
+                                        Padding="0"
                                         Margin="0 0 8 0"
                                         VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Static localization:UiStrings.ActionStepInstallOutsideApp}"
+                                    <TextBlock Text="2"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="#1E3A8A"/>
@@ -270,17 +303,26 @@
                             </Border>
                         </StackPanel>
                     </Border>
+                    <TextBlock Text="↓"
+                               FontSize="16"
+                               Foreground="#64748B"
+                               HorizontalAlignment="Center"
+                               Margin="0 0 0 8"/>
 
                     <Border BorderBrush="#93C5FD" BorderThickness="1.3" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#F8FBFF">
                         <StackPanel>
                             <DockPanel LastChildFill="True" Margin="0 0 0 6">
                                 <Border DockPanel.Dock="Left"
-                                        CornerRadius="10"
+                                        Width="22"
+                                        Height="22"
+                                        CornerRadius="11"
                                         Background="#E0F2FE"
-                                        Padding="8 2"
+                                        Padding="0"
                                         Margin="0 0 8 0"
                                         VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Static localization:UiStrings.ActionStepReturnForVerification}"
+                                    <TextBlock Text="3"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="#1E3A8A"/>
@@ -310,7 +352,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1">
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
+                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.ScanOverviewTitle}" FontWeight="SemiBold" Margin="0 0 0 8"/>
                             <StackPanel>
@@ -330,7 +372,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
+                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.RecentHistorySectionTitle}" FontWeight="SemiBold" Margin="0 0 0 4"/>
                             <TextBlock Text="{x:Static localization:UiStrings.RecentHistorySectionHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
@@ -374,7 +416,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
+                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.ReportExportTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
                             <TextBlock Text="{x:Static localization:UiStrings.ReportExportHint}" TextWrapping="Wrap" Margin="0 0 0 6"/>
@@ -387,7 +429,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 6" Background="#FFFFFF">
+                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 6" Background="#FFFFFF">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.SettingsTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
                             <Grid Margin="0 0 0 6">
