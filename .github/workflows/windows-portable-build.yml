@@ -28,20 +28,26 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Print .NET environment
+        shell: pwsh
         run: |
           dotnet --info
           dotnet --list-sdks
 
       - name: Create build logs directory
+        shell: pwsh
         run: New-Item -ItemType Directory -Path "${{ github.workspace }}/${{ env.LOG_PATH }}" -Force | Out-Null
 
       - name: Restore solution (win-x64)
+        id: restore
+        shell: pwsh
         run: |
           & dotnet restore "${{ env.SOLUTION_PATH }}" --runtime win-x64 *>&1 `
             | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/restore.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build WPF app project (Release)
+        id: build
+        shell: pwsh
         run: |
           & dotnet build "${{ env.PROJECT_PATH }}" --configuration Release --runtime win-x64 --no-restore `
             -bl:"${{ github.workspace }}/${{ env.LOG_PATH }}/build.binlog" *>&1 `
@@ -49,13 +55,65 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Publish WPF app (win-x64 portable)
+        id: publish
+        shell: pwsh
         run: |
           & dotnet publish "${{ env.PROJECT_PATH }}" --configuration Release --runtime win-x64 --self-contained false --no-restore `
             --output "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}" *>&1 `
             | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/publish.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Inspect publish and artifact directories
+        id: inspect_outputs
+        if: always()
+        shell: pwsh
+        run: |
+          $publishDir = "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}"
+          $artifactDir = $publishDir
+          $publishListPath = "${{ github.workspace }}/${{ env.LOG_PATH }}/publish-directory.txt"
+          $artifactListPath = "${{ github.workspace }}/${{ env.LOG_PATH }}/artifact-directory.txt"
+
+          if (Test-Path $publishDir) {
+            $publishFiles = Get-ChildItem -Path $publishDir -Recurse -File
+            "publish_directory_exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "publish_file_count=$($publishFiles.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Get-ChildItem -Path $publishDir -Recurse | Select-Object FullName, Length, LastWriteTimeUtc `
+              | Format-Table -AutoSize | Out-String | Set-Content -Path $publishListPath
+          }
+          else {
+            "publish_directory_exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "publish_file_count=0" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "Publish directory not found: $publishDir" | Set-Content -Path $publishListPath
+          }
+
+          if (Test-Path $artifactDir) {
+            $artifactFiles = Get-ChildItem -Path $artifactDir -Recurse -File
+            "artifact_directory_exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "artifact_file_count=$($artifactFiles.Count)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Get-ChildItem -Path $artifactDir -Recurse | Select-Object FullName, Length, LastWriteTimeUtc `
+              | Format-Table -AutoSize | Out-String | Set-Content -Path $artifactListPath
+          }
+          else {
+            "artifact_directory_exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "artifact_file_count=0" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "Artifact directory not found: $artifactDir" | Set-Content -Path $artifactListPath
+          }
+
+      - name: Add diagnostics summary
+        if: always()
+        shell: pwsh
+        run: |
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## Windows portable build diagnostics"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- restore status: ${{ steps.restore.outcome }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- build status: ${{ steps.build.outcome }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish status: ${{ steps.publish.outcome }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish directory exists: ${{ steps.inspect_outputs.outputs.publish_directory_exists }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish file count: ${{ steps.inspect_outputs.outputs.publish_file_count }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- artifact directory exists: ${{ steps.inspect_outputs.outputs.artifact_directory_exists }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- artifact file count: ${{ steps.inspect_outputs.outputs.artifact_file_count }}"
+
       - name: Upload portable app artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: DriverGuardian-win-x64-portable
