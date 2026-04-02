@@ -46,12 +46,13 @@ public sealed class ShareableReportBuilderTests
 
         var text = _builder.BuildStructuredText(report);
 
-        Assert.Contains("DriverGuardian Scan Report", text);
-        Assert.Contains("Scan Summary", text);
-        Assert.Contains("Recommendation Summary", text);
-        Assert.Contains("Manual Install Handoff Summary", text);
-        Assert.Contains("Verification Summary", text);
-        Assert.Contains("Device Details", text);
+        Assert.Contains("DriverGuardian Shareable Scan Report", text);
+        Assert.Contains("1) Scan Summary", text);
+        Assert.Contains("2) Recommendation State", text);
+        Assert.Contains("3) Manual Next-Step Guidance", text);
+        Assert.Contains("4) Verification State", text);
+        Assert.Contains("5) Device-Level Details", text);
+        Assert.Contains("Installation is always manual and user-controlled", text);
     }
 
     [Fact]
@@ -84,6 +85,52 @@ public sealed class ShareableReportBuilderTests
         var onlyDevice = Assert.Single(report.Devices);
         Assert.Equal("PCI\\VEN_10DE&DEV_1C8D", onlyDevice.DeviceInstanceId);
         Assert.Equal("NVIDIA (Display)", onlyDevice.DeviceDisplayName);
+    }
+
+    [Fact]
+    public void BuildStructuredText_ShouldUseHonestOfficialSourceLanguage_WhenSourceIsNotConfirmed()
+    {
+        var request = BuildRequest();
+        var report = _builder.Build(request);
+
+        var text = _builder.BuildStructuredText(report);
+
+        Assert.Contains("Official Source Confidence: Unconfirmed", text);
+        Assert.Contains("Do not treat this link as confirmed official", text);
+    }
+
+    [Fact]
+    public void BuildStructuredText_ShouldShowConfirmedOfficialSource_WhenEvidenceIsConfirmed()
+    {
+        var now = DateTimeOffset.Parse("2026-04-01T12:00:00+00:00");
+        var session = ScanSession.Start(Guid.NewGuid(), now.AddMinutes(-5)).Complete(now.AddMinutes(-2));
+        var driver = BuildDriver("PCI\\VEN_9999", "4.2.0", "VendorC");
+        var handoff = new ManualInstallHandoffDecision(
+            HandoffReadinessOutcome.ReadyForManualInstallHandoff,
+            new OfficialPackageReference(
+                "official",
+                "DRV-9",
+                "4.3.0",
+                new Uri("https://vendorc.example/driver.cab"),
+                new SourceEvidence(
+                    new Uri("https://vendorc.example/support"),
+                    "VendorC",
+                    SourceTrustLevel.OfficialPublisherSite,
+                    true,
+                    "Publisher-owned domain confirmed")),
+            []);
+
+        var request = new ShareableReportRequest(
+            new ScanResult(session, 1, BuildDiscoveredDevices(driver), [driver]),
+            [new RecommendationSummary(driver.DeviceIdentity, true, "Upgrade available", "4.3.0")],
+            [new ManualInstallHandoffReportItem(driver.DeviceIdentity, handoff)],
+            [],
+            now);
+
+        var text = _builder.BuildStructuredText(_builder.Build(request));
+
+        Assert.Contains("Official Source Confidence: Confirmed official publisher source", text);
+        Assert.Contains("Review the vendor page and complete installation manually", text);
     }
 
     private static ShareableReportRequest BuildRequest()
