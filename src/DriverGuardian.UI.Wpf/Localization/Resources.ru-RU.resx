@@ -377,4 +377,19 @@
     <value>Дополнительные записи остаются вспомогательными и не влияют на основной приоритетный список.</value>
   </data>
 
+  <data name="Settings_Diagnostic_Logging_Enabled_Label" xml:space="preserve">
+    <value>Включить диагностическое логирование анализа</value>
+  </data>
+  <data name="Settings_Log_Folder_Label" xml:space="preserve">
+    <value>Папка логов (необязательно):</value>
+  </data>
+  <data name="Settings_Open_Logs_Folder_Action" xml:space="preserve">
+    <value>Открыть папку логов</value>
+  </data>
+  <data name="Settings_Logs_Folder_Opened" xml:space="preserve">
+    <value>Папка логов открыта.</value>
+  </data>
+  <data name="Settings_Logs_Folder_Open_Failed" xml:space="preserve">
+    <value>Не удалось открыть папку логов. Проверьте путь в настройках.</value>
+  </data>
 </root>

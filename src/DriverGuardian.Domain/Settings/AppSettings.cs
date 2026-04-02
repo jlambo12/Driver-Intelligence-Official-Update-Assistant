@@ -68,19 +68,39 @@ public sealed record SafetyPreferences(
         BlockAutomaticInstallExecution: true);
 }
 
+public sealed record DiagnosticLoggingPreferences(
+    bool Enabled,
+    string? CustomFolderPath)
+{
+    public static DiagnosticLoggingPreferences Default => new(
+        Enabled: true,
+        CustomFolderPath: null);
+
+    public DiagnosticLoggingPreferences Normalize()
+    {
+        var customPath = string.IsNullOrWhiteSpace(CustomFolderPath)
+            ? null
+            : CustomFolderPath.Trim();
+
+        return this with { CustomFolderPath = customPath };
+    }
+}
+
 public sealed record AppSettings(
     LocalizationPreferences Localization,
     HistoryPreferences History,
     ReportPreferences Reports,
     WorkflowGuidancePreferences WorkflowGuidance,
-    SafetyPreferences Safety)
+    SafetyPreferences Safety,
+    DiagnosticLoggingPreferences DiagnosticLogging)
 {
     public static AppSettings Default => new(
         Localization: LocalizationPreferences.Default,
         History: HistoryPreferences.Default,
         Reports: ReportPreferences.Default,
         WorkflowGuidance: WorkflowGuidancePreferences.Default,
-        Safety: SafetyPreferences.Default);
+        Safety: SafetyPreferences.Default,
+        DiagnosticLogging: DiagnosticLoggingPreferences.Default);
 
     public string UiCulture => Localization.PreferredCulture;
 
@@ -94,7 +114,8 @@ public sealed record AppSettings(
             History = (History ?? HistoryPreferences.Default).Normalize(),
             Reports = Reports ?? ReportPreferences.Default,
             WorkflowGuidance = WorkflowGuidance ?? WorkflowGuidancePreferences.Default,
-            Safety = Safety ?? SafetyPreferences.Default
+            Safety = Safety ?? SafetyPreferences.Default,
+            DiagnosticLogging = (DiagnosticLogging ?? DiagnosticLoggingPreferences.Default).Normalize()
         };
     }
 }

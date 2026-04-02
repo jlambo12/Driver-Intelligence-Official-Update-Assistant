@@ -20,6 +20,7 @@ public sealed class MainScreenWorkflowTests
     {
         var auditWriter = new FakeAuditWriter();
         var historyRepository = new FakeHistoryRepository();
+        var diagnosticLogger = new FakeDiagnosticLogger();
         var workflow = new MainScreenWorkflow(
             new FakeScanOrchestrator(),
             new FakeRecommendationPipeline(),
@@ -27,6 +28,7 @@ public sealed class MainScreenWorkflowTests
             new FakeSettingsRepository(),
             auditWriter,
             historyRepository,
+            diagnosticLogger,
             new OpenOfficialSourceActionEvaluator(),
             new ShareableReportBuilder());
 
@@ -53,6 +55,7 @@ public sealed class MainScreenWorkflowTests
         Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);
         Assert.Contains(historyRepository.Entries, entry => entry is VerificationHistoryEntry);
         Assert.Single(auditWriter.Entries);
+        Assert.NotEmpty(diagnosticLogger.Entries);
     }
 
     private sealed class FakeScanOrchestrator : IScanOrchestrator
@@ -126,6 +129,23 @@ public sealed class MainScreenWorkflowTests
         }
     }
 
+
+    private sealed class FakeDiagnosticLogger : IDiagnosticLogger
+    {
+        public List<string> Entries { get; } = [];
+
+        public Task LogInfoAsync(string message, CancellationToken cancellationToken)
+        {
+            Entries.Add(message);
+            return Task.CompletedTask;
+        }
+
+        public Task LogErrorAsync(string message, Exception exception, CancellationToken cancellationToken)
+        {
+            Entries.Add($"{message}:{exception.Message}");
+            return Task.CompletedTask;
+        }
+    }
     private sealed class FakeHistoryRepository : IResultHistoryRepository
     {
         public List<ResultHistoryEntry> Entries { get; } = [];

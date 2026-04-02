@@ -16,6 +16,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly IMainScreenWorkflow _mainScreenWorkflow;
     private readonly ISettingsRepository _settingsRepository;
     private readonly IReportFileSaveService _reportFileSaveService;
+    private readonly ILogFolderOpenService _logFolderOpenService;
     private readonly PreviewScenarioMainScreenWorkflow? _previewWorkflow;
     private MainUiState _state;
     private string _settingsStatusText;
@@ -29,6 +30,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private IReadOnlyCollection<RecentHistoryPresentation> _recentHistory;
     private PreviewScenarioOption? _selectedPreviewScenario;
     private bool _showSecondaryRecommendations;
+    private bool _diagnosticLoggingEnabled;
+    private string _diagnosticLogFolderPath;
 
     private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
     [
@@ -39,11 +42,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public MainViewModel(
         IMainScreenWorkflow mainScreenWorkflow,
         ISettingsRepository settingsRepository,
-        IReportFileSaveService reportFileSaveService)
+        IReportFileSaveService reportFileSaveService,
+        ILogFolderOpenService logFolderOpenService)
     {
         _mainScreenWorkflow = mainScreenWorkflow;
         _settingsRepository = settingsRepository;
         _reportFileSaveService = reportFileSaveService;
+        _logFolderOpenService = logFolderOpenService;
         _previewWorkflow = mainScreenWorkflow as PreviewScenarioMainScreenWorkflow;
         _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusInitial, UiStrings.ScanAction);
         _settingsStatusText = UiStrings.SettingsLoadError;
@@ -58,10 +63,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
         AvailablePreviewScenarios = BuildPreviewOptions();
         _selectedPreviewScenario = AvailablePreviewScenarios.FirstOrDefault();
         _showSecondaryRecommendations = false;
+        _diagnosticLoggingEnabled = AppSettings.Default.DiagnosticLogging.Enabled;
+        _diagnosticLogFolderPath = AppSettings.Default.DiagnosticLogging.CustomFolderPath ?? string.Empty;
         ScanCommand = new AsyncRelayCommand(ScanAsync);
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
         ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
+        OpenLogsFolderCommand = new AsyncRelayCommand(OpenLogsFolderAsync);
         _ = InitializeAsync();
     }
 
@@ -71,6 +79,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand SaveSettingsCommand { get; }
     public ICommand ExportReportCommand { get; }
     public ICommand ApplyPreviewScenarioCommand { get; }
+    public ICommand OpenLogsFolderCommand { get; }
     public IReadOnlyList<ReportFormatOption> AvailableReportFormats => ReportFormatItems;
 
     public bool IsPreviewMode => _previewWorkflow is not null;
@@ -106,6 +115,37 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             _showSecondaryRecommendations = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool DiagnosticLoggingEnabled
+    {
+        get => _diagnosticLoggingEnabled;
+        set
+        {
+            if (_diagnosticLoggingEnabled == value)
+            {
+                return;
+            }
+
+            _diagnosticLoggingEnabled = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string DiagnosticLogFolderPath
+    {
+        get => _diagnosticLogFolderPath;
+        set
+        {
+            var normalized = value?.Trim() ?? string.Empty;
+            if (string.Equals(_diagnosticLogFolderPath, normalized, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _diagnosticLogFolderPath = normalized;
             OnPropertyChanged();
         }
     }
@@ -291,6 +331,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         HistoryMaxEntries = settings.History.MaxEntries;
         ShowVerificationHints = settings.WorkflowGuidance.ShowPostInstallVerificationHints;
         SelectedReportFormat = ReportFormatItems.First(option => option.Value == settings.Reports.DefaultFormat);
+        DiagnosticLoggingEnabled = settings.DiagnosticLogging.Enabled;
+        DiagnosticLogFolderPath = settings.DiagnosticLogging.CustomFolderPath ?? string.Empty;
         SettingsStatusText = UiStrings.SettingsLoaded;
     }
 
@@ -301,7 +343,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             History = current.History with { MaxEntries = HistoryMaxEntries },
             Reports = current.Reports with { DefaultFormat = SelectedReportFormat.Value },
-            WorkflowGuidance = current.WorkflowGuidance with { ShowPostInstallVerificationHints = ShowVerificationHints }
+            WorkflowGuidance = current.WorkflowGuidance with { ShowPostInstallVerificationHints = ShowVerificationHints },
+            DiagnosticLogging = current.DiagnosticLogging with
+            {
+                Enabled = DiagnosticLoggingEnabled,
+                CustomFolderPath = string.IsNullOrWhiteSpace(DiagnosticLogFolderPath) ? null : DiagnosticLogFolderPath
+            }
         };
 
         await _settingsRepository.SaveAsync(updated, CancellationToken.None);
@@ -331,6 +378,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
             ReportFileSaveResult.FailedToWrite => UiStrings.ReportExportStatusSaveFailed,
             _ => UiStrings.ReportExportStatusSaveFailed
         };
+    }
+
+    private async Task OpenLogsFolderAsync()
+    {
+        var result = await _logFolderOpenService.OpenAsync(CancellationToken.None);
+        SettingsStatusText = result == LogFolderOpenResult.Opened
+            ? UiStrings.SettingsLogsFolderOpened
+            : UiStrings.SettingsLogsFolderOpenFailed;
     }
 
     private IReadOnlyList<PreviewScenarioOption> BuildPreviewOptions()

@@ -11,6 +11,7 @@ using DriverGuardian.Application.Scanning;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Contracts.DriverInspection;
 using DriverGuardian.Infrastructure.Audit;
+using DriverGuardian.Infrastructure.Diagnostics;
 using DriverGuardian.Infrastructure.History;
 using DriverGuardian.Infrastructure.Settings;
 using DriverGuardian.Infrastructure.Time;
@@ -33,12 +34,21 @@ public partial class App : WpfApplication
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
 
         var previewModeEnabled = IsPreviewModeEnabled(e.Args);
-        ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
+        var appDataDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "DriverGuardian");
+        var logsDirectory = Path.Combine(appDataDirectory, "logs");
+        ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled, appDataDirectory);
+        ILogFolderResolver logFolderResolver = new SettingsLogFolderResolver(settingsRepository, logsDirectory);
         IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
             ? new PreviewScenarioMainScreenWorkflow()
-            : BuildProductionWorkflow(settingsRepository);
+            : BuildProductionWorkflow(settingsRepository, logFolderResolver);
 
-        var vm = new MainViewModel(mainScreenWorkflow, settingsRepository, new ReportFileSaveService());
+        var vm = new MainViewModel(
+            mainScreenWorkflow,
+            settingsRepository,
+            new ReportFileSaveService(),
+            new LogFolderOpenService(logFolderResolver));
         var window = new MainWindow { DataContext = vm };
         window.Show();
     }
@@ -46,22 +56,21 @@ public partial class App : WpfApplication
     private static bool IsPreviewModeEnabled(string[] args)
         => args.Any(arg => string.Equals(arg, "--demo", StringComparison.OrdinalIgnoreCase));
 
-    private static ISettingsRepository BuildSettingsRepository(bool previewModeEnabled)
+    private static ISettingsRepository BuildSettingsRepository(bool previewModeEnabled, string appDataDirectory)
     {
         if (previewModeEnabled)
         {
             return new InMemorySettingsRepository();
         }
 
-        var settingsDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "DriverGuardian");
-        var settingsFilePath = Path.Combine(settingsDirectory, "settings.json");
+        var settingsFilePath = Path.Combine(appDataDirectory, "settings.json");
 
         return new JsonFileSettingsRepository(settingsFilePath);
     }
 
-    private static IMainScreenWorkflow BuildProductionWorkflow(ISettingsRepository settingsRepository)
+    private static IMainScreenWorkflow BuildProductionWorkflow(
+        ISettingsRepository settingsRepository,
+        ILogFolderResolver logFolderResolver)
     {
         IClock clock = new SystemClock();
         IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService();
@@ -73,6 +82,7 @@ public partial class App : WpfApplication
         IProviderCatalogSummaryService providerSummaryService = new ProviderCatalogSummaryService(providerRegistry);
         IAuditWriter auditWriter = new InMemoryAuditWriter();
         IResultHistoryRepository resultHistoryRepository = new InMemoryResultHistoryRepository();
+        IDiagnosticLogger diagnosticLogger = new FileDiagnosticLogger(settingsRepository, logFolderResolver);
         var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
         IShareableReportBuilder reportBuilder = new ShareableReportBuilder();
 
@@ -83,6 +93,7 @@ public partial class App : WpfApplication
             settingsRepository,
             auditWriter,
             resultHistoryRepository,
+            diagnosticLogger,
             openOfficialSourceActionEvaluator,
             reportBuilder);
     }

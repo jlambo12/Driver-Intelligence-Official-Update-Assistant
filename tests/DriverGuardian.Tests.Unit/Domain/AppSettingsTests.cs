@@ -22,11 +22,13 @@ public sealed class AppSettingsTests
             History: new HistoryPreferences(5, HistoryRetentionStrategy.KeepMostRecent),
             Reports: ReportPreferences.Default,
             WorkflowGuidance: WorkflowGuidancePreferences.Default,
-            Safety: SafetyPreferences.Default);
+            Safety: SafetyPreferences.Default,
+            DiagnosticLogging: new DiagnosticLoggingPreferences(true, "  C:/logs  "));
 
         var normalized = settings.Normalize();
 
         Assert.Equal("en-US", normalized.UiCulture);
         Assert.Equal(10, normalized.History.MaxEntries);
+        Assert.Equal("C:/logs", normalized.DiagnosticLogging.CustomFolderPath);
     }
 }

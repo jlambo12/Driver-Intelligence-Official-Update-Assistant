@@ -632,11 +632,33 @@
                             <CheckBox Content="{x:Static localization:UiStrings.SettingsVerificationHintLabel}"
                                       IsChecked="{Binding ShowVerificationHints}"
                                       Margin="0 0 0 8"/>
-                            <Button Content="{x:Static localization:UiStrings.SettingsSaveAction}"
-                                    Width="220"
-                                    Height="32"
-                                    HorizontalAlignment="Left"
-                                    Command="{Binding SaveSettingsCommand}" />
+                            <CheckBox Content="{x:Static localization:UiStrings.SettingsDiagnosticLoggingEnabledLabel}"
+                                      IsChecked="{Binding DiagnosticLoggingEnabled}"
+                                      Margin="0 0 0 6"/>
+                            <Grid Margin="0 0 0 8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="230"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{x:Static localization:UiStrings.SettingsLogFolderLabel}" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                                <TextBox Grid.Column="1"
+                                         Width="220"
+                                         HorizontalAlignment="Left"
+                                         Text="{Binding DiagnosticLogFolderPath}" />
+                            </Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="{x:Static localization:UiStrings.SettingsSaveAction}"
+                                        Width="220"
+                                        Height="32"
+                                        HorizontalAlignment="Left"
+                                        Command="{Binding SaveSettingsCommand}" />
+                                <Button Content="{x:Static localization:UiStrings.SettingsOpenLogsFolderAction}"
+                                        Width="170"
+                                        Height="32"
+                                        Margin="8 0 0 0"
+                                        HorizontalAlignment="Left"
+                                        Command="{Binding OpenLogsFolderCommand}" />
+                            </StackPanel>
                             <TextBlock Text="{Binding SettingsStatusText}" Margin="0 6 0 0" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
