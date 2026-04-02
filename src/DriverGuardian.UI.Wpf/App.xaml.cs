@@ -1,4 +1,7 @@
+using System;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using WpfApplication = System.Windows.Application;
 using System.Windows;
 using DriverGuardian.Application.Abstractions;
