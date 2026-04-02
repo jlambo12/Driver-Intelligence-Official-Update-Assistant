@@ -29,7 +29,8 @@ public sealed class JsonFileSettingsRepositoryTests
                 Localization = new LocalizationPreferences("  fr-FR  "),
                 History = new HistoryPreferences(6, HistoryRetentionStrategy.KeepMostRecent),
                 Reports = AppSettings.Default.Reports with { DefaultFormat = ShareableReportFormat.PlainText },
-                WorkflowGuidance = AppSettings.Default.WorkflowGuidance with { ShowPostInstallVerificationHints = false }
+                WorkflowGuidance = AppSettings.Default.WorkflowGuidance with { ShowPostInstallVerificationHints = false },
+                DiagnosticLogging = new DiagnosticLoggingPreferences(false, "  C:/Temp/DriverLogs  ")
             };
 
             await repository.SaveAsync(update, CancellationToken.None);
@@ -39,6 +40,8 @@ public sealed class JsonFileSettingsRepositoryTests
             Assert.Equal(10, reloaded.History.MaxEntries);
             Assert.Equal(ShareableReportFormat.PlainText, reloaded.Reports.DefaultFormat);
             Assert.False(reloaded.WorkflowGuidance.ShowPostInstallVerificationHints);
+            Assert.False(reloaded.DiagnosticLogging.Enabled);
+            Assert.Equal("C:/Temp/DriverLogs", reloaded.DiagnosticLogging.CustomLogsFolderPath);
         }
         finally
         {

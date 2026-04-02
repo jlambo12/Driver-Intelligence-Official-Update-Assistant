@@ -114,6 +114,11 @@ public static class Resources
     public static string Settings_Report_Format_Markdown => GetString(nameof(Settings_Report_Format_Markdown));
     public static string Settings_Report_Format_PlainText => GetString(nameof(Settings_Report_Format_PlainText));
     public static string Settings_Verification_Hint_Label => GetString(nameof(Settings_Verification_Hint_Label));
+    public static string Settings_Diagnostic_Logging_Label => GetString(nameof(Settings_Diagnostic_Logging_Label));
+    public static string Settings_Diagnostic_Custom_Log_Folder_Label => GetString(nameof(Settings_Diagnostic_Custom_Log_Folder_Label));
+    public static string Settings_Diagnostic_Effective_Log_Folder_Label => GetString(nameof(Settings_Diagnostic_Effective_Log_Folder_Label));
+    public static string Settings_Open_Logs_Folder_Action => GetString(nameof(Settings_Open_Logs_Folder_Action));
+    public static string Settings_Logs_Folder_Open_Failed => GetString(nameof(Settings_Logs_Folder_Open_Failed));
     public static string Settings_Save_Action => GetString(nameof(Settings_Save_Action));
     public static string Settings_Loaded => GetString(nameof(Settings_Loaded));
     public static string Settings_Saved => GetString(nameof(Settings_Saved));

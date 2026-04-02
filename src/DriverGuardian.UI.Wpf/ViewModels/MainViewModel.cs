@@ -16,6 +16,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly IMainScreenWorkflow _mainScreenWorkflow;
     private readonly ISettingsRepository _settingsRepository;
     private readonly IReportFileSaveService _reportFileSaveService;
+    private readonly IDiagnosticLogsFolderService _diagnosticLogsFolderService;
     private readonly PreviewScenarioMainScreenWorkflow? _previewWorkflow;
     private MainUiState _state;
     private string _settingsStatusText;
@@ -29,6 +30,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private IReadOnlyCollection<RecentHistoryPresentation> _recentHistory;
     private PreviewScenarioOption? _selectedPreviewScenario;
     private bool _showSecondaryRecommendations;
+    private bool _isDiagnosticLoggingEnabled;
+    private string _customDiagnosticLogFolderPath;
+    private string _effectiveDiagnosticLogFolderPath;
 
     private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
     [
@@ -39,11 +43,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public MainViewModel(
         IMainScreenWorkflow mainScreenWorkflow,
         ISettingsRepository settingsRepository,
-        IReportFileSaveService reportFileSaveService)
+        IReportFileSaveService reportFileSaveService,
+        IDiagnosticLogsFolderService diagnosticLogsFolderService)
     {
         _mainScreenWorkflow = mainScreenWorkflow;
         _settingsRepository = settingsRepository;
         _reportFileSaveService = reportFileSaveService;
+        _diagnosticLogsFolderService = diagnosticLogsFolderService;
         _previewWorkflow = mainScreenWorkflow as PreviewScenarioMainScreenWorkflow;
         _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusInitial, UiStrings.ScanAction);
         _settingsStatusText = UiStrings.SettingsLoadError;
@@ -58,10 +64,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         AvailablePreviewScenarios = BuildPreviewOptions();
         _selectedPreviewScenario = AvailablePreviewScenarios.FirstOrDefault();
         _showSecondaryRecommendations = false;
+        _isDiagnosticLoggingEnabled = AppSettings.Default.DiagnosticLogging.Enabled;
+        _customDiagnosticLogFolderPath = string.Empty;
+        _effectiveDiagnosticLogFolderPath = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(AppSettings.Default.DiagnosticLogging.CustomLogsFolderPath);
         ScanCommand = new AsyncRelayCommand(ScanAsync);
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
         ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
+        OpenDiagnosticLogsFolderCommand = new AsyncRelayCommand(OpenDiagnosticLogsFolderAsync);
         _ = InitializeAsync();
     }
 
@@ -71,6 +81,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand SaveSettingsCommand { get; }
     public ICommand ExportReportCommand { get; }
     public ICommand ApplyPreviewScenarioCommand { get; }
+    public ICommand OpenDiagnosticLogsFolderCommand { get; }
     public IReadOnlyList<ReportFormatOption> AvailableReportFormats => ReportFormatItems;
 
     public bool IsPreviewMode => _previewWorkflow is not null;
@@ -162,6 +173,54 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             _selectedReportFormat = value;
+            OnPropertyChanged();
+        }
+    }
+
+
+    public bool IsDiagnosticLoggingEnabled
+    {
+        get => _isDiagnosticLoggingEnabled;
+        set
+        {
+            if (_isDiagnosticLoggingEnabled == value)
+            {
+                return;
+            }
+
+            _isDiagnosticLoggingEnabled = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string CustomDiagnosticLogFolderPath
+    {
+        get => _customDiagnosticLogFolderPath;
+        set
+        {
+            var nextValue = value ?? string.Empty;
+            if (_customDiagnosticLogFolderPath == nextValue)
+            {
+                return;
+            }
+
+            _customDiagnosticLogFolderPath = nextValue;
+            EffectiveDiagnosticLogFolderPath = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(nextValue);
+            OnPropertyChanged();
+        }
+    }
+
+    public string EffectiveDiagnosticLogFolderPath
+    {
+        get => _effectiveDiagnosticLogFolderPath;
+        private set
+        {
+            if (_effectiveDiagnosticLogFolderPath == value)
+            {
+                return;
+            }
+
+            _effectiveDiagnosticLogFolderPath = value;
             OnPropertyChanged();
         }
     }
@@ -291,6 +350,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         HistoryMaxEntries = settings.History.MaxEntries;
         ShowVerificationHints = settings.WorkflowGuidance.ShowPostInstallVerificationHints;
         SelectedReportFormat = ReportFormatItems.First(option => option.Value == settings.Reports.DefaultFormat);
+        IsDiagnosticLoggingEnabled = settings.DiagnosticLogging.Enabled;
+        CustomDiagnosticLogFolderPath = settings.DiagnosticLogging.CustomLogsFolderPath ?? string.Empty;
+        EffectiveDiagnosticLogFolderPath = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(settings.DiagnosticLogging.CustomLogsFolderPath);
         SettingsStatusText = UiStrings.SettingsLoaded;
     }
 
@@ -301,11 +363,32 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             History = current.History with { MaxEntries = HistoryMaxEntries },
             Reports = current.Reports with { DefaultFormat = SelectedReportFormat.Value },
-            WorkflowGuidance = current.WorkflowGuidance with { ShowPostInstallVerificationHints = ShowVerificationHints }
+            WorkflowGuidance = current.WorkflowGuidance with { ShowPostInstallVerificationHints = ShowVerificationHints },
+            DiagnosticLogging = current.DiagnosticLogging with
+            {
+                Enabled = IsDiagnosticLoggingEnabled,
+                CustomLogsFolderPath = string.IsNullOrWhiteSpace(CustomDiagnosticLogFolderPath)
+                    ? null
+                    : CustomDiagnosticLogFolderPath.Trim()
+            }
         };
 
-        await _settingsRepository.SaveAsync(updated, CancellationToken.None);
+        var normalized = updated.Normalize();
+        await _settingsRepository.SaveAsync(normalized, CancellationToken.None);
+        CustomDiagnosticLogFolderPath = normalized.DiagnosticLogging.CustomLogsFolderPath ?? string.Empty;
+        EffectiveDiagnosticLogFolderPath = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(normalized.DiagnosticLogging.CustomLogsFolderPath);
         SettingsStatusText = UiStrings.SettingsSaved;
+    }
+
+    private async Task OpenDiagnosticLogsFolderAsync()
+    {
+        await Task.Yield();
+
+        var opened = _diagnosticLogsFolderService.OpenFolder(EffectiveDiagnosticLogFolderPath);
+        if (!opened)
+        {
+            SettingsStatusText = UiStrings.SettingsLogsFolderOpenFailed;
+        }
     }
 
     private async Task ExportReportAsync()

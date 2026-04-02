@@ -109,6 +109,11 @@ public static class UiStrings
     public static string SettingsReportFormatMarkdown => Resources.Settings_Report_Format_Markdown;
     public static string SettingsReportFormatPlainText => Resources.Settings_Report_Format_PlainText;
     public static string SettingsVerificationHintLabel => Resources.Settings_Verification_Hint_Label;
+    public static string SettingsDiagnosticLoggingLabel => Resources.Settings_Diagnostic_Logging_Label;
+    public static string SettingsDiagnosticCustomLogFolderLabel => Resources.Settings_Diagnostic_Custom_Log_Folder_Label;
+    public static string SettingsDiagnosticEffectiveLogFolderLabel => Resources.Settings_Diagnostic_Effective_Log_Folder_Label;
+    public static string SettingsOpenLogsFolderAction => Resources.Settings_Open_Logs_Folder_Action;
+    public static string SettingsLogsFolderOpenFailed => Resources.Settings_Logs_Folder_Open_Failed;
     public static string SettingsSaveAction => Resources.Settings_Save_Action;
     public static string SettingsLoaded => Resources.Settings_Loaded;
     public static string SettingsSaved => Resources.Settings_Saved;

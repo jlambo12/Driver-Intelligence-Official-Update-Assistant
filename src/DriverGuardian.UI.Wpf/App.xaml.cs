@@ -13,6 +13,7 @@ using DriverGuardian.Application.Reports;
 using DriverGuardian.Application.Scanning;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Contracts.DriverInspection;
+using DriverGuardian.Domain.Settings;
 using DriverGuardian.Infrastructure.Audit;
 using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.History;
@@ -38,21 +39,45 @@ public partial class App : WpfApplication
 
         var previewModeEnabled = IsPreviewModeEnabled(e.Args);
         ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
-        var defaultLogsDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "DriverGuardian",
-            "Logs");
+        var defaultLogsDirectory = GetDefaultLogsDirectory();
+        var diagnosticLogsFolderService = new DiagnosticLogsFolderService(defaultLogsDirectory);
+        var appSettings = settingsRepository.GetAsync(CancellationToken.None).GetAwaiter().GetResult();
         IDiagnosticLogger diagnosticLogger = previewModeEnabled
             ? new NoOpDiagnosticLogger()
-            : new FileDiagnosticLogger(defaultLogsDirectory);
+            : BuildDiagnosticLogger(appSettings, diagnosticLogsFolderService);
         IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
             ? new PreviewScenarioMainScreenWorkflow()
             : BuildProductionWorkflow(settingsRepository, diagnosticLogger);
 
-        var vm = new MainViewModel(mainScreenWorkflow, settingsRepository, new ReportFileSaveService());
+        var vm = new MainViewModel(
+            mainScreenWorkflow,
+            settingsRepository,
+            new ReportFileSaveService(),
+            diagnosticLogsFolderService);
         var window = new MainWindow { DataContext = vm };
         window.Show();
     }
+
+
+    private static IDiagnosticLogger BuildDiagnosticLogger(
+        AppSettings appSettings,
+        IDiagnosticLogsFolderService diagnosticLogsFolderService)
+    {
+        if (!appSettings.DiagnosticLogging.Enabled)
+        {
+            return new NoOpDiagnosticLogger();
+        }
+
+        var effectiveLogsDirectory = diagnosticLogsFolderService.ResolveEffectiveFolderPath(
+            appSettings.DiagnosticLogging.CustomLogsFolderPath);
+        return new FileDiagnosticLogger(effectiveLogsDirectory);
+    }
+
+    private static string GetDefaultLogsDirectory()
+        => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "DriverGuardian",
+            "Logs");
 
     private static bool IsPreviewModeEnabled(string[] args)
         => args.Any(arg => string.Equals(arg, "--demo", StringComparison.OrdinalIgnoreCase));
