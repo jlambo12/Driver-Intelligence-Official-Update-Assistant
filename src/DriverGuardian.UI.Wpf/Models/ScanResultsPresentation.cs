@@ -29,7 +29,12 @@ public sealed record ScanResultsPresentation(
     bool ShowVerificationEmptyState,
     bool ShowSecondaryRecommendationSummary,
     string SecondaryRecommendationSummary,
+    bool HasSecondaryRecommendations,
+    int SecondaryRecommendationCount,
+    string SecondaryRecommendationToggleText,
+    string SecondaryRecommendationHint,
     IReadOnlyCollection<RecommendationDetailPresentation> RecommendationDetails,
+    IReadOnlyCollection<RecommendationDetailPresentation> SecondaryRecommendationDetails,
     IReadOnlyCollection<UserGuidedActionStepPresentation> UserGuidedSteps)
 {
     private const int MaxPrimaryRecommendationEntries = 6;
@@ -61,6 +66,11 @@ public sealed record ScanResultsPresentation(
             true,
             false,
             string.Empty,
+            false,
+            0,
+            string.Empty,
+            string.Empty,
+            Array.Empty<RecommendationDetailPresentation>(),
             Array.Empty<RecommendationDetailPresentation>(),
             Array.Empty<UserGuidedActionStepPresentation>());
 
@@ -70,8 +80,10 @@ public sealed record ScanResultsPresentation(
         var hasReadyHandoff = result.ManualHandoffReadyCount > 0;
         var officialSourceReady = result.OfficialSourceAction.IsReady;
 
-        var prioritizedDetails = PrioritizeAndFilterDetails(result.RecommendationDetails);
-        var hiddenCount = result.RecommendationDetails.Count - prioritizedDetails.Count;
+        var orderedDetails = OrderByPriority(result.RecommendationDetails);
+        var primaryDetails = orderedDetails.Take(MaxPrimaryRecommendationEntries).ToArray();
+        var secondaryDetails = orderedDetails.Skip(MaxPrimaryRecommendationEntries).ToArray();
+        var hiddenCount = secondaryDetails.Length;
 
         return new ScanResultsPresentation(
             HasScanData: true,
@@ -101,20 +113,27 @@ public sealed record ScanResultsPresentation(
             SecondaryRecommendationSummary: hiddenCount > 0
                 ? string.Format(UiStrings.RecommendationSecondarySummaryFormat, hiddenCount)
                 : string.Empty,
-            RecommendationDetails: prioritizedDetails.Select(MapDetail).ToArray(),
+            HasSecondaryRecommendations: hiddenCount > 0,
+            SecondaryRecommendationCount: hiddenCount,
+            SecondaryRecommendationToggleText: hiddenCount > 0
+                ? string.Format(UiStrings.RecommendationSecondaryToggleFormat, hiddenCount)
+                : string.Empty,
+            SecondaryRecommendationHint: hiddenCount > 0
+                ? UiStrings.RecommendationSecondaryHint
+                : string.Empty,
+            RecommendationDetails: primaryDetails.Select(MapDetail).ToArray(),
+            SecondaryRecommendationDetails: secondaryDetails.Select(MapDetail).ToArray(),
             UserGuidedSteps: hasRecommendation
                 ? BuildUserGuidedSteps(hasRecommendation, hasReadyHandoff, officialSourceReady)
                 : Array.Empty<UserGuidedActionStepPresentation>());
     }
 
-    private static IReadOnlyCollection<RecommendationDetailResult> PrioritizeAndFilterDetails(IReadOnlyCollection<RecommendationDetailResult> details)
+    private static IOrderedEnumerable<RecommendationDetailResult> OrderByPriority(IReadOnlyCollection<RecommendationDetailResult> details)
     {
         return details
             .OrderBy(ResolvePriorityBucket)
             .ThenByDescending(detail => detail.HasRecommendation)
-            .ThenBy(detail => HumanizeDeviceLabel(detail.DeviceDisplayName), StringComparer.CurrentCultureIgnoreCase)
-            .Take(MaxPrimaryRecommendationEntries)
-            .ToArray();
+            .ThenBy(detail => HumanizeDeviceLabel(detail.DeviceDisplayName), StringComparer.CurrentCultureIgnoreCase);
     }
 
     private static int ResolvePriorityBucket(RecommendationDetailResult detail)

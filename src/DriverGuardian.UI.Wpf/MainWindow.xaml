@@ -29,6 +29,18 @@
             <Setter Property="Background" Value="White" />
         </Style>
 
+
+        <Style x:Key="SubtleActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="Foreground" Value="#1D4ED8" />
+            <Setter Property="BorderBrush" Value="#BFDBFE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10 4" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
         <Style x:Key="SecondaryCardStyle" TargetType="Border">
             <Setter Property="BorderBrush" Value="#E2E8F0" />
             <Setter Property="BorderThickness" Value="1" />
@@ -276,9 +288,9 @@
                                 <TextBlock Text="{Binding State.Results.RecommendationSectionTitle}" FontWeight="SemiBold" FontSize="17" Foreground="#1E3A8A"/>
                             </DockPanel>
                             <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
-                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 8">
-                                <Border.Style>
-                                    <Style TargetType="Border">
+                            <StackPanel Margin="0 0 0 8">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding State.Results.ShowSecondaryRecommendationSummary}" Value="True">
@@ -286,9 +298,48 @@
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </Border.Style>
-                                <TextBlock Text="{Binding State.Results.SecondaryRecommendationSummary}" TextWrapping="Wrap" Foreground="#334155"/>
-                            </Border>
+                                </StackPanel.Style>
+                                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 6" Background="#F8FAFC">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding State.Results.SecondaryRecommendationSummary}" TextWrapping="Wrap" Foreground="#334155"/>
+                                        <TextBlock Text="{Binding State.Results.SecondaryRecommendationHint}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#475569"/>
+                                        <Button Content="{Binding SecondaryRecommendationAccessText}"
+                                                Command="{Binding ToggleSecondaryRecommendationsCommand}"
+                                                Margin="0 8 0 0"
+                                                Style="{StaticResource SubtleActionButtonStyle}"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Background="#FCFCFF" BorderBrush="#E2E8F0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ShowSecondaryRecommendations}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{x:Static localization:UiStrings.RecommendationSectionTitle}" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                                        <ItemsControl ItemsSource="{Binding State.Results.SecondaryRecommendationDetails}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="5" Padding="8" Margin="0 0 0 6" Background="White">
+                                                        <StackPanel>
+                                                            <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="{Binding WorkflowState}" Margin="0 2 0 0" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding DeviceSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="{Binding Summary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="{Binding CandidateSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
                             <ItemsControl ItemsSource="{Binding State.Results.RecommendationDetails}">
                                 <ItemsControl.Style>
                                     <Style TargetType="ItemsControl">
@@ -471,6 +522,9 @@
                                 </StackPanel.Style>
                                 <TextBlock Text="{Binding State.Results.DiscoveryAndInspectionSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                                 <TextBlock Text="{Binding State.Results.OfficialSourceSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                                <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="6" Padding="8" Background="#F8FBFF">
+                                    <TextBlock Text="{x:Static localization:UiStrings.ResultSurfaceTrustNote}" TextWrapping="Wrap" Foreground="#1E293B"/>
+                                </Border>
                             </StackPanel>
                         </StackPanel>
                     </Border>

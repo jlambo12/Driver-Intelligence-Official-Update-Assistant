@@ -28,6 +28,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _reportMarkdownContent;
     private IReadOnlyCollection<RecentHistoryPresentation> _recentHistory;
     private PreviewScenarioOption? _selectedPreviewScenario;
+    private bool _showSecondaryRecommendations;
 
     private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
     [
@@ -60,6 +61,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
         ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
+        ToggleSecondaryRecommendationsCommand = new AsyncRelayCommand(ToggleSecondaryRecommendationsAsync);
         _ = InitializeAsync();
     }
 
@@ -70,6 +72,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand ExportReportCommand { get; }
     public ICommand ApplyPreviewScenarioCommand { get; }
     public IReadOnlyList<ReportFormatOption> AvailableReportFormats => ReportFormatItems;
+
+    public ICommand ToggleSecondaryRecommendationsCommand { get; }
 
     public bool IsPreviewMode => _previewWorkflow is not null;
 
@@ -92,6 +96,28 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+
+    public bool ShowSecondaryRecommendations
+    {
+        get => _showSecondaryRecommendations;
+        private set
+        {
+            if (_showSecondaryRecommendations == value)
+            {
+                return;
+            }
+
+            _showSecondaryRecommendations = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SecondaryRecommendationAccessText));
+        }
+    }
+
+    public string SecondaryRecommendationAccessText =>
+        ShowSecondaryRecommendations
+            ? UiStrings.RecommendationSecondaryCollapseAction
+            : State.Results.SecondaryRecommendationToggleText;
+
     public MainUiState State
     {
         get => _state;
@@ -99,6 +125,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             _state = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SecondaryRecommendationAccessText));
         }
     }
 
@@ -187,6 +214,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             return;
         }
 
+        ShowSecondaryRecommendations = false;
+
         State = State with
         {
             TitleText = UiStrings.PreviewWindowTitle,
@@ -227,6 +256,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             _reportMarkdownContent = string.Empty;
             _reportFileNameBase = "driverguardian-preview-first-run";
             ReportExportStatusText = UiStrings.ReportExportStatusNoData;
+            ShowSecondaryRecommendations = false;
             State = MainUiState.Initial(
                 UiStrings.PreviewWindowTitle,
                 string.Format(UiStrings.PreviewModeStatusFormat, scenario.DisplayName),
@@ -248,6 +278,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             status = string.Format(UiStrings.PreviewModeStatusFormat, scenarioName ?? string.Empty);
         }
+
+        ShowSecondaryRecommendations = false;
 
         State = State with
         {
@@ -311,6 +343,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
             ReportFileSaveResult.FailedToWrite => UiStrings.ReportExportStatusSaveFailed,
             _ => UiStrings.ReportExportStatusSaveFailed
         };
+    }
+
+    private Task ToggleSecondaryRecommendationsAsync()
+    {
+        if (!State.Results.HasSecondaryRecommendations)
+        {
+            ShowSecondaryRecommendations = false;
+            return Task.CompletedTask;
+        }
+
+        ShowSecondaryRecommendations = !ShowSecondaryRecommendations;
+        return Task.CompletedTask;
     }
 
     private IReadOnlyList<PreviewScenarioOption> BuildPreviewOptions()

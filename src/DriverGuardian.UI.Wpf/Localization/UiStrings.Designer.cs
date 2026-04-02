@@ -48,6 +48,10 @@ public static class UiStrings
     public static string RecommendationSectionTitle => Resources.Recommendation_Section_Title;
     public static string RecommendationSectionHint => Resources.Recommendation_Section_Hint;
     public static string RecommendationSecondarySummaryFormat => Resources.Recommendation_Secondary_Summary_Format;
+    public static string RecommendationSecondaryToggleFormat => Resources.Recommendation_Secondary_Toggle_Format;
+    public static string RecommendationSecondaryHint => Resources.Recommendation_Secondary_Hint;
+    public static string RecommendationSecondaryCollapseAction => Resources.Recommendation_Secondary_Collapse_Action;
+    public static string ResultSurfaceTrustNote => Resources.Result_Surface_Trust_Note;
     public static string RecommendationEmptyStatePreScan => Resources.Recommendation_Empty_State_Pre_Scan;
     public static string RecommendationEmptyStateNoAction => Resources.Recommendation_Empty_State_No_Action;
     public static string RecommendationEmptyState => Resources.Recommendation_Empty_State;
