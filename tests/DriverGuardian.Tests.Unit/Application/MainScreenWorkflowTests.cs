@@ -20,11 +20,13 @@ public sealed class MainScreenWorkflowTests
     {
         var auditWriter = new FakeAuditWriter();
         var historyRepository = new FakeHistoryRepository();
+        var logger = new RecordingDiagnosticLogger();
         var workflow = new MainScreenWorkflow(
             new FakeScanOrchestrator(),
             new FakeRecommendationPipeline(),
             new FakeProviderCatalogSummaryService(),
             new FakeSettingsRepository(),
+            logger,
             auditWriter,
             historyRepository,
             new OpenOfficialSourceActionEvaluator(),
@@ -53,6 +55,34 @@ public sealed class MainScreenWorkflowTests
         Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);
         Assert.Contains(historyRepository.Entries, entry => entry is VerificationHistoryEntry);
         Assert.Single(auditWriter.Entries);
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.start:", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.discovery.completed:", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.inspection.completed:", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.recommendation.completed:", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.official_source.state:", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.history_report.completed:", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.summary:", StringComparison.Ordinal));
+        Assert.Empty(logger.ErrorEvents);
+    }
+
+    [Fact]
+    public async Task RunScanAsync_WhenScanFails_ShouldLogErrorAndRethrow()
+    {
+        var logger = new RecordingDiagnosticLogger();
+        var workflow = new MainScreenWorkflow(
+            new ThrowingScanOrchestrator(),
+            new FakeRecommendationPipeline(),
+            new FakeProviderCatalogSummaryService(),
+            new FakeSettingsRepository(),
+            logger,
+            new FakeAuditWriter(),
+            new FakeHistoryRepository(),
+            new OpenOfficialSourceActionEvaluator(),
+            new ShareableReportBuilder());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => workflow.RunScanAsync(CancellationToken.None));
+        Assert.Single(logger.ErrorEvents);
+        Assert.StartsWith("scan.workflow.failed:", logger.ErrorEvents[0], StringComparison.Ordinal);
     }
 
     private sealed class FakeScanOrchestrator : IScanOrchestrator
@@ -142,6 +172,30 @@ public sealed class MainScreenWorkflowTests
         {
             LastRequestedTake = take;
             return Task.FromResult<IReadOnlyCollection<ResultHistoryEntry>>(Entries.Take(take).ToArray());
+        }
+    }
+
+    private sealed class ThrowingScanOrchestrator : IScanOrchestrator
+    {
+        public Task<ScanResult> RunAsync(CancellationToken cancellationToken)
+            => throw new InvalidOperationException("scan failure");
+    }
+
+    private sealed class RecordingDiagnosticLogger : IDiagnosticLogger
+    {
+        public List<string> InfoEvents { get; } = [];
+        public List<string> ErrorEvents { get; } = [];
+
+        public Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken)
+        {
+            InfoEvents.Add($"{eventName}:{message}");
+            return Task.CompletedTask;
+        }
+
+        public Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken)
+        {
+            ErrorEvents.Add($"{eventName}:{message}:{exception.GetType().Name}");
+            return Task.CompletedTask;
         }
     }
 }

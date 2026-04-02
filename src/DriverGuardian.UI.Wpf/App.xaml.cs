@@ -14,6 +14,7 @@ using DriverGuardian.Application.Scanning;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Contracts.DriverInspection;
 using DriverGuardian.Infrastructure.Audit;
+using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.History;
 using DriverGuardian.Infrastructure.Settings;
 using DriverGuardian.Infrastructure.Time;
@@ -37,9 +38,16 @@ public partial class App : WpfApplication
 
         var previewModeEnabled = IsPreviewModeEnabled(e.Args);
         ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
+        var defaultLogsDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "DriverGuardian",
+            "Logs");
+        IDiagnosticLogger diagnosticLogger = previewModeEnabled
+            ? new NoOpDiagnosticLogger()
+            : new FileDiagnosticLogger(defaultLogsDirectory);
         IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
             ? new PreviewScenarioMainScreenWorkflow()
-            : BuildProductionWorkflow(settingsRepository);
+            : BuildProductionWorkflow(settingsRepository, diagnosticLogger);
 
         var vm = new MainViewModel(mainScreenWorkflow, settingsRepository, new ReportFileSaveService());
         var window = new MainWindow { DataContext = vm };
@@ -64,7 +72,9 @@ public partial class App : WpfApplication
         return new JsonFileSettingsRepository(settingsFilePath);
     }
 
-    private static IMainScreenWorkflow BuildProductionWorkflow(ISettingsRepository settingsRepository)
+    private static IMainScreenWorkflow BuildProductionWorkflow(
+        ISettingsRepository settingsRepository,
+        IDiagnosticLogger diagnosticLogger)
     {
         IClock clock = new SystemClock();
         IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService();
@@ -84,6 +94,7 @@ public partial class App : WpfApplication
             recommendationPipeline,
             providerSummaryService,
             settingsRepository,
+            diagnosticLogger,
             auditWriter,
             resultHistoryRepository,
             openOfficialSourceActionEvaluator,
