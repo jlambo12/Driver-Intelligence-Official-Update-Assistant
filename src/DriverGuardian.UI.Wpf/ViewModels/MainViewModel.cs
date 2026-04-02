@@ -28,6 +28,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _reportMarkdownContent;
     private IReadOnlyCollection<RecentHistoryPresentation> _recentHistory;
     private PreviewScenarioOption? _selectedPreviewScenario;
+    private bool _showSecondaryRecommendations;
 
     private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
     [
@@ -56,6 +57,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _recentHistory = Array.Empty<RecentHistoryPresentation>();
         AvailablePreviewScenarios = BuildPreviewOptions();
         _selectedPreviewScenario = AvailablePreviewScenarios.FirstOrDefault();
+        _showSecondaryRecommendations = false;
         ScanCommand = new AsyncRelayCommand(ScanAsync);
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
@@ -88,6 +90,22 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             _selectedPreviewScenario = value;
+            OnPropertyChanged();
+        }
+    }
+
+
+    public bool ShowSecondaryRecommendations
+    {
+        get => _showSecondaryRecommendations;
+        set
+        {
+            if (_showSecondaryRecommendations == value)
+            {
+                return;
+            }
+
+            _showSecondaryRecommendations = value;
             OnPropertyChanged();
         }
     }
@@ -227,6 +245,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             _reportMarkdownContent = string.Empty;
             _reportFileNameBase = "driverguardian-preview-first-run";
             ReportExportStatusText = UiStrings.ReportExportStatusNoData;
+            ShowSecondaryRecommendations = false;
             State = MainUiState.Initial(
                 UiStrings.PreviewWindowTitle,
                 string.Format(UiStrings.PreviewModeStatusFormat, scenario.DisplayName),
@@ -256,6 +275,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             StatusText = status,
             Results = ScanResultsPresentation.FromResult(result)
         };
+        ShowSecondaryRecommendations = false;
         RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);
         _reportFileNameBase = result.ReportExportPayload.FileNameBase;
         _reportPlainTextContent = result.ReportExportPayload.PlainTextContent;

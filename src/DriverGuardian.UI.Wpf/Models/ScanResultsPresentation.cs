@@ -19,6 +19,12 @@ public sealed record ScanResultsPresentation(
     string RecommendationSectionTitle,
     string RecommendationSectionHint,
     string RecommendationEmptyState,
+    string PrimaryRecommendationSummary,
+    bool ShowSecondaryRecommendationSummary,
+    string SecondaryRecommendationSummary,
+    string SecondaryRecommendationToggleLabel,
+    string SecondaryRecommendationHideLabel,
+    int SecondaryRecommendationCount,
     string ManualSectionTitle,
     string ManualSectionHint,
     string ManualSectionEmptyState,
@@ -27,9 +33,8 @@ public sealed record ScanResultsPresentation(
     string VerificationRescanHint,
     string VerificationEmptyState,
     bool ShowVerificationEmptyState,
-    bool ShowSecondaryRecommendationSummary,
-    string SecondaryRecommendationSummary,
     IReadOnlyCollection<RecommendationDetailPresentation> RecommendationDetails,
+    IReadOnlyCollection<RecommendationDetailPresentation> SecondaryRecommendationDetails,
     IReadOnlyCollection<UserGuidedActionStepPresentation> UserGuidedSteps)
 {
     private const int MaxPrimaryRecommendationEntries = 6;
@@ -51,6 +56,12 @@ public sealed record ScanResultsPresentation(
             UiStrings.RecommendationSectionTitle,
             UiStrings.RecommendationSectionHint,
             UiStrings.RecommendationEmptyStatePreScan,
+            string.Empty,
+            false,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            0,
             UiStrings.ManualSectionTitle,
             UiStrings.ManualSectionHint,
             UiStrings.ManualSectionEmptyState,
@@ -59,8 +70,7 @@ public sealed record ScanResultsPresentation(
             UiStrings.VerificationRescanHintNoAction,
             UiStrings.VerificationSectionEmptyStatePreScan,
             true,
-            false,
-            string.Empty,
+            Array.Empty<RecommendationDetailPresentation>(),
             Array.Empty<RecommendationDetailPresentation>(),
             Array.Empty<UserGuidedActionStepPresentation>());
 
@@ -71,7 +81,11 @@ public sealed record ScanResultsPresentation(
         var officialSourceReady = result.OfficialSourceAction.IsReady;
 
         var prioritizedDetails = PrioritizeAndFilterDetails(result.RecommendationDetails);
-        var hiddenCount = result.RecommendationDetails.Count - prioritizedDetails.Count;
+        var secondaryDetails = result.RecommendationDetails
+            .Except(prioritizedDetails)
+            .OrderBy(detail => HumanizeDeviceLabel(detail.DeviceDisplayName), StringComparer.CurrentCultureIgnoreCase)
+            .ToArray();
+        var hiddenCount = secondaryDetails.Length;
 
         return new ScanResultsPresentation(
             HasScanData: true,
@@ -89,6 +103,18 @@ public sealed record ScanResultsPresentation(
             RecommendationSectionTitle: UiStrings.RecommendationSectionTitle,
             RecommendationSectionHint: UiStrings.RecommendationSectionHint,
             RecommendationEmptyState: hasRecommendation ? UiStrings.RecommendationEmptyState : UiStrings.RecommendationEmptyStateNoAction,
+            PrimaryRecommendationSummary: string.Format(UiStrings.RecommendationPrimarySummaryFormat, prioritizedDetails.Count, result.RecommendationDetails.Count),
+            ShowSecondaryRecommendationSummary: hiddenCount > 0,
+            SecondaryRecommendationSummary: hiddenCount > 0
+                ? string.Format(UiStrings.RecommendationSecondarySummaryFormat, hiddenCount)
+                : string.Empty,
+            SecondaryRecommendationToggleLabel: hiddenCount > 0
+                ? string.Format(UiStrings.RecommendationSecondaryToggleFormat, hiddenCount)
+                : string.Empty,
+            SecondaryRecommendationHideLabel: UiStrings.RecommendationSecondaryHide,
+            SecondaryRecommendationCount: hiddenCount,
+            RecommendationDetails: prioritizedDetails.Select(MapDetail).ToArray(),
+            SecondaryRecommendationDetails: secondaryDetails.Select(MapDetail).ToArray(),
             ManualSectionTitle: UiStrings.ManualSectionTitle,
             ManualSectionHint: UiStrings.ManualSectionHint,
             ManualSectionEmptyState: UiStrings.ManualSectionEmptyState,
@@ -97,11 +123,6 @@ public sealed record ScanResultsPresentation(
             VerificationRescanHint: hasRecommendation ? UiStrings.VerificationRescanHint : UiStrings.VerificationRescanHintNoAction,
             VerificationEmptyState: hasRecommendation ? string.Empty : UiStrings.VerificationSectionEmptyStateNoAction,
             ShowVerificationEmptyState: !hasRecommendation,
-            ShowSecondaryRecommendationSummary: hiddenCount > 0,
-            SecondaryRecommendationSummary: hiddenCount > 0
-                ? string.Format(UiStrings.RecommendationSecondarySummaryFormat, hiddenCount)
-                : string.Empty,
-            RecommendationDetails: prioritizedDetails.Select(MapDetail).ToArray(),
             UserGuidedSteps: hasRecommendation
                 ? BuildUserGuidedSteps(hasRecommendation, hasReadyHandoff, officialSourceReady)
                 : Array.Empty<UserGuidedActionStepPresentation>());
