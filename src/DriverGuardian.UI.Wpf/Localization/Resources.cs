@@ -29,6 +29,9 @@ public static class Resources
     public static string Action_Status_Wait => GetString(nameof(Action_Status_Wait));
     public static string Action_Status_Not_Available => GetString(nameof(Action_Status_Not_Available));
     public static string Action_Status_Return => GetString(nameof(Action_Status_Return));
+    public static string Action_Status_No_Action_Needed => GetString(nameof(Action_Status_No_Action_Needed));
+    public static string Action_Status_Waiting_For_Return => GetString(nameof(Action_Status_Waiting_For_Return));
+    public static string Action_Status_Verification_Expected => GetString(nameof(Action_Status_Verification_Expected));
     public static string Action_Step_Review_Recommendation => GetString(nameof(Action_Step_Review_Recommendation));
     public static string Action_Step_Review_Recommendation_Hint => GetString(nameof(Action_Step_Review_Recommendation_Hint));
     public static string Action_Step_Open_Official_Source => GetString(nameof(Action_Step_Open_Official_Source));

@@ -163,6 +163,8 @@ public sealed record ScanResultsPresentation(
         var deviceTitle = BuildDeviceTitle(detail);
         var technicalSummary = BuildTechnicalIdentifierSummary(detail.DeviceId);
 
+        var verificationStateLabel = ResolveVerificationStateLabel(detail);
+
         return new RecommendationDetailPresentation(
             recommendationTitle,
             state.State,
@@ -173,7 +175,7 @@ public sealed record ScanResultsPresentation(
             candidateSummary,
             string.Format(UiStrings.RecommendationManualHandoffFormat, detail.ManualHandoffReady ? UiStrings.ActionStatusAvailable : UiStrings.ActionStatusBlocked),
             string.Format(UiStrings.RecommendationManualActionFormat, detail.ManualActionRequired ? UiStrings.ActionStatusRequired : UiStrings.ActionStatusWait),
-            string.Format(UiStrings.RecommendationVerificationFormat, detail.VerificationAvailable ? UiStrings.ActionStatusReturn : UiStrings.ActionStatusWait),
+            string.Format(UiStrings.RecommendationVerificationFormat, verificationStateLabel),
             string.Format(UiStrings.RecommendationVerificationStatusFormat, detail.VerificationStatus),
             nextStep);
     }
@@ -232,6 +234,18 @@ public sealed record ScanResultsPresentation(
         }
 
         return (UiStrings.RecommendationStateBlocked, UiStrings.RecommendationStateBlockedHint);
+    }
+
+    private static string ResolveVerificationStateLabel(RecommendationDetailResult detail)
+    {
+        if (!detail.VerificationAvailable)
+        {
+            return UiStrings.ActionStatusNoActionNeeded;
+        }
+
+        return detail.ManualHandoffReady
+            ? UiStrings.ActionStatusVerificationExpected
+            : UiStrings.ActionStatusWaitingForReturn;
     }
 
     private static string BuildOfficialSourceSummary(OpenOfficialSourceActionResult officialSourceAction)
@@ -294,7 +308,9 @@ public sealed record ScanResultsPresentation(
         var sourceStatus = officialSourceReady ? UiStrings.ActionStatusAvailable : UiStrings.ActionStatusBlocked;
         var handoffStatus = hasReadyHandoff ? UiStrings.ActionStatusAvailable : UiStrings.ActionStatusBlocked;
         var manualInstallStatus = hasRecommendation ? UiStrings.ActionStatusRequired : UiStrings.ActionStatusWait;
-        var verificationStatus = hasRecommendation ? UiStrings.ActionStatusReturn : UiStrings.ActionStatusWait;
+        var verificationStatus = hasRecommendation
+            ? (hasReadyHandoff ? UiStrings.ActionStatusVerificationExpected : UiStrings.ActionStatusWaitingForReturn)
+            : UiStrings.ActionStatusNoActionNeeded;
 
         return
         [

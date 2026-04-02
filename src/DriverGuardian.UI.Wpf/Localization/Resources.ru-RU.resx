@@ -61,7 +61,7 @@
     <value>рекомендация не сформирована</value>
   </data>
   <data name="Action_Status_Return" xml:space="preserve">
-    <value>вернитесь и запустите анализ снова</value>
+    <value>вернитесь для проверки после ручной установки</value>
   </data>
   <data name="Action_Step_Review_Recommendation" xml:space="preserve">
     <value>Проверить рекомендации</value>
@@ -91,7 +91,7 @@
     <value>Вернуться для проверки</value>
   </data>
   <data name="Action_Step_Return_For_Verification_Hint" xml:space="preserve">
-    <value>После ручной установки снова запустите анализ для проверки изменений.</value>
+    <value>После ручной установки вернитесь в DriverGuardian и запустите повторный анализ: так вы подтвердите результат.</value>
   </data>
   <data name="Official_Source_Summary_Ready_Format" xml:space="preserve">
     <value>Официальный источник подтверждён: {0}</value>
@@ -124,10 +124,10 @@
     <value>Действие пользователя: {0}</value>
   </data>
   <data name="Recommendation_Verification_Format" xml:space="preserve">
-    <value>Проверка: {0}</value>
+    <value>Проверка после установки: {0}</value>
   </data>
   <data name="Recommendation_Verification_Status_Format" xml:space="preserve">
-    <value>Статус возврата: {0}</value>
+    <value>Состояние проверки: {0}</value>
   </data>
   <data name="Recommendation_Title_Recommended" xml:space="preserve">
     <value>Рекомендовано обновление драйвера</value>
@@ -358,13 +358,13 @@
     <value>Возврат для проверки после ручной установки</value>
   </data>
   <data name="Verification_Section_Hint" xml:space="preserve">
-    <value>После внешней установки вернитесь и повторно запустите анализ, чтобы сверить изменения.</value>
+    <value>После внешней ручной установки вернитесь и повторно запустите анализ. Это подтвердит, что изменения действительно применились.</value>
   </data>
   <data name="Verification_Rescan_Hint" xml:space="preserve">
-    <value>Если вы уже устанавливали драйвер вручную, запустите анализ ещё раз сейчас.</value>
+    <value>Если ручная установка уже выполнена, повторный анализ можно запустить сейчас — проверка доступна.</value>
   </data>
   <data name="Verification_Rescan_Hint_No_Action" xml:space="preserve">
-    <value>Когда выполните ручную установку в будущем, вернитесь и запустите анализ повторно.</value>
+    <value>Сейчас действие не требуется. Когда выполните ручную установку, вернитесь и запустите повторный анализ.</value>
   </data>
   <data name="Recent_History_Section_Hint" xml:space="preserve">
     <value>История помогает продолжить безопасный сценарий: что уже проверено и какой шаг следующий.</value>
@@ -381,7 +381,7 @@
   <data name="Recent_History_Unknown_Guidance" xml:space="preserve">
     <value>Проверьте новый анализ, чтобы получить структурированную запись.</value>
   </data>
-<data name="Status_Initial" xml:space="preserve"><value>Готово к первому анализу. Нажмите «Запустить анализ», чтобы получить безопасную сводку.</value></data><data name="Status_Scan_Completed_Ready" xml:space="preserve"><value>Анализ завершён: доступны безопасные рекомендации для ручной проверки.</value></data><data name="Status_Scan_Completed_No_Action" xml:space="preserve"><value>Анализ завершён: сейчас нет безопасных рекомендаций для ручного действия.</value></data><data name="Scan_Overview_Empty_State" xml:space="preserve"><value>После первого анализа здесь появится сводка: что проверено, есть ли безопасные рекомендации и какие ручные шаги имеют подтверждение.</value></data><data name="Recommendation_Empty_State_Pre_Scan" xml:space="preserve"><value>Запустите первый анализ, чтобы увидеть понятные выводы по устройствам, ограничения безопасности и следующий ручной шаг.</value></data><data name="Recommendation_Empty_State_No_Action" xml:space="preserve"><value>По текущему анализу безопасных рекомендаций для ручного обновления нет. Это осторожный результат: для действия пока недостаточно подтверждений от источников.</value></data><data name="Manual_Section_Empty_State" xml:space="preserve"><value>Пока ручные шаги не сформированы. Сначала выполните анализ и проверьте, есть ли безопасная рекомендация.</value></data><data name="Verification_Section_Empty_State_Pre_Scan" xml:space="preserve"><value>Проверка становится актуальной после ручной установки драйвера вне приложения.</value></data><data name="Verification_Section_Empty_State_No_Action" xml:space="preserve"><value>Сейчас возвращаться для проверки не требуется: сначала нужен подтверждённый сценарий ручной установки.</value></data><data name="Preview_Window_Title" xml:space="preserve"><value>DriverGuardian — режим предпросмотра</value></data><data name="Preview_Mode_Section_Title" xml:space="preserve"><value>Режим предпросмотра продукта</value></data><data name="Preview_Mode_Banner" xml:space="preserve"><value>Показаны демонстрационные сценарии. Эти данные не являются результатом реального анализа системы.</value></data><data name="Preview_Mode_Scenario_Label" xml:space="preserve"><value>Сценарий предпросмотра</value></data><data name="Preview_Apply_Scenario_Action" xml:space="preserve"><value>Применить сценарий предпросмотра</value></data><data name="Preview_Mode_Status_Format" xml:space="preserve"><value>Предпросмотр: {0}. Данные демонстрационные и не относятся к этому устройству.</value></data><data name="Preview_Scenario_First_Run" xml:space="preserve"><value>1) Первый запуск / до анализа</value></data><data name="Preview_Scenario_No_Action" xml:space="preserve"><value>2) Рекомендаций для действия нет</value></data><data name="Preview_Scenario_Limited_Evidence" xml:space="preserve"><value>3) Рекомендация есть, но доказательств недостаточно</value></data><data name="Preview_Scenario_Manual_Ready" xml:space="preserve"><value>4) Рекомендация готова к безопасному ручному действию</value></data><data name="Preview_Scenario_Verification_Return" xml:space="preserve"><value>5) Возврат для проверки / повторный анализ</value></data><data name="Preview_Scenario_History_Export" xml:space="preserve"><value>6) Заполненная история и готовность экспорта отчёта</value></data><data name="Recommendation_Secondary_Summary_Format" xml:space="preserve"><value>Показаны наиболее важные позиции. Остальные записи (ещё {0}) скрыты в этом представлении, чтобы не перегружать основной сценарий.</value></data>
+<data name="Status_Initial" xml:space="preserve"><value>Готово к первому анализу. Нажмите «Запустить анализ», чтобы получить безопасную сводку.</value></data><data name="Status_Scan_Completed_Ready" xml:space="preserve"><value>Анализ завершён: доступны безопасные рекомендации для ручной проверки.</value></data><data name="Status_Scan_Completed_No_Action" xml:space="preserve"><value>Анализ завершён: сейчас нет безопасных рекомендаций для ручного действия.</value></data><data name="Scan_Overview_Empty_State" xml:space="preserve"><value>После первого анализа здесь появится сводка: что проверено, есть ли безопасные рекомендации и какие ручные шаги имеют подтверждение.</value></data><data name="Recommendation_Empty_State_Pre_Scan" xml:space="preserve"><value>Запустите первый анализ, чтобы увидеть понятные выводы по устройствам, ограничения безопасности и следующий ручной шаг.</value></data><data name="Recommendation_Empty_State_No_Action" xml:space="preserve"><value>По текущему анализу безопасных рекомендаций для ручного обновления нет. Это осторожный результат: для действия пока недостаточно подтверждений от источников.</value></data><data name="Manual_Section_Empty_State" xml:space="preserve"><value>Пока ручные шаги не сформированы. Сначала выполните анализ и проверьте, есть ли безопасная рекомендация.</value></data><data name="Verification_Section_Empty_State_Pre_Scan" xml:space="preserve"><value>Проверка становится актуальной после ручной установки драйвера вне приложения.</value></data><data name="Verification_Section_Empty_State_No_Action" xml:space="preserve"><value>Сейчас действие не требуется: нет устройств, для которых ожидается возврат на проверку.</value></data><data name="Preview_Window_Title" xml:space="preserve"><value>DriverGuardian — режим предпросмотра</value></data><data name="Preview_Mode_Section_Title" xml:space="preserve"><value>Режим предпросмотра продукта</value></data><data name="Preview_Mode_Banner" xml:space="preserve"><value>Показаны демонстрационные сценарии. Эти данные не являются результатом реального анализа системы.</value></data><data name="Preview_Mode_Scenario_Label" xml:space="preserve"><value>Сценарий предпросмотра</value></data><data name="Preview_Apply_Scenario_Action" xml:space="preserve"><value>Применить сценарий предпросмотра</value></data><data name="Preview_Mode_Status_Format" xml:space="preserve"><value>Предпросмотр: {0}. Данные демонстрационные и не относятся к этому устройству.</value></data><data name="Preview_Scenario_First_Run" xml:space="preserve"><value>1) Первый запуск / до анализа</value></data><data name="Preview_Scenario_No_Action" xml:space="preserve"><value>2) Рекомендаций для действия нет</value></data><data name="Preview_Scenario_Limited_Evidence" xml:space="preserve"><value>3) Рекомендация есть, но доказательств недостаточно</value></data><data name="Preview_Scenario_Manual_Ready" xml:space="preserve"><value>4) Рекомендация готова к безопасному ручному действию</value></data><data name="Preview_Scenario_Verification_Return" xml:space="preserve"><value>5) Возврат для проверки / повторный анализ</value></data><data name="Preview_Scenario_History_Export" xml:space="preserve"><value>6) Заполненная история и готовность экспорта отчёта</value></data><data name="Recommendation_Secondary_Summary_Format" xml:space="preserve"><value>Показаны наиболее важные позиции. Остальные записи (ещё {0}) скрыты в этом представлении, чтобы не перегружать основной сценарий.</value></data>
   <data name="Recommendation_Primary_Summary_Format" xml:space="preserve">
     <value>На основном экране показано приоритетных записей: {0} из {1}.</value>
   </data>
@@ -392,4 +392,4 @@
     <value>Дополнительные записи остаются вспомогательными и не влияют на основной приоритетный список.</value>
   </data>
 
-</root>
+<data name="Action_Status_No_Action_Needed" xml:space="preserve"><value>действие не требуется</value></data><data name="Action_Status_Waiting_For_Return" xml:space="preserve"><value>ожидается возврат пользователя</value></data><data name="Action_Status_Verification_Expected" xml:space="preserve"><value>проверка доступна после возврата</value></data></root>

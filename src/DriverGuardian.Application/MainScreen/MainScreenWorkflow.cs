@@ -207,8 +207,8 @@ public sealed class MainScreenWorkflow(
                     ManualActionRequired: hasRecommendation,
                     VerificationAvailable: hasRecommendation,
                     VerificationStatus: hasRecommendation
-                        ? "Ожидается возврат пользователя после ручной установки."
-                        : "Проверка после установки сейчас не требуется.");
+                        ? "Ожидается ваш возврат: после ручной установки выполните повторный анализ для проверки результата."
+                        : "Действие не требуется: возврат для проверки по этому устройству не ожидается.");
             })
             .Where(detail =>
             {
@@ -233,8 +233,8 @@ public sealed class MainScreenWorkflow(
     {
         var waitingForReturnCount = recommendationDetails.Count(detail => detail.VerificationAvailable);
         return waitingForReturnCount > 0
-            ? $"Ожидается возврат для проверки по устройствам: {waitingForReturnCount}."
-            : "Активных задач на возврат для проверки нет.";
+            ? $"Ожидается возврат пользователя по {waitingForReturnCount} устройств(ам). После ручной установки вернитесь и запустите повторный анализ: проверка будет доступна сразу."
+            : "Действие не требуется: активных задач на возврат для проверки нет.";
     }
 
     private static OpenOfficialSourceActionResult BuildOfficialSourceAction(

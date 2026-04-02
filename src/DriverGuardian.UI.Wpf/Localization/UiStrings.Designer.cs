@@ -24,6 +24,9 @@ public static class UiStrings
     public static string ActionStatusWait => Resources.Action_Status_Wait;
     public static string ActionStatusNotAvailable => Resources.Action_Status_Not_Available;
     public static string ActionStatusReturn => Resources.Action_Status_Return;
+    public static string ActionStatusNoActionNeeded => Resources.Action_Status_No_Action_Needed;
+    public static string ActionStatusWaitingForReturn => Resources.Action_Status_Waiting_For_Return;
+    public static string ActionStatusVerificationExpected => Resources.Action_Status_Verification_Expected;
     public static string ActionStepReviewRecommendation => Resources.Action_Step_Review_Recommendation;
     public static string ActionStepReviewRecommendationHint => Resources.Action_Step_Review_Recommendation_Hint;
     public static string ActionStepOpenOfficialSource => Resources.Action_Step_Open_Official_Source;
