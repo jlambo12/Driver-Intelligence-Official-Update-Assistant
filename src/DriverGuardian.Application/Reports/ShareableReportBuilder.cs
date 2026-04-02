@@ -176,13 +176,13 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
 
     private static string MapOfficialSourceConfidence(ManualInstallHandoffReportItem handoff)
     {
-        var evidence = handoff.Decision.PackageReference?.Evidence;
+        var evidence = handoff.Decision.PackageReference?.SourceEvidence;
         if (evidence is null)
         {
             return "Unconfirmed";
         }
 
-        if (evidence.IsOfficiallyConfirmed &&
+        if (evidence.IsOfficialSource &&
             evidence.TrustLevel == ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.OfficialPublisherSite)
         {
             return "Confirmed official publisher source";
@@ -191,15 +191,16 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
         return evidence.TrustLevel switch
         {
             ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.OfficialPublisherSite => "Likely official source (not confirmed)",
-            ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.AggregatorOrMirror => "Unconfirmed third-party source",
+            ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.OemSupportPortal => "Unconfirmed third-party source",
+            ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.OperatingSystemCatalog => "Unconfirmed third-party source",
             _ => "Unconfirmed"
         };
     }
 
     private static string BuildOfficialSourceGuidance(ManualInstallHandoffReportItem handoff)
     {
-        var evidence = handoff.Decision.PackageReference?.Evidence;
-        if (evidence?.IsOfficiallyConfirmed == true)
+        var evidence = handoff.Decision.PackageReference?.SourceEvidence;
+        if (evidence?.IsOfficialSource == true)
         {
             return "Review the vendor page and complete installation manually.";
         }
