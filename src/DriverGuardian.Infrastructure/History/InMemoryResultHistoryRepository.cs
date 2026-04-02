@@ -5,7 +5,7 @@ namespace DriverGuardian.Infrastructure.History;
 
 public sealed class InMemoryResultHistoryRepository : IResultHistoryRepository
 {
-    private readonly Lock _gate = new();
+    private readonly object _gate = new();
     private readonly List<ResultHistoryEntry> _entries = [];
 
     public Task SaveAsync(ResultHistoryEntry entry, CancellationToken cancellationToken)
