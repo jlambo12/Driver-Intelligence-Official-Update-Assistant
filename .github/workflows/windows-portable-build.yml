@@ -50,13 +50,9 @@ jobs:
 
       - name: Publish WPF app (win-x64 portable)
         run: |
-          & dotnet publish "${{ env.PROJECT_PATH }}"
-          --configuration Release
-          --runtime win-x64
-          --self-contained false
-          --no-restore
-          --output "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}" *>&1
-          | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/publish.log"
+          & dotnet publish "${{ env.PROJECT_PATH }}" --configuration Release --runtime win-x64 --self-contained false --no-restore `
+            --output "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}" *>&1 `
+            | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/publish.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload portable app artifact
