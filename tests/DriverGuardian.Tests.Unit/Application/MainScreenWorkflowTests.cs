@@ -45,7 +45,7 @@ public sealed class MainScreenWorkflowTests
         Assert.Equal("ru-RU", result.UiCulture);
         Assert.False(string.IsNullOrWhiteSpace(result.ReportExportPayload.FileNameBase));
         Assert.False(string.IsNullOrWhiteSpace(result.ReportExportPayload.PlainTextContent));
-        Assert.Contains("DriverGuardian Scan Report", result.ReportExportPayload.MarkdownContent);
+        Assert.Contains("DriverGuardian Shareable Scan Report", result.ReportExportPayload.MarkdownContent);
         Assert.Single(result.RecommendationDetails);
         Assert.False(result.OfficialSourceAction.IsReady);
         Assert.Equal(3, result.RecentHistory.Count);

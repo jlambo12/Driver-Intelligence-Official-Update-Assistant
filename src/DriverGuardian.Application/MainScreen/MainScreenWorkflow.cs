@@ -171,7 +171,7 @@ public sealed class MainScreenWorkflow(
                 [],
                 generatedAtUtc));
         var plainTextContent = reportBuilder.BuildStructuredText(report);
-        var markdownContent = $"# DriverGuardian Scan Report{Environment.NewLine}{Environment.NewLine}```text{Environment.NewLine}{plainTextContent}{Environment.NewLine}```";
+        var markdownContent = $"# DriverGuardian Shareable Scan Report{Environment.NewLine}{Environment.NewLine}```text{Environment.NewLine}{plainTextContent}{Environment.NewLine}```";
         var fileNameBase = $"driverguardian-report-{scanResult.Session.Id:N}";
 
         return new ReportExportPayload(fileNameBase, plainTextContent, markdownContent);
