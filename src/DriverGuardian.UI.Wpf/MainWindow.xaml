@@ -11,6 +11,33 @@
         MinWidth="920"
         Background="#F1F5F9"
         WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style x:Key="PrimaryWorkflowCardStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#BFDBFE" />
+            <Setter Property="BorderThickness" Value="1.2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0 0 0 12" />
+            <Setter Property="Background" Value="#F8FBFF" />
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#DBEAFE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="9" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+
+        <Style x:Key="SecondaryCardStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="11" />
+            <Setter Property="Margin" Value="0 0 0 10" />
+            <Setter Property="Background" Value="#FFFFFF" />
+        </Style>
+    </Window.Resources>
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -18,12 +45,12 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
-                BorderBrush="#94A3B8"
+                BorderBrush="#BFD4EA"
                 BorderThickness="1"
-                CornerRadius="10"
+                CornerRadius="11"
                 Padding="14"
-                Background="#F8FAFC"
-                Margin="0 0 0 10">
+                Background="#F8FBFF"
+                Margin="0 0 0 12">
             <StackPanel>
                 <Grid Margin="0 0 0 8">
                     <Grid.ColumnDefinitions>
@@ -50,9 +77,9 @@
                             BorderThickness="1.5" />
                 </Grid>
 
-                <Border BorderBrush="#CBD5E1"
+                <Border BorderBrush="#DBEAFE"
                         BorderThickness="1"
-                        CornerRadius="6"
+                        CornerRadius="7"
                         Padding="10"
                         Background="White">
                     <StackPanel>
@@ -87,12 +114,12 @@
                     </StackPanel>
                 </Border>
 
-                <Border BorderBrush="#C7D2FE"
+                <Border BorderBrush="#BFDBFE"
                         BorderThickness="1"
-                        CornerRadius="6"
+                        CornerRadius="7"
                         Padding="10"
-                        Margin="0 8 0 0"
-                        Background="#F8FAFF">
+                        Margin="0 10 0 0"
+                        Background="#F5F9FF">
                     <StackPanel>
                         <TextBlock Text="{x:Static localization:UiStrings.ActionFlowTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
                         <TextBlock Text="{Binding State.Results.SafetyNotice}" TextWrapping="Wrap" Foreground="#1E293B" Margin="0 0 0 4"/>
@@ -101,7 +128,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0 8 0 0" Background="#FFFBEB">
+                <Border BorderBrush="#FBBF24" BorderThickness="1" CornerRadius="7" Padding="10" Margin="0 10 0 0" Background="#FFFBEB">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -149,8 +176,8 @@
                     <ColumnDefinition Width="1.15*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Margin="0 0 10 0">
-                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#F8FBFF">
+                <StackPanel Grid.Column="0" Margin="0 0 12 0">
+                    <Border Style="{StaticResource PrimaryWorkflowCardStyle}">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -164,10 +191,10 @@
                         <StackPanel>
                             <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" FontSize="17" Margin="0 0 0 4" Foreground="#1E3A8A"/>
                             <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
-                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="9" Margin="0 0 0 6">
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 6">
                                 <TextBlock Text="{Binding State.Results.ScanOverviewEmptyState}" TextWrapping="Wrap" Foreground="#0F172A"/>
                             </Border>
-                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="9">
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}">
                                 <StackPanel>
                                     <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" TextWrapping="Wrap" Foreground="#0F172A"/>
                                     <TextBlock Text="{Binding State.Results.ManualSectionHint}" TextWrapping="Wrap" Margin="0 4 0 0" Foreground="#334155"/>
@@ -176,25 +203,25 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#F8FBFF">
+                    <Border Style="{StaticResource PrimaryWorkflowCardStyle}">
                         <StackPanel>
                             <TextBlock Text="{Binding State.Results.ActionFlowTitle}" FontWeight="SemiBold" FontSize="17" Margin="0 0 0 4" Foreground="#1E3A8A"/>
                             <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" Margin="0 0 0 4" TextWrapping="Wrap" Foreground="#0F172A"/>
                             <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 0 0 8" TextWrapping="Wrap"/>
                             <UniformGrid Columns="3" Margin="0 0 0 8">
-                                <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="8" Margin="0 0 6 0">
+                                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="8" Margin="0 0 6 0">
                                     <StackPanel>
                                         <TextBlock Text="1" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8"/>
                                         <TextBlock Text="{x:Static localization:UiStrings.ActionStepReviewRecommendation}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#1E293B"/>
                                     </StackPanel>
                                 </Border>
-                                <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="8" Margin="0 0 6 0">
+                                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="8" Margin="0 0 6 0">
                                     <StackPanel>
                                         <TextBlock Text="2" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8"/>
                                         <TextBlock Text="{x:Static localization:UiStrings.ActionStepInstallOutsideApp}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#1E293B"/>
                                     </StackPanel>
                                 </Border>
-                                <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Background="White" Padding="8">
+                                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="8">
                                     <StackPanel>
                                         <TextBlock Text="3" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8"/>
                                         <TextBlock Text="{x:Static localization:UiStrings.ActionStepReturnForVerification}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#1E293B"/>
@@ -205,7 +232,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#FCD34D" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#FFFBEB">
+                    <Border BorderBrush="#FCD34D" BorderThickness="1.2" CornerRadius="8" Padding="12" Margin="0 0 0 12" Background="#FFFBEB">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -228,7 +255,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#60A5FA" BorderThickness="1.4" CornerRadius="8" Padding="13" Margin="0 0 0 8" Background="#F0F7FF">
+                    <Border Style="{StaticResource PrimaryWorkflowCardStyle}" BorderBrush="#93C5FD" BorderThickness="1.3" Padding="13" Margin="0 0 0 10" Background="#F1F7FF">
                         <StackPanel>
                             <DockPanel LastChildFill="True" Margin="0 0 0 6">
                                 <Border DockPanel.Dock="Left"
@@ -249,7 +276,7 @@
                                 <TextBlock Text="{Binding State.Results.RecommendationSectionTitle}" FontWeight="SemiBold" FontSize="17" Foreground="#1E3A8A"/>
                             </DockPanel>
                             <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
-                            <Border BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="9" Margin="0 0 0 8" Background="#FFFFFF">
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 8">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -275,7 +302,7 @@
                                 </ItemsControl.Style>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Padding="8" Margin="0 0 0 6" Background="White">
+                                        <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="8" Margin="0 0 0 6">
                                             <StackPanel>
                                                 <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap"/>
                                                 <TextBlock Text="{Binding WorkflowState}" Margin="0 2 0 0" TextWrapping="Wrap" FontWeight="SemiBold"/>
@@ -291,7 +318,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Border BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="10" Background="#FFFFFF">
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="10">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -316,7 +343,7 @@
                                HorizontalAlignment="Center"
                                Margin="0 0 0 8"/>
 
-                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 8" Background="#FCFDFF">
+                    <Border Style="{StaticResource PrimaryWorkflowCardStyle}" Background="#FCFDFF" Margin="0 0 0 10">
                         <StackPanel>
                             <DockPanel LastChildFill="True" Margin="0 0 0 6">
                                 <Border DockPanel.Dock="Left"
@@ -350,7 +377,7 @@
                                 </ItemsControl.Style>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Padding="8" Margin="0 0 0 6" Background="White">
+                                        <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="8" Margin="0 0 0 6">
                                             <StackPanel>
                                                 <TextBlock FontWeight="SemiBold" TextWrapping="Wrap">
                                                     <Run Text="• " />
@@ -364,7 +391,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="6" Padding="10" Background="#FFFFFF">
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="10">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -385,7 +412,7 @@
                                HorizontalAlignment="Center"
                                Margin="0 0 0 8"/>
 
-                    <Border BorderBrush="#93C5FD" BorderThickness="1.3" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#F8FBFF">
+                    <Border Style="{StaticResource PrimaryWorkflowCardStyle}" BorderBrush="#93C5FD" BorderThickness="1.3" Margin="0 0 0 10" Background="#F8FBFF">
                         <StackPanel>
                             <DockPanel LastChildFill="True" Margin="0 0 0 6">
                                 <Border DockPanel.Dock="Left"
@@ -407,10 +434,10 @@
                             </DockPanel>
                             <TextBlock Text="{Binding State.Results.VerificationSummary}" Margin="0 0 0 5" TextWrapping="Wrap"/>
                             <TextBlock Text="{Binding State.Results.VerificationSectionHint}" Margin="0 0 0 4" TextWrapping="Wrap" Foreground="#1E293B"/>
-                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="6" Padding="9" Background="White" Margin="0 0 0 4">
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 4">
                                 <TextBlock Text="{Binding State.Results.VerificationRescanHint}" TextWrapping="Wrap" Foreground="#0F172A"/>
                             </Border>
-                            <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="6" Padding="9" Background="White">
+                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -428,7 +455,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1">
-                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
+                    <Border Style="{StaticResource SecondaryCardStyle}">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.ScanOverviewTitle}" FontWeight="SemiBold" Margin="0 0 0 8"/>
                             <StackPanel>
@@ -448,7 +475,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
+                    <Border Style="{StaticResource SecondaryCardStyle}">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.RecentHistorySectionTitle}" FontWeight="SemiBold" Margin="0 0 0 4"/>
                             <TextBlock Text="{x:Static localization:UiStrings.RecentHistorySectionHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
@@ -465,7 +492,7 @@
                                 </ItemsControl.Style>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="7" Margin="0 0 0 6">
+                                        <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="5" Padding="7" Margin="0 0 0 6" Background="#F8FAFC">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Timestamp}" Foreground="#475569" TextWrapping="Wrap"/>
                                                 <TextBlock FontWeight="SemiBold" Text="{Binding Title}" Margin="0 2 0 0" TextWrapping="Wrap"/>
@@ -492,7 +519,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
+                    <Border Style="{StaticResource SecondaryCardStyle}">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.ReportExportTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
                             <TextBlock Text="{x:Static localization:UiStrings.ReportExportHint}" TextWrapping="Wrap" Margin="0 0 0 6"/>
@@ -505,7 +532,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 6" Background="#FFFFFF">
+                    <Border Style="{StaticResource SecondaryCardStyle}" Margin="0 0 0 6">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.SettingsTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
                             <Grid Margin="0 0 0 6">
