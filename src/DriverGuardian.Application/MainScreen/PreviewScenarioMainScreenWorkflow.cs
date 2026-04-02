@@ -87,16 +87,16 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             ReportExportPayload: new ReportExportPayload(
                 "driverguardian-preview-no-action",
                 "Предпросмотр: безопасных рекомендаций не найдено.",
-                "# DriverGuardian Preview\n\nБезопасных рекомендаций не найдено."),
+                "# DriverGuardian Preview\n\nБезопасных рекомендаций не найдено. Для ручного действия ничего не требуется."),
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
-                    "Сетевой адаптер Intel Ethernet",
-                    "PCI\\VEN_8086&DEV_51A3",
+                    "Intel Ethernet Connection (7) I219-V",
+                    "PCI\\VEN_8086&DEV_15FA",
                     0,
                     false,
                     "Официальные источники не предоставили подтверждённого более нового пакета драйвера.",
-                    "31.0.101.4577",
+                    "12.19.2.45",
                     "Intel",
                     null,
                     false,
@@ -115,18 +115,18 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             NotRecommendedCount: 4,
             ProviderCount: 4,
             ManualHandoffReadyCount: 0,
-            ManualHandoffUserActionCount: 1,
-            VerificationSummary: "Для 1 устройства ожидается ручная установка и возврат пользователя для проверки.",
+            ManualHandoffUserActionCount: 0,
+            VerificationSummary: "Есть 1 потенциальная рекомендация, но до подтверждения официального источника ручная установка не предлагается.",
             UiCulture: "ru-RU",
             ScanSessionId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
             ReportExportPayload: new ReportExportPayload(
                 "driverguardian-preview-limited-evidence",
-                "Предпросмотр: рекомендация есть, но доказательная база ограничена.",
-                "# DriverGuardian Preview\n\nРекомендация есть, но источник требует дополнительной проверки."),
+                "Предпросмотр: найден кандидат обновления, но официальность источника не подтверждена.",
+                "# DriverGuardian Preview\n\nОбнаружен кандидат обновления, но ручной переход заблокирован до дополнительной проверки источника."),
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
-                    "Контроллер Realtek PCIe GbE",
+                    "Realtek PCIe GbE Family Controller",
                     "PCI\\VEN_10EC&DEV_8168",
                     0,
                     true,
@@ -135,9 +135,9 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     "Realtek",
                     "10.64.1120.2025",
                     false,
-                    true,
-                    true,
-                    "Ожидается возврат пользователя после ручной установки.")
+                    false,
+                    false,
+                    "Сначала подтвердите официальный источник; затем повторите анализ.")
             ],
             OfficialSourceAction: new OpenOfficialSourceActionResult(false, "Требуется ручная проверка официальности источника.", null, "Недостаточно подтверждённых признаков источника"),
             RecentHistory: []);
@@ -157,12 +157,12 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             ReportExportPayload: new ReportExportPayload(
                 "driverguardian-preview-manual-ready",
                 "Предпросмотр: рекомендация готова к безопасному ручному действию.",
-                "# DriverGuardian Preview\n\nРекомендация готова к безопасному ручному действию."),
+                "# DriverGuardian Preview\n\nРекомендация подтверждена. Выполните ручной переход к официальному источнику и вернитесь для проверки."),
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
-                    "Видеокарта NVIDIA GeForce",
-                    "PCI\\VEN_10DE&DEV_28A1",
+                    "NVIDIA GeForce RTX 4070 Laptop GPU",
+                    "PCI\\VEN_10DE&DEV_2820",
                     0,
                     true,
                     "Официальная страница производителя подтверждена и доступна для ручного перехода.",
@@ -192,12 +192,12 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             ReportExportPayload: new ReportExportPayload(
                 "driverguardian-preview-verification",
                 "Предпросмотр: состояние возврата после ручной установки.",
-                "# DriverGuardian Preview\n\nСценарий возврата для проверки после ручной установки."),
+                "# DriverGuardian Preview\n\nПользователь вернулся после ручного действия. Запустите контрольный анализ и сравните версию драйвера."),
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
-                    "Графический адаптер Intel",
-                    "PCI\\VEN_8086&DEV_A0F0",
+                    "Intel Arc A370M Graphics",
+                    "PCI\\VEN_8086&DEV_5690",
                     0,
                     true,
                     "Ранее был предложен переход на официальную версию; ожидается подтверждение после повторного анализа.",
@@ -213,7 +213,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             RecentHistory:
             [
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddMinutes(-45), RecentHistoryEntryKind.Scan, Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), 4, 4, 0, null, null),
-                new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddMinutes(-42), RecentHistoryEntryKind.Recommendation, Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), 1, 1, 0, null, null)
+                new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddMinutes(-42), RecentHistoryEntryKind.Recommendation, Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), 1, 1, 3, null, null)
             ]);
 
     private static MainScreenWorkflowResult BuildPopulatedHistoryAndExport()
@@ -224,19 +224,19 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             NotRecommendedCount: 7,
             ProviderCount: 4,
             ManualHandoffReadyCount: 1,
-            ManualHandoffUserActionCount: 2,
+            ManualHandoffUserActionCount: 1,
             VerificationSummary: "Есть активные и завершённые задачи возврата для проверки; ориентируйтесь на журнал истории.",
             UiCulture: "ru-RU",
             ScanSessionId: Guid.Parse("55555555-5555-5555-5555-555555555555"),
             ReportExportPayload: new ReportExportPayload(
                 "driverguardian-preview-history-export",
                 "Предпросмотр: история заполнена, отчёт готов к ручному сохранению.",
-                "# DriverGuardian Preview\n\nИстория заполнена, отчёт готов к ручному сохранению."),
+                "# DriverGuardian Preview\n\nИстория содержит как ожидающие, так и завершённые проверки. Используйте отчёт для продуктового ревью сценариев."),
             RecommendationDetails:
             [
                 new RecommendationDetailResult(
-                    "Видеокарта NVIDIA GeForce",
-                    "PCI\\VEN_10DE&DEV_1C8D",
+                    "NVIDIA GeForce GTX 1060 6GB",
+                    "PCI\\VEN_10DE&DEV_1C03",
                     0,
                     true,
                     "Подтверждён безопасный ручной путь через официальный каталог.",
@@ -248,8 +248,8 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     true,
                     "Ожидается возврат пользователя после ручной установки."),
                 new RecommendationDetailResult(
-                    "Графический адаптер Intel",
-                    "PCI\\VEN_8086&DEV_1911",
+                    "Intel UHD Graphics 630",
+                    "PCI\\VEN_8086&DEV_3E92",
                     0,
                     true,
                     "Есть кандидат, но ссылка требует дополнительной ручной проверки.",
@@ -257,15 +257,15 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     "Intel",
                     "31.0.101.5590",
                     false,
-                    true,
-                    true,
-                    "Ожидается подтверждение после повторного анализа.")
+                    false,
+                    false,
+                    "Подтвердите официальный источник перед ручным действием.")
             ],
             OfficialSourceAction: new OpenOfficialSourceActionResult(true, "Официальный источник для первого устройства подтверждён.", "https://www.nvidia.com/download/index.aspx", null),
             RecentHistory:
             [
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddHours(-5), RecentHistoryEntryKind.Scan, Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), 8, 8, 0, null, null),
-                new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddHours(-5).AddMinutes(2), RecentHistoryEntryKind.Recommendation, Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), 2, 2, 6, null, null),
+                new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddHours(-5).AddMinutes(2), RecentHistoryEntryKind.Recommendation, Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), 2, 1, 7, null, null),
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddHours(-4), RecentHistoryEntryKind.Verification, Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), 0, 0, 0, "skipped", "Пользователь перенёс ручную установку на позднее время."),
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddHours(-2), RecentHistoryEntryKind.Scan, Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"), 9, 9, 0, null, null),
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddHours(-2).AddMinutes(3), RecentHistoryEntryKind.Verification, Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"), 0, 0, 0, "passed", "Повторный анализ зафиксировал ожидаемую версию драйвера.")
