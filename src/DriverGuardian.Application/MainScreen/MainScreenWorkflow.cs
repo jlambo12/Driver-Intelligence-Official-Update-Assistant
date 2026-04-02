@@ -172,9 +172,15 @@ public sealed class MainScreenWorkflow(
                 generatedAtUtc));
         var plainTextContent = reportBuilder.BuildStructuredText(report);
         var markdownContent = $"# DriverGuardian Shareable Scan Report{Environment.NewLine}{Environment.NewLine}```text{Environment.NewLine}{plainTextContent}{Environment.NewLine}```";
-        var fileNameBase = $"driverguardian-report-{scanResult.Session.Id:N}";
+        var fileNameBase = BuildReportFileNameBase(scanResult.Session.Id, generatedAtUtc);
 
         return new ReportExportPayload(fileNameBase, plainTextContent, markdownContent);
+    }
+
+    private static string BuildReportFileNameBase(Guid scanSessionId, DateTimeOffset generatedAtUtc)
+    {
+        var normalizedTimestamp = generatedAtUtc.ToUniversalTime().ToString("yyyyMMdd-HHmmss'Z'");
+        return $"driverguardian-scan-report-{normalizedTimestamp}-{scanSessionId:N}";
     }
 
     private static IReadOnlyCollection<RecommendationDetailResult> BuildRecommendationDetails(
