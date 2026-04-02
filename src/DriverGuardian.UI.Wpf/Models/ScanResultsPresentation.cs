@@ -140,18 +140,7 @@ public sealed record ScanResultsPresentation(
 
     private static int ResolvePriorityBucket(RecommendationDetailResult detail)
     {
-        if (detail.HasRecommendation && detail.ManualHandoffReady)
-        {
-            return 0;
-        }
-
-        if (detail.HasRecommendation)
-        {
-            return 1;
-        }
-
-        var looksNoisy = LooksTechnical(detail.DeviceDisplayName) || LooksTechnical(detail.DeviceId);
-        return looksNoisy ? 3 : 2;
+        return detail.PriorityBucket;
     }
 
     private static RecommendationDetailPresentation MapDetail(RecommendationDetailResult detail)

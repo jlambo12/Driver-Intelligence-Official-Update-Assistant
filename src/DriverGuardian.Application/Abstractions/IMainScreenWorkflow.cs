@@ -29,6 +29,7 @@ public sealed record ReportExportPayload(
 public sealed record RecommendationDetailResult(
     string DeviceDisplayName,
     string DeviceId,
+    int PriorityBucket,
     bool HasRecommendation,
     string RecommendationReason,
     string InstalledVersion,

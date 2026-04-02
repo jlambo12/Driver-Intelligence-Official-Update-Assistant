@@ -1,4 +1,5 @@
 using DriverGuardian.Application.Verification;
+using DriverGuardian.Application.Presentation;
 using DriverGuardian.Domain.Drivers;
 
 namespace DriverGuardian.Application.Reports;
@@ -18,9 +19,28 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
         var recommendationByDevice = request.Recommendations.ToDictionary(x => x.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
         var handoffByDevice = request.ManualInstallHandoffs.ToDictionary(x => x.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
         var verificationByDevice = request.Verifications.ToDictionary(x => x.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
+        var discoveredByInstanceId = request.ScanResult.DiscoveredDevices.ToDictionary(
+            x => x.Identity.InstanceId,
+            x => x,
+            StringComparer.OrdinalIgnoreCase);
 
         var devices = request.ScanResult.Drivers
-            .Select(driver => BuildDeviceSection(driver, recommendationByDevice, handoffByDevice, verificationByDevice))
+            .Select(driver =>
+            {
+                discoveredByInstanceId.TryGetValue(driver.DeviceIdentity.InstanceId, out var discoveredDevice);
+                recommendationByDevice.TryGetValue(driver.DeviceIdentity.InstanceId, out var recommendation);
+                var hasRecommendation = recommendation?.HasRecommendation ?? false;
+                return new
+                {
+                    Section = BuildDeviceSection(driver, discoveredDevice, recommendation, handoffByDevice, verificationByDevice),
+                    Priority = DevicePresentationHeuristics.ResolvePriorityBucket(discoveredDevice, hasRecommendation),
+                    IsRelevant = DevicePresentationHeuristics.IsUserRelevant(discoveredDevice, hasRecommendation)
+                };
+            })
+            .Where(x => x.IsRelevant || x.Section.Recommendation?.HasRecommendation == true)
+            .OrderBy(x => x.Priority)
+            .ThenBy(x => x.Section.DeviceDisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .Select(x => x.Section)
             .ToArray();
 
         return new ShareableReport(
@@ -75,7 +95,8 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
 
         foreach (var device in report.Devices)
         {
-            lines.Add($"- Device: {device.DeviceInstanceId}");
+            lines.Add($"- Device: {device.DeviceDisplayName}");
+            lines.Add($"  Device ID: {device.DeviceInstanceId}");
             lines.Add($"  Driver Version: {device.DriverSnapshot.DriverVersion}");
             lines.Add($"  Provider: {device.DriverSnapshot.ProviderName ?? "(unknown)"}");
             lines.Add($"  Hardware ID: {device.DriverSnapshot.HardwareId}");
@@ -104,15 +125,16 @@ public sealed class ShareableReportBuilder : IShareableReportBuilder
 
     private static DeviceReportSection BuildDeviceSection(
         InstalledDriverSnapshot driver,
-        IReadOnlyDictionary<string, Domain.Recommendations.RecommendationSummary> recommendationByDevice,
+        Contracts.DeviceDiscovery.DiscoveredDevice? discoveredDevice,
+        Domain.Recommendations.RecommendationSummary? recommendation,
         IReadOnlyDictionary<string, ManualInstallHandoffReportItem> handoffByDevice,
         IReadOnlyDictionary<string, VerificationReportItem> verificationByDevice)
     {
-        recommendationByDevice.TryGetValue(driver.DeviceIdentity.InstanceId, out var recommendation);
         handoffByDevice.TryGetValue(driver.DeviceIdentity.InstanceId, out var handoff);
         verificationByDevice.TryGetValue(driver.DeviceIdentity.InstanceId, out var verification);
 
         return new DeviceReportSection(
+            DevicePresentationHeuristics.BuildUserFacingName(discoveredDevice, driver.DeviceIdentity.InstanceId),
             driver.DeviceIdentity.InstanceId,
             new ScanDriverSnapshotSection(
                 driver.DriverVersion,

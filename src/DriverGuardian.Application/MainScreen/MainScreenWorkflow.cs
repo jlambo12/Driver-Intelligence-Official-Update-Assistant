@@ -2,6 +2,7 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.History;
 using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.OfficialSources;
+using DriverGuardian.Application.Presentation;
 using DriverGuardian.Application.Reports;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
@@ -181,19 +182,21 @@ public sealed class MainScreenWorkflow(
         IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations)
     {
         var byDevice = recommendations.ToDictionary(item => item.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
-        var discoveredNames = discoveredDevices.ToDictionary(
+        var discoveredById = discoveredDevices.ToDictionary(
             device => device.Identity.InstanceId,
-            device => device.DisplayName,
+            device => device,
             StringComparer.OrdinalIgnoreCase);
 
         return drivers.Select(driver =>
             {
                 var hasRecommendation = byDevice.TryGetValue(driver.DeviceIdentity.InstanceId, out var recommendation) && recommendation.HasRecommendation;
-                var displayName = ResolveDeviceDisplayName(driver.DeviceIdentity.InstanceId, discoveredNames);
+                discoveredById.TryGetValue(driver.DeviceIdentity.InstanceId, out var discoveredDevice);
+                var displayName = DevicePresentationHeuristics.BuildUserFacingName(discoveredDevice, driver.DeviceIdentity.InstanceId);
 
                 return new RecommendationDetailResult(
                     DeviceDisplayName: displayName,
                     DeviceId: driver.DeviceIdentity.InstanceId,
+                    PriorityBucket: DevicePresentationHeuristics.ResolvePriorityBucket(discoveredDevice, hasRecommendation),
                     HasRecommendation: hasRecommendation,
                     RecommendationReason: recommendation?.Reason ?? string.Empty,
                     InstalledVersion: driver.DriverVersion,
@@ -206,19 +209,23 @@ public sealed class MainScreenWorkflow(
                         ? "Ожидается возврат пользователя после ручной установки."
                         : "Проверка после установки сейчас не требуется.");
             })
+            .Where(detail =>
+            {
+                if (detail.HasRecommendation)
+                {
+                    return true;
+                }
+
+                if (!discoveredById.TryGetValue(detail.DeviceId, out var device))
+                {
+                    return true;
+                }
+
+                return DevicePresentationHeuristics.IsUserRelevant(device, detail.HasRecommendation);
+            })
+            .OrderBy(detail => detail.PriorityBucket)
+            .ThenBy(detail => detail.DeviceDisplayName, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
-    }
-
-    private static string ResolveDeviceDisplayName(string instanceId, IReadOnlyDictionary<string, string> discoveredNames)
-    {
-        if (discoveredNames.TryGetValue(instanceId, out var displayName) &&
-            !string.IsNullOrWhiteSpace(displayName) &&
-            !StringComparer.OrdinalIgnoreCase.Equals(displayName, instanceId))
-        {
-            return displayName;
-        }
-
-        return instanceId;
     }
 
     private static string BuildVerificationSummary(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)

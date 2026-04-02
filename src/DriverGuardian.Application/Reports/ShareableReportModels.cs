@@ -57,6 +57,7 @@ public sealed record VerificationSummarySection(
     int InsufficientEvidenceCount);
 
 public sealed record DeviceReportSection(
+    string DeviceDisplayName,
     string DeviceInstanceId,
     ScanDriverSnapshotSection DriverSnapshot,
     RecommendationReportSection? Recommendation,

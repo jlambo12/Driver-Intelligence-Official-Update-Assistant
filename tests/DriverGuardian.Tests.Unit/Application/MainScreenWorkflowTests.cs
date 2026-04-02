@@ -85,6 +85,27 @@ public sealed class MainScreenWorkflowTests
         Assert.StartsWith("scan.workflow.failed:", logger.ErrorEvents[0], StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task RunScanAsync_ShouldFilterLowValueDevicesAndKeepUserRelevantResults()
+    {
+        var workflow = new MainScreenWorkflow(
+            new MixedScanOrchestrator(),
+            new NoRecommendationPipeline(),
+            new FakeProviderCatalogSummaryService(),
+            new FakeSettingsRepository(),
+            new RecordingDiagnosticLogger(),
+            new FakeAuditWriter(),
+            new FakeHistoryRepository(),
+            new OpenOfficialSourceActionEvaluator(),
+            new ShareableReportBuilder());
+
+        var result = await workflow.RunScanAsync(CancellationToken.None);
+
+        Assert.Single(result.RecommendationDetails);
+        Assert.Equal("Intel (Display)", result.RecommendationDetails.First().DeviceDisplayName);
+        Assert.Equal("PCI\\VEN_8086&DEV_1234", result.RecommendationDetails.First().DeviceId);
+    }
+
     private sealed class FakeScanOrchestrator : IScanOrchestrator
     {
         public Task<ScanResult> RunAsync(CancellationToken cancellationToken)
@@ -179,6 +200,62 @@ public sealed class MainScreenWorkflowTests
     {
         public Task<ScanResult> RunAsync(CancellationToken cancellationToken)
             => throw new InvalidOperationException("scan failure");
+    }
+
+    private sealed class MixedScanOrchestrator : IScanOrchestrator
+    {
+        public Task<ScanResult> RunAsync(CancellationToken cancellationToken)
+        {
+            var session = ScanSession.Start(Guid.NewGuid(), DateTimeOffset.UtcNow).Complete(DateTimeOffset.UtcNow);
+            IReadOnlyCollection<DiscoveredDevice> discoveredDevices =
+            [
+                DiscoveredDevice.Create(
+                    "SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}",
+                    "SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}",
+                    ["ROOT\\MMDEVAPI"],
+                    "Microsoft",
+                    "AudioEndpoint",
+                    DevicePresenceStatus.Present,
+                    null),
+                DiscoveredDevice.Create(
+                    "PCI\\VEN_8086&DEV_1234",
+                    "PCI\\VEN_8086&DEV_1234",
+                    ["PCI\\VEN_8086&DEV_1234"],
+                    "Intel",
+                    "Display",
+                    DevicePresenceStatus.Present,
+                    null)
+            ];
+
+            IReadOnlyCollection<InstalledDriverSnapshot> drivers =
+            [
+                new InstalledDriverSnapshot(
+                    new DeviceIdentity("SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}"),
+                    new HardwareIdentifier("ROOT\\MMDEVAPI"),
+                    "10.0.1",
+                    null,
+                    "Microsoft"),
+                new InstalledDriverSnapshot(
+                    new DeviceIdentity("PCI\\VEN_8086&DEV_1234"),
+                    new HardwareIdentifier("PCI\\VEN_8086&DEV_1234"),
+                    "31.0.101.9999",
+                    null,
+                    "Intel")
+            ];
+
+            return Task.FromResult(new ScanResult(session, 2, discoveredDevices, drivers));
+        }
+    }
+
+    private sealed class NoRecommendationPipeline : IRecommendationPipeline
+    {
+        public Task<IReadOnlyCollection<RecommendationSummary>> BuildAsync(IReadOnlyCollection<InstalledDriverSnapshot> installedDrivers, CancellationToken cancellationToken)
+        {
+            IReadOnlyCollection<RecommendationSummary> result = installedDrivers
+                .Select(driver => new RecommendationSummary(driver.DeviceIdentity, false, "Недостаточно данных", null))
+                .ToArray();
+            return Task.FromResult(result);
+        }
     }
 
     private sealed class RecordingDiagnosticLogger : IDiagnosticLogger
