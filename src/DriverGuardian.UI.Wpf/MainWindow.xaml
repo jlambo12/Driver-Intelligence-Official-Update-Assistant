@@ -9,42 +9,48 @@
         Height="760"
         Width="1020"
         MinWidth="920"
+        Background="#F1F5F9"
         WindowStartupLocation="CenterScreen">
-    <Grid Margin="20">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
-                BorderBrush="#CBD5E1"
+                BorderBrush="#94A3B8"
                 BorderThickness="1"
-                CornerRadius="8"
-                Padding="16"
+                CornerRadius="10"
+                Padding="14"
                 Background="#F8FAFC"
-                Margin="0 0 0 12">
+                Margin="0 0 0 10">
             <StackPanel>
-                <Grid Margin="0 0 0 10">
+                <Grid Margin="0 0 0 8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Margin="0 0 16 0">
-                        <TextBlock Text="{Binding State.TitleText}" FontSize="20" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding State.StatusText}" Margin="0 6 0 0" TextWrapping="Wrap" FontSize="14" />
+                    <StackPanel Grid.Column="0" Margin="0 0 14 0">
+                        <TextBlock Text="{Binding State.TitleText}" FontSize="22" FontWeight="SemiBold" Foreground="#0F172A" />
+                        <TextBlock Text="{Binding State.StatusText}" Margin="0 4 0 0" TextWrapping="Wrap" FontSize="14" Foreground="#1E293B" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
                             Content="{Binding State.ScanButtonText}"
                             Command="{Binding ScanCommand}"
                             Width="230"
-                            Height="42"
+                            Height="44"
                             HorizontalAlignment="Right"
-                            VerticalAlignment="Top" />
+                            VerticalAlignment="Top"
+                            FontWeight="SemiBold"
+                            Foreground="White"
+                            Background="#2563EB"
+                            BorderBrush="#1D4ED8"
+                            BorderThickness="1.5" />
                 </Grid>
 
-                <Border BorderBrush="#D0D7DE"
+                <Border BorderBrush="#CBD5E1"
                         BorderThickness="1"
                         CornerRadius="6"
                         Padding="10"
@@ -81,7 +87,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 10 0 0" Background="#FFFBEB">
+                <Border BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0 8 0 0" Background="#FFFBEB">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -94,8 +100,8 @@
                     </Border.Style>
                     <StackPanel>
                         <TextBlock Text="{x:Static localization:UiStrings.PreviewModeSectionTitle}" FontWeight="SemiBold" Margin="0 0 0 4"/>
-                        <TextBlock Text="{Binding PreviewModeBannerText}" TextWrapping="Wrap" Margin="0 0 0 8"/>
-                        <Grid Margin="0 0 0 8">
+                        <TextBlock Text="{Binding PreviewModeBannerText}" TextWrapping="Wrap" Margin="0 0 0 6"/>
+                        <Grid Margin="0 0 0 6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="260"/>
                                 <ColumnDefinition Width="*"/>
@@ -115,7 +121,7 @@
                         </Grid>
                         <Button Content="{x:Static localization:UiStrings.PreviewApplyScenarioAction}"
                                 Width="260"
-                                Height="34"
+                                Height="32"
                                 Command="{Binding ApplyPreviewScenarioCommand}"/>
                     </StackPanel>
                 </Border>
@@ -129,20 +135,20 @@
                     <ColumnDefinition Width="1.3*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Margin="0 0 12 0">
-                    <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 12" Background="#F8FAFC">
+                <StackPanel Grid.Column="0" Margin="0 0 10 0">
+                    <Border BorderBrush="#93C5FD" BorderThickness="1.5" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#EFF6FF">
                         <StackPanel>
-                            <TextBlock Text="{Binding State.Results.ActionFlowTitle}" FontWeight="SemiBold" FontSize="16" Margin="0 0 0 6"/>
-                            <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" Margin="0 0 0 4" TextWrapping="Wrap"/>
-                            <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 0 0 8" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.ActionFlowTitle}" FontWeight="SemiBold" FontSize="17" Margin="0 0 0 5" Foreground="#1E3A8A"/>
+                            <TextBlock Text="{Binding State.Results.WorkflowHeadline}" FontWeight="SemiBold" Margin="0 0 0 3" TextWrapping="Wrap" Foreground="#0F172A"/>
+                            <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                             <TextBlock Text="{Binding State.Results.SafetyNotice}" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 12">
+                    <Border BorderBrush="#93C5FD" BorderThickness="1.5" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#F8FAFF">
                         <StackPanel>
-                            <TextBlock Text="{Binding State.Results.RecommendationSectionTitle}" FontWeight="SemiBold" FontSize="15" Margin="0 0 0 6"/>
-                            <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.RecommendationSectionTitle}" FontWeight="SemiBold" FontSize="16" Margin="0 0 0 5" Foreground="#1E3A8A"/>
+                            <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                             <ItemsControl ItemsSource="{Binding State.Results.RecommendationDetails}">
                                 <ItemsControl.Style>
                                     <Style TargetType="ItemsControl">
@@ -156,7 +162,7 @@
                                 </ItemsControl.Style>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 0 0 8">
+                                        <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Padding="8" Margin="0 0 0 6" Background="White">
                                             <StackPanel>
                                                 <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap"/>
                                                 <TextBlock Text="{Binding WorkflowState}" Margin="0 2 0 0" TextWrapping="Wrap" FontWeight="SemiBold"/>
@@ -187,10 +193,10 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 12">
+                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#FCFDFF">
                         <StackPanel>
-                            <TextBlock Text="{Binding State.Results.ManualSectionTitle}" FontWeight="SemiBold" FontSize="15" Margin="0 0 0 6"/>
-                            <TextBlock Text="{Binding State.Results.ManualSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.ManualSectionTitle}" FontWeight="SemiBold" FontSize="16" Margin="0 0 0 5" Foreground="#1E3A8A"/>
+                            <TextBlock Text="{Binding State.Results.ManualSectionHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                             <ItemsControl ItemsSource="{Binding State.Results.UserGuidedSteps}">
                                 <ItemsControl.Style>
                                     <Style TargetType="ItemsControl">
@@ -204,7 +210,7 @@
                                 </ItemsControl.Style>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 0 0 8">
+                                        <Border BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="5" Padding="8" Margin="0 0 0 6" Background="White">
                                             <StackPanel>
                                                 <TextBlock FontWeight="SemiBold" TextWrapping="Wrap">
                                                     <Run Text="• " />
@@ -233,13 +239,13 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 12">
+                    <Border BorderBrush="#BFDBFE" BorderThickness="1.2" CornerRadius="7" Padding="12" Margin="0 0 0 10" Background="#FCFDFF">
                         <StackPanel>
-                            <TextBlock Text="{Binding State.Results.VerificationSectionTitle}" FontWeight="SemiBold" FontSize="15" Margin="0 0 0 6"/>
-                            <TextBlock Text="{Binding State.Results.VerificationSummary}" Margin="0 0 0 6" TextWrapping="Wrap"/>
-                            <TextBlock Text="{Binding State.Results.VerificationSectionHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.VerificationSectionTitle}" FontWeight="SemiBold" FontSize="16" Margin="0 0 0 5" Foreground="#1E3A8A"/>
+                            <TextBlock Text="{Binding State.Results.VerificationSummary}" Margin="0 0 0 5" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding State.Results.VerificationSectionHint}" Margin="0 0 0 5" TextWrapping="Wrap"/>
                             <TextBlock Text="{Binding State.Results.VerificationRescanHint}" TextWrapping="Wrap"/>
-                            <TextBlock Text="{Binding State.Results.VerificationEmptyState}" Margin="0 6 0 0" TextWrapping="Wrap">
+                            <TextBlock Text="{Binding State.Results.VerificationEmptyState}" Margin="0 5 0 0" TextWrapping="Wrap">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -256,7 +262,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1">
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 12">
+                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.ScanOverviewTitle}" FontWeight="SemiBold" Margin="0 0 0 8"/>
                             <StackPanel>
@@ -276,10 +282,10 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 12">
+                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.RecentHistorySectionTitle}" FontWeight="SemiBold" Margin="0 0 0 4"/>
-                            <TextBlock Text="{x:Static localization:UiStrings.RecentHistorySectionHint}" Margin="0 0 0 8" TextWrapping="Wrap"/>
+                            <TextBlock Text="{x:Static localization:UiStrings.RecentHistorySectionHint}" Margin="0 0 0 6" TextWrapping="Wrap"/>
                             <ItemsControl ItemsSource="{Binding RecentHistory}">
                                 <ItemsControl.Style>
                                     <Style TargetType="ItemsControl">
@@ -293,7 +299,7 @@
                                 </ItemsControl.Style>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 0 0 8">
+                                        <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="4" Padding="7" Margin="0 0 0 6">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Timestamp}" Foreground="#475569" TextWrapping="Wrap"/>
                                                 <TextBlock FontWeight="SemiBold" Text="{Binding Title}" Margin="0 2 0 0" TextWrapping="Wrap"/>
@@ -320,23 +326,23 @@
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 12">
+                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 10" Background="#FFFFFF">
                         <StackPanel>
                             <TextBlock Text="{x:Static localization:UiStrings.ReportExportTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
-                            <TextBlock Text="{x:Static localization:UiStrings.ReportExportHint}" TextWrapping="Wrap" Margin="0 0 0 8"/>
+                            <TextBlock Text="{x:Static localization:UiStrings.ReportExportHint}" TextWrapping="Wrap" Margin="0 0 0 6"/>
                             <Button Content="{x:Static localization:UiStrings.ReportExportAction}"
                                     Width="220"
-                                    Height="34"
+                                    Height="32"
                                     HorizontalAlignment="Left"
                                     Command="{Binding ExportReportCommand}" />
-                            <TextBlock Text="{Binding ReportExportStatusText}" Margin="0 8 0 0" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding ReportExportStatusText}" Margin="0 6 0 0" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
 
-                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0 0 0 8">
+                    <Border BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="11" Margin="0 0 0 6" Background="#FFFFFF">
                         <StackPanel>
-                            <TextBlock Text="{x:Static localization:UiStrings.SettingsTitle}" FontWeight="SemiBold" Margin="0 0 0 8"/>
-                            <Grid Margin="0 0 0 8">
+                            <TextBlock Text="{x:Static localization:UiStrings.SettingsTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
+                            <Grid Margin="0 0 0 6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="110"/>
@@ -344,7 +350,7 @@
                                 <TextBlock Grid.Column="0" Text="{x:Static localization:UiStrings.SettingsHistoryRetentionLabel}" Margin="0 0 8 0" VerticalAlignment="Center"/>
                                 <TextBox Grid.Column="1" Width="100" HorizontalAlignment="Left" Text="{Binding HistoryMaxEntries}"/>
                             </Grid>
-                            <Grid Margin="0 0 0 8">
+                            <Grid Margin="0 0 0 6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="230"/>
@@ -364,13 +370,13 @@
                             </Grid>
                             <CheckBox Content="{x:Static localization:UiStrings.SettingsVerificationHintLabel}"
                                       IsChecked="{Binding ShowVerificationHints}"
-                                      Margin="0 0 0 10"/>
+                                      Margin="0 0 0 8"/>
                             <Button Content="{x:Static localization:UiStrings.SettingsSaveAction}"
                                     Width="220"
-                                    Height="34"
+                                    Height="32"
                                     HorizontalAlignment="Left"
                                     Command="{Binding SaveSettingsCommand}" />
-                            <TextBlock Text="{Binding SettingsStatusText}" Margin="0 8 0 0" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding SettingsStatusText}" Margin="0 6 0 0" TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
