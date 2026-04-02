@@ -1,12 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>DriverGuardian.UI.Wpf</AssemblyName>
     <RootNamespace>DriverGuardian.UI.Wpf</RootNamespace>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Platforms>x64</Platforms>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../DriverGuardian.Application/DriverGuardian.Application.csproj" />
     <ProjectReference Include="../DriverGuardian.Infrastructure/DriverGuardian.Infrastructure.csproj" />
