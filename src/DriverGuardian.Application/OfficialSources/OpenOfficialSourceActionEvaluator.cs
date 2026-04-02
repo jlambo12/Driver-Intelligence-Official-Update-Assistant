@@ -16,10 +16,7 @@ public sealed class OpenOfficialSourceActionEvaluator
                 OpenOfficialSourceBlockedReason.SourceTrustUnverified,
                 "Open official source action is blocked because source trust could not be verified."));
 
-            return new OpenOfficialSourceActionDecision(
-                OpenOfficialSourceActionOutcome.InsufficientEvidence,
-                null,
-                blockers);
+            return BuildInsufficientEvidenceDecision(blockers);
         }
 
         if (!request.SourceEvidence.IsOfficialSource)
@@ -28,10 +25,7 @@ public sealed class OpenOfficialSourceActionEvaluator
                 OpenOfficialSourceBlockedReason.SourceMarkedNonOfficial,
                 "Open official source action is blocked because source evidence is not official."));
 
-            return new OpenOfficialSourceActionDecision(
-                OpenOfficialSourceActionOutcome.NonOfficialSource,
-                null,
-                blockers);
+            return BuildInsufficientEvidenceDecision(blockers, OpenOfficialSourceActionOutcome.NonOfficialSource);
         }
 
         if (request.OfficialSourceUri is null)
@@ -40,10 +34,7 @@ public sealed class OpenOfficialSourceActionEvaluator
                 OpenOfficialSourceBlockedReason.MissingOfficialSourceUrl,
                 "Open official source action is blocked because no official source URL is available."));
 
-            return new OpenOfficialSourceActionDecision(
-                OpenOfficialSourceActionOutcome.MissingUrl,
-                null,
-                blockers);
+            return BuildInsufficientEvidenceDecision(blockers, OpenOfficialSourceActionOutcome.MissingUrl);
         }
 
         if (!string.Equals(request.OfficialSourceUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
@@ -52,10 +43,7 @@ public sealed class OpenOfficialSourceActionEvaluator
                 OpenOfficialSourceBlockedReason.UrlIsNotHttps,
                 "Open official source action is blocked because official source URL is not HTTPS."));
 
-            return new OpenOfficialSourceActionDecision(
-                OpenOfficialSourceActionOutcome.Blocked,
-                null,
-                blockers);
+            return BuildInsufficientEvidenceDecision(blockers, OpenOfficialSourceActionOutcome.Blocked);
         }
 
         if (!string.Equals(request.OfficialSourceUri.Host, request.SourceEvidence.SourceUri.Host, StringComparison.OrdinalIgnoreCase))
@@ -64,18 +52,50 @@ public sealed class OpenOfficialSourceActionEvaluator
                 OpenOfficialSourceBlockedReason.UrlHostMismatch,
                 "Open official source action is blocked because official source URL host does not match source evidence host."));
 
-            return new OpenOfficialSourceActionDecision(
-                OpenOfficialSourceActionOutcome.Blocked,
-                null,
-                blockers);
+            return BuildInsufficientEvidenceDecision(blockers, OpenOfficialSourceActionOutcome.Blocked);
+        }
+
+        if (!TryResolveConfirmedOutcome(request.SourceEvidence.TrustLevel, out var resolutionOutcome))
+        {
+            blockers.Add(new OpenOfficialSourceBlocker(
+                OpenOfficialSourceBlockedReason.UnsupportedSourceTrustLevel,
+                "Open official source action is blocked because source trust level does not classify the page as a confirmed direct driver page or vendor support page."));
+
+            return BuildInsufficientEvidenceDecision(blockers);
         }
 
         return new OpenOfficialSourceActionDecision(
             OpenOfficialSourceActionOutcome.Allowed,
+            resolutionOutcome,
             new ApprovedOfficialSourceLink(
                 request.ProviderCode,
                 request.DriverIdentifier,
                 request.OfficialSourceUri),
             Array.Empty<OpenOfficialSourceBlocker>());
     }
+
+    private static bool TryResolveConfirmedOutcome(SourceTrustLevel trustLevel, out OfficialSourceResolutionOutcome outcome)
+    {
+        switch (trustLevel)
+        {
+            case SourceTrustLevel.OfficialPublisherSite:
+                outcome = OfficialSourceResolutionOutcome.ConfirmedDirectOfficialDriverPage;
+                return true;
+            case SourceTrustLevel.OemSupportPortal:
+                outcome = OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage;
+                return true;
+            default:
+                outcome = OfficialSourceResolutionOutcome.InsufficientEvidence;
+                return false;
+        }
+    }
+
+    private static OpenOfficialSourceActionDecision BuildInsufficientEvidenceDecision(
+        IReadOnlyCollection<OpenOfficialSourceBlocker> blockers,
+        OpenOfficialSourceActionOutcome outcome = OpenOfficialSourceActionOutcome.InsufficientEvidence)
+        => new(
+            outcome,
+            OfficialSourceResolutionOutcome.InsufficientEvidence,
+            null,
+            blockers);
 }

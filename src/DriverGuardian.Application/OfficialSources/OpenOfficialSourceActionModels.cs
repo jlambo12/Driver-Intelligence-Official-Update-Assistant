@@ -9,13 +9,21 @@ public enum OpenOfficialSourceActionOutcome
     InsufficientEvidence = 4
 }
 
+public enum OfficialSourceResolutionOutcome
+{
+    ConfirmedDirectOfficialDriverPage = 0,
+    ConfirmedVendorSupportPage = 1,
+    InsufficientEvidence = 2
+}
+
 public enum OpenOfficialSourceBlockedReason
 {
     MissingOfficialSourceUrl = 0,
     UrlIsNotHttps = 1,
     SourceTrustUnverified = 2,
     SourceMarkedNonOfficial = 3,
-    UrlHostMismatch = 4
+    UrlHostMismatch = 4,
+    UnsupportedSourceTrustLevel = 5
 }
 
 public sealed record OpenOfficialSourceBlocker(
@@ -29,8 +37,11 @@ public sealed record ApprovedOfficialSourceLink(
 
 public sealed record OpenOfficialSourceActionDecision(
     OpenOfficialSourceActionOutcome Outcome,
+    OfficialSourceResolutionOutcome ResolutionOutcome,
     ApprovedOfficialSourceLink? Link,
     IReadOnlyCollection<OpenOfficialSourceBlocker> Blockers)
 {
-    public bool IsAllowed => Outcome == OpenOfficialSourceActionOutcome.Allowed;
+    public bool IsAllowed =>
+        Outcome == OpenOfficialSourceActionOutcome.Allowed
+        && ResolutionOutcome != OfficialSourceResolutionOutcome.InsufficientEvidence;
 }
