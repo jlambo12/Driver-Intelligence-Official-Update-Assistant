@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AssemblyName>DriverGuardian.UI.Wpf</AssemblyName>
     <RootNamespace>DriverGuardian.UI.Wpf</RootNamespace>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
