@@ -110,7 +110,11 @@ public partial class App : WpfApplication
         IProviderRegistry providerRegistry = new OfficialProviderRegistryStub();
         IProviderCatalogSummaryService providerSummaryService = new ProviderCatalogSummaryService(providerRegistry);
         IAuditWriter auditWriter = new InMemoryAuditWriter();
-        IResultHistoryRepository resultHistoryRepository = new InMemoryResultHistoryRepository();
+        var historyFilePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "DriverGuardian",
+            "result-history.json");
+        IResultHistoryRepository resultHistoryRepository = new JsonFileResultHistoryRepository(historyFilePath);
         var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
         IShareableReportBuilder reportBuilder = new ShareableReportBuilder();
 
