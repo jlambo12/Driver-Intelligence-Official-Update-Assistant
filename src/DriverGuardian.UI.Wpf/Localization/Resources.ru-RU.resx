@@ -392,4 +392,14 @@
     <value>Дополнительные записи остаются вспомогательными и не влияют на основной приоритетный список.</value>
   </data>
 
+  <data name="Official_Source_Summary_Direct_Driver_Page_Format" xml:space="preserve">
+    <value>Подтверждена прямая официальная страница драйвера: {0}</value>
+  </data>
+  <data name="Official_Source_Summary_Vendor_Support_Page_Format" xml:space="preserve">
+    <value>Подтверждена официальная страница поддержки производителя: {0}</value>
+  </data>
+  <data name="Official_Source_Summary_Insufficient_Evidence" xml:space="preserve">
+    <value>Официальный источник не открыт: недостаточно подтверждённых признаков.</value>
+  </data>
+
 </root>

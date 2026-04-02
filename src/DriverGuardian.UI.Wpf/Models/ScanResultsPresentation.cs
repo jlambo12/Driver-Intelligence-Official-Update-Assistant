@@ -1,3 +1,4 @@
+using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.UI.Wpf.Localization;
 
@@ -236,10 +237,21 @@ public sealed record ScanResultsPresentation(
 
     private static string BuildOfficialSourceSummary(OpenOfficialSourceActionResult officialSourceAction)
     {
+        var url = officialSourceAction.ApprovedOfficialSourceUrl ?? UiStrings.OfficialSourceUrlUnavailable;
+
         if (officialSourceAction.IsReady)
         {
-            var url = officialSourceAction.ApprovedOfficialSourceUrl ?? UiStrings.OfficialSourceUrlUnavailable;
-            return string.Format(UiStrings.OfficialSourceSummaryReadyFormat, url);
+            return officialSourceAction.ResolutionOutcome switch
+            {
+                OfficialSourceResolutionOutcome.DirectOfficialDriverPageConfirmed => string.Format(UiStrings.OfficialSourceSummaryDirectDriverPageFormat, url),
+                OfficialSourceResolutionOutcome.VendorSupportPageConfirmed => string.Format(UiStrings.OfficialSourceSummaryVendorSupportPageFormat, url),
+                _ => string.Format(UiStrings.OfficialSourceSummaryReadyFormat, url)
+            };
+        }
+
+        if (officialSourceAction.ResolutionOutcome == OfficialSourceResolutionOutcome.InsufficientEvidence)
+        {
+            return UiStrings.OfficialSourceSummaryInsufficientEvidence;
         }
 
         var reason = string.IsNullOrWhiteSpace(officialSourceAction.BlockReason)

@@ -6,4 +6,5 @@ public sealed record OpenOfficialSourceActionRequest(
     string ProviderCode,
     string DriverIdentifier,
     SourceEvidence SourceEvidence,
-    Uri? OfficialSourceUri);
+    Uri? OfficialSourceUri,
+    OfficialSourceResolutionOutcome ResolutionOutcome);

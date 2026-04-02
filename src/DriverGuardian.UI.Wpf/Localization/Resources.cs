@@ -76,6 +76,9 @@ public static class Resources
     public static string Verification_Section_Empty_State_No_Action => GetString(nameof(Verification_Section_Empty_State_No_Action));
 
     public static string Official_Source_Summary_Ready_Format => GetString(nameof(Official_Source_Summary_Ready_Format));
+    public static string Official_Source_Summary_Direct_Driver_Page_Format => GetString(nameof(Official_Source_Summary_Direct_Driver_Page_Format));
+    public static string Official_Source_Summary_Vendor_Support_Page_Format => GetString(nameof(Official_Source_Summary_Vendor_Support_Page_Format));
+    public static string Official_Source_Summary_Insufficient_Evidence => GetString(nameof(Official_Source_Summary_Insufficient_Evidence));
     public static string Official_Source_Summary_Blocked_Format => GetString(nameof(Official_Source_Summary_Blocked_Format));
     public static string Official_Source_Blocked_No_Reason => GetString(nameof(Official_Source_Blocked_No_Reason));
     public static string Official_Source_Url_Unavailable => GetString(nameof(Official_Source_Url_Unavailable));

@@ -10,6 +10,19 @@ public sealed class OpenOfficialSourceActionEvaluator
 
         var blockers = new List<OpenOfficialSourceBlocker>();
 
+        if (request.ResolutionOutcome == OfficialSourceResolutionOutcome.InsufficientEvidence)
+        {
+            blockers.Add(new OpenOfficialSourceBlocker(
+                OpenOfficialSourceBlockedReason.ResolutionNotConfirmed,
+                "Open official source action is blocked because source resolution evidence is insufficient."));
+
+            return new OpenOfficialSourceActionDecision(
+                OpenOfficialSourceActionOutcome.InsufficientEvidence,
+                request.ResolutionOutcome,
+                null,
+                blockers);
+        }
+
         if (request.SourceEvidence.TrustLevel == SourceTrustLevel.Unknown)
         {
             blockers.Add(new OpenOfficialSourceBlocker(
@@ -18,6 +31,7 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.InsufficientEvidence,
+                request.ResolutionOutcome,
                 null,
                 blockers);
         }
@@ -30,6 +44,7 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.NonOfficialSource,
+                request.ResolutionOutcome,
                 null,
                 blockers);
         }
@@ -42,6 +57,7 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.MissingUrl,
+                request.ResolutionOutcome,
                 null,
                 blockers);
         }
@@ -54,6 +70,7 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.Blocked,
+                request.ResolutionOutcome,
                 null,
                 blockers);
         }
@@ -66,12 +83,14 @@ public sealed class OpenOfficialSourceActionEvaluator
 
             return new OpenOfficialSourceActionDecision(
                 OpenOfficialSourceActionOutcome.Blocked,
+                request.ResolutionOutcome,
                 null,
                 blockers);
         }
 
         return new OpenOfficialSourceActionDecision(
             OpenOfficialSourceActionOutcome.Allowed,
+            request.ResolutionOutcome,
             new ApprovedOfficialSourceLink(
                 request.ProviderCode,
                 request.DriverIdentifier,

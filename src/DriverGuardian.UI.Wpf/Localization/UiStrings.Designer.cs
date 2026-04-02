@@ -71,6 +71,9 @@ public static class UiStrings
     public static string VerificationSectionEmptyStateNoAction => Resources.Verification_Section_Empty_State_No_Action;
 
     public static string OfficialSourceSummaryReadyFormat => Resources.Official_Source_Summary_Ready_Format;
+    public static string OfficialSourceSummaryDirectDriverPageFormat => Resources.Official_Source_Summary_Direct_Driver_Page_Format;
+    public static string OfficialSourceSummaryVendorSupportPageFormat => Resources.Official_Source_Summary_Vendor_Support_Page_Format;
+    public static string OfficialSourceSummaryInsufficientEvidence => Resources.Official_Source_Summary_Insufficient_Evidence;
     public static string OfficialSourceSummaryBlockedFormat => Resources.Official_Source_Summary_Blocked_Format;
     public static string OfficialSourceBlockedNoReason => Resources.Official_Source_Blocked_No_Reason;
     public static string OfficialSourceUrlUnavailable => Resources.Official_Source_Url_Unavailable;
