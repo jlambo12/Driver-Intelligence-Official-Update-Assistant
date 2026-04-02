@@ -113,8 +113,13 @@ public static class UiStrings
     public static string SettingsReportFormatPlainText => Resources.Settings_Report_Format_PlainText;
     public static string SettingsVerificationHintLabel => Resources.Settings_Verification_Hint_Label;
     public static string SettingsDiagnosticLoggingLabel => Resources.Settings_Diagnostic_Logging_Label;
+    public static string SettingsDiagnosticLoggingHint => Resources.Settings_Diagnostic_Logging_Hint;
+    public static string SettingsDiagnosticLoggingStateEnabled => Resources.Settings_Diagnostic_Logging_State_Enabled;
+    public static string SettingsDiagnosticLoggingStateDisabled => Resources.Settings_Diagnostic_Logging_State_Disabled;
     public static string SettingsDiagnosticCustomLogFolderLabel => Resources.Settings_Diagnostic_Custom_Log_Folder_Label;
+    public static string SettingsDiagnosticCustomLogFolderHint => Resources.Settings_Diagnostic_Custom_Log_Folder_Hint;
     public static string SettingsDiagnosticEffectiveLogFolderLabel => Resources.Settings_Diagnostic_Effective_Log_Folder_Label;
+    public static string SettingsDiagnosticEffectiveLogFolderHint => Resources.Settings_Diagnostic_Effective_Log_Folder_Hint;
     public static string SettingsOpenLogsFolderAction => Resources.Settings_Open_Logs_Folder_Action;
     public static string SettingsLogsFolderOpenFailed => Resources.Settings_Logs_Folder_Open_Failed;
     public static string SettingsSaveAction => Resources.Settings_Save_Action;
