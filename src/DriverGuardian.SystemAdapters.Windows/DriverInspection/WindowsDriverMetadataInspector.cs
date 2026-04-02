@@ -5,7 +5,7 @@ using DriverGuardian.Domain.Drivers;
 
 namespace DriverGuardian.SystemAdapters.Windows.DriverInspection;
 
-public sealed class WindowsDriverMetadataInspectorStub : IDriverMetadataInspector
+public sealed class WindowsDriverMetadataInspector : IDriverMetadataInspector
 {
     private const string Query = "SELECT DeviceID, DriverVersion, DriverDate, DriverProviderName FROM Win32_PnPSignedDriver";
 
