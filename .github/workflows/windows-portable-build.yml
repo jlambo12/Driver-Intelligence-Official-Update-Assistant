@@ -16,6 +16,7 @@ jobs:
       PROJECT_PATH: src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj
       SOLUTION_PATH: DriverGuardian.sln
       ARTIFACT_PATH: artifacts/DriverGuardian-win-x64
+      LOG_PATH: artifacts/logs
 
     steps:
       - name: Checkout repository
@@ -31,20 +32,32 @@ jobs:
           dotnet --info
           dotnet --list-sdks
 
+      - name: Create build logs directory
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}/${{ env.LOG_PATH }}" -Force | Out-Null
+
       - name: Restore solution (win-x64)
-        run: dotnet restore "${{ env.SOLUTION_PATH }}" --runtime win-x64
+        run: |
+          & dotnet restore "${{ env.SOLUTION_PATH }}" --runtime win-x64 *>&1 `
+            | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/restore.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build WPF app project (Release)
-        run: dotnet build "${{ env.PROJECT_PATH }}" --configuration Release --runtime win-x64 --no-restore
+        run: |
+          & dotnet build "${{ env.PROJECT_PATH }}" --configuration Release --runtime win-x64 --no-restore `
+            -bl:"${{ github.workspace }}/${{ env.LOG_PATH }}/build.binlog" *>&1 `
+            | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/build.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Publish WPF app (win-x64 portable)
-        run: >
-          dotnet publish "${{ env.PROJECT_PATH }}"
+        run: |
+          & dotnet publish "${{ env.PROJECT_PATH }}"
           --configuration Release
           --runtime win-x64
           --self-contained false
           --no-restore
-          --output "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}"
+          --output "${{ github.workspace }}/${{ env.ARTIFACT_PATH }}" *>&1
+          | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/publish.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload portable app artifact
         uses: actions/upload-artifact@v4
@@ -52,3 +65,11 @@ jobs:
           name: DriverGuardian-win-x64-portable
           path: ${{ github.workspace }}/${{ env.ARTIFACT_PATH }}
           if-no-files-found: error
+
+      - name: Upload build logs artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DriverGuardian-build-logs
+          path: ${{ github.workspace }}/${{ env.LOG_PATH }}
+          if-no-files-found: warn
