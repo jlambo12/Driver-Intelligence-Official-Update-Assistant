@@ -4,6 +4,7 @@ using DriverGuardian.Domain.Drivers;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 using DriverGuardian.ProviderAdapters.Abstractions.Models;
 using DriverGuardian.ProviderAdapters.Abstractions.Providers;
+using DriverGuardian.ProviderAdapters.Official.Registry;
 
 namespace DriverGuardian.Tests.Unit.Application.Recommendations;
 
@@ -127,6 +128,18 @@ public sealed class RecommendationPipelineTests
     }
 
     [Fact]
+    public async Task BuildAsync_ShouldUseRealWindowsCatalogProvider_InSupportedRuntimeScenario()
+    {
+        var pipeline = new RecommendationPipeline([new OfficialWindowsCatalogProviderAdapter()]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("DEV-1", "31.0.101.2000", "PCI\\VEN_8086&DEV_15F3")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.True(summary.HasRecommendation);
+        Assert.Equal("31.0.101.2125", summary.RecommendedVersion);
+    }
+
+    [Fact]
     public async Task BuildAsync_ShouldReturnEmpty_WhenNoInstalledDriversProvided()
     {
         var pipeline = new RecommendationPipeline([new TestProviderAdapter(CreateSuccessResponse("official", []))]);
@@ -136,10 +149,10 @@ public sealed class RecommendationPipelineTests
         Assert.Empty(result);
     }
 
-    private static InstalledDriverSnapshot CreateInstalled(string deviceId, string version)
+    private static InstalledDriverSnapshot CreateInstalled(string deviceId, string version, string? hardwareId = null)
         => new(
             new DeviceIdentity(deviceId),
-            new HardwareIdentifier($"PCI\\VEN_1234&DEV_{deviceId}"),
+            new HardwareIdentifier(hardwareId ?? $"PCI\\VEN_1234&DEV_{deviceId}"),
             version,
             null,
             "Contoso");
