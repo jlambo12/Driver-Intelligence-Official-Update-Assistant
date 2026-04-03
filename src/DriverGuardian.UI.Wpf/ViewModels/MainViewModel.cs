@@ -4,10 +4,10 @@ using System.Windows.Input;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Domain.Settings;
+using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.Models;
-using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.ViewModels.Sections;
 
@@ -18,18 +18,22 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly IMainScreenWorkflow _mainScreenWorkflow;
     private readonly PreviewScenarioMainScreenWorkflow? _previewWorkflow;
     private readonly IDiagnosticLogsFolderService _diagnosticLogsFolderService;
+    private readonly IOfficialSourceLauncher _officialSourceLauncher;
     private MainUiState _state;
     private PreviewScenarioOption? _selectedPreviewScenario;
+    private string? _lastApprovedOfficialSourceUrl;
 
     public MainViewModel(
         IMainScreenWorkflow mainScreenWorkflow,
         ISettingsRepository settingsRepository,
         IReportFileSaveService reportFileSaveService,
-        IDiagnosticLogsFolderService diagnosticLogsFolderService)
+        IDiagnosticLogsFolderService diagnosticLogsFolderService,
+        IOfficialSourceLauncher officialSourceLauncher)
     {
         _mainScreenWorkflow = mainScreenWorkflow;
         _previewWorkflow = mainScreenWorkflow as PreviewScenarioMainScreenWorkflow;
         _diagnosticLogsFolderService = diagnosticLogsFolderService;
+        _officialSourceLauncher = officialSourceLauncher;
         _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusInitial, UiStrings.ScanAction);
 
         WorkflowSection = new WorkflowSectionViewModel(_state);
@@ -48,6 +52,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
         OpenDiagnosticLogsFolderCommand = new AsyncRelayCommand(OpenDiagnosticLogsFolderAsync);
+        OpenOfficialSourceCommand = new AsyncRelayCommand(OpenOfficialSourceAsync, () => CanOpenOfficialSource);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -56,6 +61,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand ApplyPreviewScenarioCommand { get; }
     public ICommand ExportReportCommand { get; }
     public ICommand OpenDiagnosticLogsFolderCommand { get; }
+    public ICommand OpenOfficialSourceCommand { get; }
+
+    public bool CanOpenOfficialSource => TryGetApprovedOfficialSourceUri(out _);
+
+    public string OpenOfficialSourceBlockReason => CanOpenOfficialSource
+        ? string.Empty
+        : State.Results.HasScanData
+            ? State.Results.OfficialSourceSummary
+            : "Запустите анализ, чтобы получить подтверждённый официальный источник.";
 
     public bool IsPreviewMode => _previewWorkflow is not null;
     public string PreviewModeBannerText => UiStrings.PreviewModeBanner;
@@ -151,6 +165,48 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private async Task OpenOfficialSourceAsync()
+    {
+        await Task.Yield();
+
+        if (!TryGetApprovedOfficialSourceUri(out var approvedUri) || approvedUri is null)
+        {
+            State = State with { StatusText = OpenOfficialSourceBlockReason };
+            return;
+        }
+
+        if (!_officialSourceLauncher.Open(approvedUri))
+        {
+            State = State with { StatusText = "Не удалось открыть официальный источник. Проверьте браузер по умолчанию." };
+            return;
+        }
+
+        State = State with { StatusText = $"Открыт официальный источник: {approvedUri.Host}" };
+    }
+
+    private bool TryGetApprovedOfficialSourceUri(out Uri? uri)
+    {
+        uri = null;
+
+        if (!State.Results.HasScanData || string.IsNullOrWhiteSpace(_lastApprovedOfficialSourceUrl))
+        {
+            return false;
+        }
+
+        if (!Uri.TryCreate(_lastApprovedOfficialSourceUrl, UriKind.Absolute, out var parsed))
+        {
+            return false;
+        }
+
+        if (!string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        uri = parsed;
+        return true;
+    }
+
     private async Task ApplyPreviewScenarioAsync()
     {
         if (_previewWorkflow is null)
@@ -182,7 +238,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
         State = MainUiStateFactory.CreateFromWorkflowResult(result, isPreview, scenarioName);
         WorkflowSection.ShowSecondaryRecommendations = false;
         HistorySection.RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);
+        _lastApprovedOfficialSourceUrl = result.OfficialSourceAction.ApprovedOfficialSourceUrl;
         ReportSection.ApplyWorkflowPayload(result.ReportExportPayload);
+        OnPropertyChanged(nameof(CanOpenOfficialSource));
+        OnPropertyChanged(nameof(OpenOfficialSourceBlockReason));
+
+        if (OpenOfficialSourceCommand is AsyncRelayCommand command)
+        {
+            command.RaiseCanExecuteChanged();
+        }
     }
 
     private void OnSettingsSectionPropertyChanged(object? sender, PropertyChangedEventArgs e)

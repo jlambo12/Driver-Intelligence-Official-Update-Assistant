@@ -40,7 +40,8 @@ public partial class App : WpfApplication
                 mainScreenWorkflow,
                 settingsRepository,
                 new ReportFileSaveService(),
-                logsFolderService);
+                logsFolderService,
+                new OfficialSourceLauncher());
 
             await vm.InitializeAsync();
 
@@ -61,7 +62,8 @@ public partial class App : WpfApplication
                 new PreviewScenarioMainScreenWorkflow(),
                 new InMemorySettingsRepository(),
                 new ReportFileSaveService(),
-                new DiagnosticLogsFolderService(GetDefaultLogsDirectory()));
+                new DiagnosticLogsFolderService(GetDefaultLogsDirectory()),
+                new OfficialSourceLauncher());
             await fallbackVm.InitializeAsync();
             fallbackVm.ApplyStartupRecoveryStatus(recoveryStatus);
             var fallbackWindow = new MainWindow { DataContext = fallbackVm };

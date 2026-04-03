@@ -2,13 +2,28 @@ using System.Windows.Input;
 
 namespace DriverGuardian.UI.Wpf.Commands;
 
-public sealed class AsyncRelayCommand(Func<Task> execute, Action<Exception>? onError = null) : ICommand
+public sealed class AsyncRelayCommand : ICommand
 {
+    private readonly Func<Task> _execute;
+    private readonly Func<bool>? _canExecute;
+    private readonly Action<Exception>? _onError;
     private bool _isRunning;
+
+    public AsyncRelayCommand(Func<Task> execute, Action<Exception>? onError = null)
+        : this(execute, null, onError)
+    {
+    }
+
+    public AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute, Action<Exception>? onError = null)
+    {
+        _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+        _canExecute = canExecute;
+        _onError = onError;
+    }
 
     public event EventHandler? CanExecuteChanged;
 
-    public bool CanExecute(object? parameter) => !_isRunning;
+    public bool CanExecute(object? parameter) => !_isRunning && (_canExecute?.Invoke() ?? true);
 
     public async void Execute(object? parameter)
     {
@@ -18,27 +33,33 @@ public sealed class AsyncRelayCommand(Func<Task> execute, Action<Exception>? onE
         }
         catch (Exception ex)
         {
-            onError?.Invoke(ex);
+            _onError?.Invoke(ex);
         }
     }
 
     public async Task ExecuteAsync(object? parameter = null)
     {
-        if (_isRunning)
+        if (!CanExecute(parameter))
         {
             return;
         }
 
         _isRunning = true;
-        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        RaiseCanExecuteChanged();
+
         try
         {
-            await execute();
+            await _execute();
         }
         finally
         {
             _isRunning = false;
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            RaiseCanExecuteChanged();
         }
+    }
+
+    public void RaiseCanExecuteChanged()
+    {
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

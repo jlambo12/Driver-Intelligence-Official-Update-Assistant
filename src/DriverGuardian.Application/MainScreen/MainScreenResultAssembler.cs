@@ -1,13 +1,15 @@
+using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Application.Reports;
+using DriverGuardian.Application.Verification;
 using DriverGuardian.Domain.Recommendations;
 using DriverGuardian.Domain.Scanning;
-using DriverGuardian.Application.Reports;
-using DriverGuardian.Application.Abstractions;
 
 namespace DriverGuardian.Application.MainScreen;
 
 public sealed class MainScreenResultAssembler(
     RecommendationDetailAssembler recommendationDetailAssembler,
     OfficialSourceActionService officialSourceActionService,
+    VerificationTrackingService verificationTrackingService,
     IShareableReportBuilder reportBuilder)
 {
     public async Task<MainScreenAssembledResult> AssembleAsync(
@@ -21,7 +23,8 @@ public sealed class MainScreenResultAssembler(
             recommendationDetails.Count(detail => detail.ManualActionRequired));
 
         var officialSourceAction = await officialSourceActionService.BuildAsync(scanResult.Drivers, recommendations, cancellationToken);
-        var verificationSummary = BuildVerificationSummary(recommendationDetails);
+        var verifications = await verificationTrackingService.EvaluateAndCaptureAsync(scanResult.Drivers, recommendations, cancellationToken);
+        var verificationSummary = BuildVerificationSummary(verifications, recommendationDetails);
 
         var generatedAtUtc = DateTimeOffset.UtcNow;
         var report = reportBuilder.Build(
@@ -29,7 +32,7 @@ public sealed class MainScreenResultAssembler(
                 scanResult,
                 recommendations,
                 [],
-                [],
+                verifications,
                 generatedAtUtc));
 
         var plainTextContent = reportBuilder.BuildStructuredText(report);
@@ -47,12 +50,25 @@ public sealed class MainScreenResultAssembler(
             officialSourceAction);
     }
 
-    private static string BuildVerificationSummary(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)
+    private static string BuildVerificationSummary(
+        IReadOnlyCollection<VerificationReportItem> verifications,
+        IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)
     {
-        var waitingForReturnCount = recommendationDetails.Count(detail => detail.VerificationAvailable);
-        return waitingForReturnCount > 0
-            ? $"Ожидается возврат пользователя по {waitingForReturnCount} устройств(ам). После ручной установки вернитесь и запустите повторный анализ: проверка будет доступна сразу."
-            : "Действие не требуется: активных задач на возврат для проверки нет.";
+        if (verifications.Count == 0)
+        {
+            var waitingForReturnCount = recommendationDetails.Count(detail => detail.VerificationAvailable);
+            return waitingForReturnCount > 0
+                ? $"Ожидается возврат пользователя по {waitingForReturnCount} устройств(ам). После ручной установки вернитесь и запустите повторный анализ: проверка будет доступна сразу."
+                : "Действие не требуется: активных задач на возврат для проверки нет.";
+        }
+
+        var verified = verifications.Count(v => v.Result.Outcome == PostInstallVerificationOutcome.VerifiedChanged);
+        var partial = verifications.Count(v => v.Result.Outcome == PostInstallVerificationOutcome.PartiallyChanged);
+        var noChange = verifications.Count(v => v.Result.Outcome == PostInstallVerificationOutcome.NoChangeDetected);
+        var missing = verifications.Count(v => v.Result.Outcome == PostInstallVerificationOutcome.DeviceMissing);
+        var insufficient = verifications.Count(v => v.Result.Outcome == PostInstallVerificationOutcome.InsufficientEvidence);
+
+        return $"Результаты проверки после ручной установки: подтверждено изменений {verified}, частично {partial}, без изменений {noChange}, устройство отсутствует {missing}, недостаточно данных {insufficient}.";
     }
 
     private static string BuildReportFileNameBase(Guid scanSessionId, DateTimeOffset generatedAtUtc)
