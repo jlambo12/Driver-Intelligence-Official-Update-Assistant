@@ -5,7 +5,7 @@ using System.Windows;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Infrastructure.DiagnosticLogging;
-using DriverGuardian.Infrastructure.Runtime;
+using DriverGuardian.Bootstrap.Runtime;
 using DriverGuardian.Infrastructure.Settings;
 using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.ViewModels;

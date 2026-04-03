@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../DriverGuardian.Application/DriverGuardian.Application.csproj" />
+    <ProjectReference Include="../DriverGuardian.Bootstrap/DriverGuardian.Bootstrap.csproj" />
     <ProjectReference Include="../DriverGuardian.Infrastructure/DriverGuardian.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

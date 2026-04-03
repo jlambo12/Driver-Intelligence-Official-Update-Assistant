@@ -19,7 +19,7 @@ using DriverGuardian.SystemAdapters.Windows.DeviceDiscovery;
 using DriverGuardian.SystemAdapters.Windows.DriverInspection;
 using System.IO;
 
-namespace DriverGuardian.Infrastructure.Runtime;
+namespace DriverGuardian.Bootstrap.Runtime;
 
 public static class ProductionRuntimeFactory
 {
