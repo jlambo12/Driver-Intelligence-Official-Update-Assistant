@@ -44,10 +44,9 @@ public partial class App : WpfApplication
         {
             ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
             var diagnosticLogsFolderService = new DiagnosticLogsFolderService(defaultLogsDirectory);
-            var diagnosticLogger = startupLogger;
             IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
                 ? new PreviewScenarioMainScreenWorkflow()
-                : BuildProductionWorkflow(settingsRepository, diagnosticLogger);
+                : BuildProductionWorkflow(settingsRepository, defaultLogsDirectory);
 
             var vm = new MainViewModel(
                 mainScreenWorkflow,
@@ -119,8 +118,9 @@ public partial class App : WpfApplication
 
     private static IMainScreenWorkflow BuildProductionWorkflow(
         ISettingsRepository settingsRepository,
-        IDiagnosticLogger diagnosticLogger)
+        string defaultLogsDirectory)
     {
+        IDiagnosticLogger runtimeDiagnosticLogger = new RuntimeDiagnosticLogger(settingsRepository, defaultLogsDirectory);
         IClock clock = new SystemClock();
         IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService();
         IDriverMetadataInspector inspector = new WindowsDriverMetadataInspector();
@@ -139,7 +139,7 @@ public partial class App : WpfApplication
         var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
         var recommendationDetailAssembler = new RecommendationDetailAssembler();
         var officialSourceResolutionService = new OfficialSourceResolutionService(officialProviders);
-        var officialSourceActionService = new OfficialSourceActionService(officialSourceResolutionService, openOfficialSourceActionEvaluator, diagnosticLogger);
+        var officialSourceActionService = new OfficialSourceActionService(officialSourceResolutionService, openOfficialSourceActionEvaluator, runtimeDiagnosticLogger);
         var reportPayloadFactory = new ReportPayloadFactory(new ShareableReportBuilder());
         var historyWriter = new HistoryWriter(resultHistoryRepository);
         var historySummarizer = new HistorySummarizer(resultHistoryRepository);
@@ -149,7 +149,7 @@ public partial class App : WpfApplication
             recommendationPipeline,
             providerSummaryService,
             settingsRepository,
-            diagnosticLogger,
+            runtimeDiagnosticLogger,
             auditWriter,
             recommendationDetailAssembler,
             officialSourceActionService,
