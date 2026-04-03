@@ -1,4 +1,5 @@
 using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Application.OfficialSources;
 
 namespace DriverGuardian.Application.MainScreen;
 
@@ -69,7 +70,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
             ScanSessionId: Guid.Empty,
             ReportExportPayload: new ReportExportPayload("driverguardian-preview-first-run", string.Empty, string.Empty),
             RecommendationDetails: [],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(false, "Официальный источник недоступен до появления рекомендаций.", null, null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(false, OfficialSourceResolutionOutcome.InsufficientEvidence, "Официальный источник недоступен до появления рекомендаций.", null, null),
             RecentHistory: []);
 
     private static MainScreenWorkflowResult BuildNoActionableRecommendation()
@@ -104,7 +105,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     false,
                     "Проверка после установки не требуется.")
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(false, "Нет доступных рекомендаций для перехода к источнику.", null, null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(false, OfficialSourceResolutionOutcome.InsufficientEvidence, "Нет доступных рекомендаций для перехода к источнику.", null, null),
             RecentHistory: []);
 
     private static MainScreenWorkflowResult BuildRecommendationWithLimitedEvidence()
@@ -139,7 +140,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     false,
                     "Сначала подтвердите официальный источник; затем повторите анализ.")
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(false, "Требуется ручная проверка официальности источника.", null, "Недостаточно подтверждённых признаков источника"),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(false, OfficialSourceResolutionOutcome.InsufficientEvidence, "Требуется ручная проверка официальности источника.", null, "Недостаточно подтверждённых признаков источника"),
             RecentHistory: []);
 
     private static MainScreenWorkflowResult BuildRecommendationReadyForManualAction()
@@ -174,7 +175,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     true,
                     "Ожидается возврат пользователя после ручной установки.")
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(true, "Официальный источник подтверждён для ручного открытия.", "https://www.nvidia.com/download/index.aspx", null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(true, OfficialSourceResolutionOutcome.ConfirmedDirectOfficialDriverPage, "Официальный источник подтверждён для ручного открытия.", "https://www.nvidia.com/download/index.aspx", null),
             RecentHistory: []);
 
     private static MainScreenWorkflowResult BuildVerificationReturnGuidance()
@@ -209,7 +210,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     true,
                     "Пользователь сообщил о ручной установке. Нужен контрольный анализ.")
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(true, "Официальный источник подтверждён.", "https://www.intel.com/content/www/us/en/download-center/home.html", null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(true, OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage, "Официальный источник подтверждён.", "https://www.intel.com/content/www/us/en/download-center/home.html", null),
             RecentHistory:
             [
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddMinutes(-45), RecentHistoryEntryKind.Scan, Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), 4, 4, 0, null, null),
@@ -261,7 +262,7 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
                     false,
                     "Подтвердите официальный источник перед ручным действием.")
             ],
-            OfficialSourceAction: new OpenOfficialSourceActionResult(true, "Официальный источник для первого устройства подтверждён.", "https://www.nvidia.com/download/index.aspx", null),
+            OfficialSourceAction: new OpenOfficialSourceActionResult(true, OfficialSourceResolutionOutcome.ConfirmedDirectOfficialDriverPage, "Официальный источник для первого устройства подтверждён.", "https://www.nvidia.com/download/index.aspx", null),
             RecentHistory:
             [
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow.AddHours(-5), RecentHistoryEntryKind.Scan, Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), 8, 8, 0, null, null),

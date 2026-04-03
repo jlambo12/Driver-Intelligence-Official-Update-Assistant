@@ -1,3 +1,5 @@
+using DriverGuardian.Application.OfficialSources;
+
 namespace DriverGuardian.Application.Abstractions;
 
 public interface IMainScreenWorkflow
@@ -42,6 +44,7 @@ public sealed record RecommendationDetailResult(
 
 public sealed record OpenOfficialSourceActionResult(
     bool IsReady,
+    OfficialSourceResolutionOutcome ResolutionOutcome,
     string Status,
     string? ApprovedOfficialSourceUrl,
     string? BlockReason);
