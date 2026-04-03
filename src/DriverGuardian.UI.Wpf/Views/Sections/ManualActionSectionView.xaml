@@ -8,15 +8,15 @@
                     <Border DockPanel.Dock="Left" Width="22" Height="22" CornerRadius="11" Background="#E0E7FF" Margin="0 0 8 0" VerticalAlignment="Center">
                         <TextBlock Text="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Foreground="#1E3A8A"/>
                     </Border>
-                    <TextBlock Text="{Binding Results.ManualSectionTitle}" FontWeight="SemiBold" FontSize="16" Foreground="#1E3A8A"/>
+                    <TextBlock Text="{Binding State.Results.ManualSectionTitle}" FontWeight="SemiBold" FontSize="16" Foreground="#1E3A8A"/>
                 </DockPanel>
-                <TextBlock Text="{Binding Results.ManualSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
-                <ItemsControl ItemsSource="{Binding Results.UserGuidedSteps}">
+                <TextBlock Text="{Binding State.Results.ManualSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
+                <ItemsControl ItemsSource="{Binding State.Results.UserGuidedSteps}">
                     <ItemsControl.Style>
                         <Style TargetType="ItemsControl">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Results.UserGuidedSteps.Count}" Value="0">
+                                <DataTrigger Binding="{Binding State.Results.UserGuidedSteps.Count}" Value="0">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -39,7 +39,28 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
                 <Border Style="{StaticResource PrimaryWorkflowInnerCardStyleWhenUserGuidedStepsEmptyVisible}" Padding="10">
-                    <TextBlock Text="{Binding Results.ManualSectionEmptyState}" TextWrapping="Wrap" Foreground="#334155"/>
+                    <TextBlock Text="{Binding State.Results.ManualSectionEmptyState}" TextWrapping="Wrap" Foreground="#334155"/>
+                </Border>
+                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="10" Margin="0 8 0 0">
+                    <StackPanel>
+                        <Button Content="Открыть подтверждённый официальный источник"
+                                Command="{Binding OpenOfficialSourceCommand}"
+                                Height="32"
+                                HorizontalAlignment="Left"
+                                Padding="12 4"/>
+                        <TextBlock Text="{Binding OpenOfficialSourceBlockReason}" Margin="0 6 0 0" TextWrapping="Wrap" Foreground="#475569">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanOpenOfficialSource}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
                 </Border>
             </StackPanel>
         </Border>

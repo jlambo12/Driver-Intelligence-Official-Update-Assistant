@@ -69,7 +69,8 @@ public sealed class MainViewModelCoordinationTests
             workflow,
             settingsRepository,
             new FakeReportFileSaveService(),
-            new FakeDiagnosticLogsFolderService());
+            new FakeDiagnosticLogsFolderService(),
+            new FakeOfficialSourceLauncher());
 
     private static async Task ExecuteAsync(System.Windows.Input.ICommand command)
     {
@@ -130,5 +131,10 @@ public sealed class MainViewModelCoordinationTests
             => string.IsNullOrWhiteSpace(customFolderPath) ? "C:/logs/default" : customFolderPath;
 
         public bool OpenFolder(string folderPath) => true;
+    }
+
+    private sealed class FakeOfficialSourceLauncher : IOfficialSourceLauncher
+    {
+        public bool Open(Uri uri) => true;
     }
 }

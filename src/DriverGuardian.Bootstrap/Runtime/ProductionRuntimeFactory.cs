@@ -6,6 +6,7 @@ using DriverGuardian.Application.ProviderCatalog;
 using DriverGuardian.Application.Recommendations;
 using DriverGuardian.Application.Reports;
 using DriverGuardian.Application.Scanning;
+using DriverGuardian.Application.Verification;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Contracts.DriverInspection;
 using DriverGuardian.Infrastructure.Audit;
@@ -29,6 +30,8 @@ public static class ProductionRuntimeFactory
         var defaultLogsDirectory = Path.Combine(appDataDirectory, "Logs");
         var settingsFilePath = Path.Combine(appDataDirectory, "settings.json");
         var historyFilePath = Path.Combine(appDataDirectory, "result-history.json");
+        var auditFilePath = Path.Combine(appDataDirectory, "audit-log.jsonl");
+        var verificationBaselineFilePath = Path.Combine(appDataDirectory, "verification-baselines.json");
 
         ISettingsRepository settingsRepository = new JsonFileSettingsRepository(settingsFilePath);
         IDiagnosticLogger runtimeDiagnosticLogger = new SettingsDiagnosticLogger(settingsRepository, defaultLogsDirectory);
@@ -44,8 +47,9 @@ public static class ProductionRuntimeFactory
         IProviderRegistry providerRegistry = new OfficialProviderRegistry(officialProviders);
         IProviderCatalogSummaryService providerSummaryService = new ProviderCatalogSummaryService(providerRegistry);
 
-        IAuditWriter auditWriter = new InMemoryAuditWriter();
+        IAuditWriter auditWriter = new JsonFileAuditWriter(auditFilePath);
         IResultHistoryRepository resultHistoryRepository = new JsonFileResultHistoryRepository(historyFilePath);
+        IVerificationBaselineStore verificationBaselineStore = new JsonFileVerificationBaselineStore(verificationBaselineFilePath);
 
         var officialSourceResolutionService = new OfficialSourceResolutionService(officialProviders);
         var officialSourceActionService = new OfficialSourceActionService(
@@ -56,6 +60,7 @@ public static class ProductionRuntimeFactory
         var resultAssembler = new MainScreenResultAssembler(
             new RecommendationDetailAssembler(),
             officialSourceActionService,
+            new VerificationTrackingService(verificationBaselineStore, new PostInstallVerificationEvaluator()),
             new ShareableReportBuilder());
 
         var mainScreenWorkflow = new MainScreenWorkflow(

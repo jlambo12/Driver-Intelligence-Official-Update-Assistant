@@ -257,7 +257,7 @@
                     </Border>
 
                     <sections:RecommendationSectionView DataContext="{Binding WorkflowSection}" />
-                    <sections:ManualActionSectionView DataContext="{Binding State}" />
+                    <sections:ManualActionSectionView DataContext="{Binding}" />
                     <sections:VerificationSectionView DataContext="{Binding State}" />
                 </StackPanel>
 

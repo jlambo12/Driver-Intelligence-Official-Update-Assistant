@@ -45,7 +45,7 @@ public sealed class MainScreenWorkflow(
 
             var recentHistory = await historyService.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
 
-            await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
+            await auditWriter.WriteAsync($"session={scanResult.Session.Id};event=scan.completed;devices={scanResult.DiscoveredDeviceCount};drivers={scanResult.Drivers.Count};recommended={recommendationStats.RecommendedCount}", cancellationToken);
             await diagnosticLogger.LogInfoAsync(
                 "scan.workflow.summary",
                 $"Сеанс {scanResult.Session.Id}; устройств {scanResult.DiscoveredDeviceCount}; драйверов {scanResult.Drivers.Count}; рекомендаций {recommendationStats.RecommendedCount}.",

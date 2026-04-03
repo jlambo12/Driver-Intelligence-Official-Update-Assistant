@@ -4,6 +4,7 @@ using DriverGuardian.Application.History.Models;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Application.Reports;
+using DriverGuardian.Application.Verification;
 using DriverGuardian.Domain.Devices;
 using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
@@ -32,6 +33,7 @@ public sealed class MainScreenWorkflowTests
             new MainScreenResultAssembler(
                 new RecommendationDetailAssembler(),
                 new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+                new VerificationTrackingService(new InMemoryVerificationBaselineStore(), new PostInstallVerificationEvaluator()),
                 new ShareableReportBuilder()),
             new ScanSessionHistoryService(historyRepository));
 
@@ -91,6 +93,7 @@ public sealed class MainScreenWorkflowTests
             new MainScreenResultAssembler(
                 new RecommendationDetailAssembler(),
                 new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+                new VerificationTrackingService(new InMemoryVerificationBaselineStore(), new PostInstallVerificationEvaluator()),
                 new ShareableReportBuilder()),
             new ScanSessionHistoryService(historyRepository));
 
@@ -114,6 +117,7 @@ public sealed class MainScreenWorkflowTests
             new MainScreenResultAssembler(
                 new RecommendationDetailAssembler(),
                 new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+                new VerificationTrackingService(new InMemoryVerificationBaselineStore(), new PostInstallVerificationEvaluator()),
                 new ShareableReportBuilder()),
             new ScanSessionHistoryService(historyRepository));
 
@@ -305,6 +309,20 @@ public sealed class MainScreenWorkflowTests
         public Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken)
         {
             ErrorEvents.Add($"{eventName}:{message}:{exception.GetType().Name}");
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class InMemoryVerificationBaselineStore : IVerificationBaselineStore
+    {
+        private IReadOnlyCollection<VerificationBaselineSnapshot> _snapshots = [];
+
+        public Task<IReadOnlyCollection<VerificationBaselineSnapshot>> GetAllAsync(CancellationToken cancellationToken)
+            => Task.FromResult(_snapshots);
+
+        public Task SaveAllAsync(IReadOnlyCollection<VerificationBaselineSnapshot> snapshots, CancellationToken cancellationToken)
+        {
+            _snapshots = snapshots;
             return Task.CompletedTask;
         }
     }
