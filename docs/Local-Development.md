@@ -11,7 +11,7 @@ The solution targets **.NET 8** and includes Windows-specific projects (`net8.0-
    dotnet --info
    ```
 
-> If you see `dotnet: command not found`, the SDK is not installed or not in `PATH`.
+> If you see `dotnet: command not found`, the SDK is not installed or not in `PATH` (or `~/.dotnet/dotnet`).
 
 ## Run unit tests
 
@@ -38,4 +38,4 @@ In minimal containers and Linux-based CI workers without .NET preinstalled, the 
 The repository now includes:
 
 - `global.json` to pin the SDK feature band and improve reproducibility.
-- `scripts/run-dotnet-tests.sh` for preflight checks and actionable diagnostics.
+- `scripts/run-dotnet-tests.sh` for preflight checks and actionable diagnostics (including fallback to `DOTNET_ROOT` / `~/.dotnet/dotnet`).
