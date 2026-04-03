@@ -6,8 +6,8 @@ namespace DriverGuardian.Tests.Unit.Application.Verification;
 
 public sealed class PostInstallVerificationEvaluatorTests
 {
-    private static readonly DeviceIdentity DeviceIdentity = new("PCI\\VEN_8086&DEV_15F3");
-    private static readonly HardwareIdentifier HardwareIdentifier = new("PCI\\VEN_8086&DEV_15F3");
+    private static readonly DeviceIdentity TestDeviceIdentity = new("PCI\\VEN_8086&DEV_15F3");
+    private static readonly HardwareIdentifier TestHardwareIdentifier = new("PCI\\VEN_8086&DEV_15F3");
 
     private readonly PostInstallVerificationEvaluator _evaluator = new();
 
@@ -15,7 +15,7 @@ public sealed class PostInstallVerificationEvaluatorTests
     public void Evaluate_ReturnsVerifiedChanged_WhenVersionAndAdditionalAttributesChange()
     {
         var result = _evaluator.Evaluate(new PostInstallVerificationRequest(
-            DeviceIdentity,
+            TestDeviceIdentity,
             new VerificationBaselineSnapshot(CreateSnapshot("1.0.0", new DateOnly(2024, 1, 1), "Provider A"), DateTimeOffset.UtcNow.AddMinutes(-20)),
             CreateSnapshot("2.0.0", new DateOnly(2025, 3, 12), "Provider B")));
 
@@ -33,7 +33,7 @@ public sealed class PostInstallVerificationEvaluatorTests
         var snapshot = CreateSnapshot("2.0.0", new DateOnly(2025, 3, 12), "Provider A");
 
         var result = _evaluator.Evaluate(new PostInstallVerificationRequest(
-            DeviceIdentity,
+            TestDeviceIdentity,
             new VerificationBaselineSnapshot(snapshot, DateTimeOffset.UtcNow.AddMinutes(-20)),
             snapshot));
 
@@ -46,7 +46,7 @@ public sealed class PostInstallVerificationEvaluatorTests
     public void Evaluate_ReturnsPartiallyChanged_WhenOnlyProviderChanges()
     {
         var result = _evaluator.Evaluate(new PostInstallVerificationRequest(
-            DeviceIdentity,
+            TestDeviceIdentity,
             new VerificationBaselineSnapshot(CreateSnapshot("2.0.0", new DateOnly(2025, 3, 12), "Provider A"), DateTimeOffset.UtcNow.AddMinutes(-20)),
             CreateSnapshot("2.0.0", new DateOnly(2025, 3, 12), "Provider B")));
 
@@ -60,7 +60,7 @@ public sealed class PostInstallVerificationEvaluatorTests
     public void Evaluate_ReturnsDeviceMissing_WhenPostInstallSnapshotIsMissing()
     {
         var result = _evaluator.Evaluate(new PostInstallVerificationRequest(
-            DeviceIdentity,
+            TestDeviceIdentity,
             new VerificationBaselineSnapshot(CreateSnapshot("2.0.0", new DateOnly(2025, 3, 12), "Provider A"), DateTimeOffset.UtcNow.AddMinutes(-20)),
             null));
 
@@ -71,12 +71,12 @@ public sealed class PostInstallVerificationEvaluatorTests
     [Fact]
     public void Evaluate_ReturnsInsufficientEvidence_WhenBaselineIsMissing()
     {
-        var result = _evaluator.Evaluate(new PostInstallVerificationRequest(DeviceIdentity, null, CreateSnapshot("2.0.0", new DateOnly(2025, 3, 12), "Provider A")));
+        var result = _evaluator.Evaluate(new PostInstallVerificationRequest(TestDeviceIdentity, null, CreateSnapshot("2.0.0", new DateOnly(2025, 3, 12), "Provider A")));
 
         Assert.Equal(PostInstallVerificationOutcome.InsufficientEvidence, result.Outcome);
         Assert.Equal(PostInstallVerificationReason.MissingBaselineSnapshot, result.Reason);
     }
 
     private static InstalledDriverSnapshot CreateSnapshot(string version, DateOnly? date, string provider)
-        => new(DeviceIdentity, HardwareIdentifier, version, date, provider);
+        => new(TestDeviceIdentity, TestHardwareIdentifier, version, date, provider);
 }
