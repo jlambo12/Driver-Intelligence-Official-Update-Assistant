@@ -36,16 +36,15 @@ public partial class App : WpfApplication
 
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
+        var defaultLogsDirectory = GetDefaultLogsDirectory();
+        var previewModeEnabled = IsPreviewModeEnabled(e.Args);
+        var startupLogger = BuildStartupDiagnosticLogger(previewModeEnabled, defaultLogsDirectory);
 
         try
         {
-            var previewModeEnabled = IsPreviewModeEnabled(e.Args);
             ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
-            var defaultLogsDirectory = GetDefaultLogsDirectory();
             var diagnosticLogsFolderService = new DiagnosticLogsFolderService(defaultLogsDirectory);
-            var diagnosticLogger = previewModeEnabled
-                ? new NoOpDiagnosticLogger()
-                : new FileDiagnosticLogger(defaultLogsDirectory);
+            var diagnosticLogger = startupLogger;
             IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
                 ? new PreviewScenarioMainScreenWorkflow()
                 : BuildProductionWorkflow(settingsRepository, diagnosticLogger);
@@ -60,9 +59,16 @@ public partial class App : WpfApplication
 
             var window = new MainWindow { DataContext = vm };
             window.Show();
+            await startupLogger.LogInfoAsync("app.startup.completed", "Primary startup flow completed.", CancellationToken.None);
         }
-        catch
+        catch (Exception ex)
         {
+            await startupLogger.LogErrorAsync("app.startup.failed", "Primary startup flow failed. Recovery mode will be activated.", ex, CancellationToken.None);
+            MessageBox.Show(
+                "Не удалось запустить приложение в production-режиме. Активирован recovery-режим (preview) для безопасного продолжения.",
+                "DriverGuardian startup recovery",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
             var fallbackVm = new MainViewModel(
                 new PreviewScenarioMainScreenWorkflow(),
                 new InMemorySettingsRepository(),
@@ -71,6 +77,7 @@ public partial class App : WpfApplication
             await fallbackVm.InitializeAsync();
             var fallbackWindow = new MainWindow { DataContext = fallbackVm };
             fallbackWindow.Show();
+            await startupLogger.LogWarningAsync("app.startup.recovery_mode.enabled", "Application is running in recovery preview mode after startup failure.", CancellationToken.None);
         }
     }
 
@@ -98,6 +105,16 @@ public partial class App : WpfApplication
         return new JsonFileSettingsRepository(settingsFilePath);
     }
 
+    private static IDiagnosticLogger BuildStartupDiagnosticLogger(bool previewModeEnabled, string defaultLogsDirectory)
+    {
+        if (previewModeEnabled)
+        {
+            return new NoOpDiagnosticLogger();
+        }
+
+        return new FileDiagnosticLogger(defaultLogsDirectory);
+    }
+
     private static IMainScreenWorkflow BuildProductionWorkflow(
         ISettingsRepository settingsRepository,
         IDiagnosticLogger diagnosticLogger)
@@ -120,7 +137,7 @@ public partial class App : WpfApplication
         var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
         var recommendationDetailAssembler = new RecommendationDetailAssembler();
         var officialSourceResolutionService = new OfficialSourceResolutionService(officialProviders);
-        var officialSourceActionService = new OfficialSourceActionService(officialSourceResolutionService, openOfficialSourceActionEvaluator);
+        var officialSourceActionService = new OfficialSourceActionService(officialSourceResolutionService, openOfficialSourceActionEvaluator, diagnosticLogger);
         var reportPayloadFactory = new ReportPayloadFactory(new ShareableReportBuilder());
         var historyWriter = new HistoryWriter(resultHistoryRepository);
         var historySummarizer = new HistorySummarizer(resultHistoryRepository);

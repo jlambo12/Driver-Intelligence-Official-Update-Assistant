@@ -55,7 +55,7 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     }
 
     [Fact]
-    public void Evaluate_ReturnsInsufficientEvidence_WhenTrustLevelIsNotClassifiedForExplicitOutcome()
+    public void Evaluate_ReturnsAllowed_WhenOperatingSystemCatalogTrustIsUsed()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
             officialSourceUri: new Uri("https://catalog.windows.update.test/driver"),
@@ -63,10 +63,10 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
             isOfficial: true,
             trustLevel: SourceTrustLevel.OperatingSystemCatalog));
 
-        Assert.Equal(OpenOfficialSourceActionOutcome.InsufficientEvidence, decision.Outcome);
-        Assert.Equal(OfficialSourceResolutionOutcome.InsufficientEvidence, decision.ResolutionOutcome);
-        Assert.False(decision.IsAllowed);
-        Assert.Contains(decision.Blockers, blocker => blocker.Reason == OpenOfficialSourceBlockedReason.UnsupportedSourceTrustLevel);
+        Assert.Equal(OpenOfficialSourceActionOutcome.Allowed, decision.Outcome);
+        Assert.Equal(OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage, decision.ResolutionOutcome);
+        Assert.True(decision.IsAllowed);
+        Assert.Empty(decision.Blockers);
     }
 
     [Fact]
@@ -125,11 +125,26 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
         Assert.Contains(decision.Blockers, blocker => blocker.Reason == OpenOfficialSourceBlockedReason.UrlHostMismatch);
     }
 
+    [Fact]
+    public void Evaluate_ReturnsAllowed_WhenDifferentHostIsExplicitlyAllowed()
+    {
+        var decision = _evaluator.Evaluate(CreateRequest(
+            officialSourceUri: new Uri("https://cdn.vendor.test/catalog/driver"),
+            sourceUri: new Uri("https://downloads.vendor.test/provider"),
+            isOfficial: true,
+            allowDifferentHostOfficialDownload: true));
+
+        Assert.Equal(OpenOfficialSourceActionOutcome.Allowed, decision.Outcome);
+        Assert.True(decision.IsAllowed);
+        Assert.Empty(decision.Blockers);
+    }
+
     private static OpenOfficialSourceActionRequest CreateRequest(
         Uri? officialSourceUri,
         Uri sourceUri,
         bool isOfficial,
-        SourceTrustLevel trustLevel = SourceTrustLevel.OfficialPublisherSite)
+        SourceTrustLevel trustLevel = SourceTrustLevel.OfficialPublisherSite,
+        bool allowDifferentHostOfficialDownload = false)
         => new(
             ProviderCode: "official",
             DriverIdentifier: "DRV-1",
@@ -139,5 +154,6 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
                 TrustLevel: trustLevel,
                 IsOfficialSource: isOfficial,
                 EvidenceNote: "unit-test"),
-            OfficialSourceUri: officialSourceUri);
+            OfficialSourceUri: officialSourceUri,
+            AllowDifferentHostOfficialDownload: allowDifferentHostOfficialDownload);
 }

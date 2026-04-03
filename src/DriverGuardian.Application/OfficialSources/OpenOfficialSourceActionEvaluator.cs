@@ -46,7 +46,8 @@ public sealed class OpenOfficialSourceActionEvaluator
             return BuildInsufficientEvidenceDecision(blockers, OpenOfficialSourceActionOutcome.Blocked);
         }
 
-        if (!string.Equals(request.OfficialSourceUri.Host, request.SourceEvidence.SourceUri.Host, StringComparison.OrdinalIgnoreCase))
+        if (!request.AllowDifferentHostOfficialDownload
+            && !string.Equals(request.OfficialSourceUri.Host, request.SourceEvidence.SourceUri.Host, StringComparison.OrdinalIgnoreCase))
         {
             blockers.Add(new OpenOfficialSourceBlocker(
                 OpenOfficialSourceBlockedReason.UrlHostMismatch,

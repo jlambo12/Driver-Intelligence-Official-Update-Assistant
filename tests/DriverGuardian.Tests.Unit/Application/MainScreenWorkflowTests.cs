@@ -30,7 +30,7 @@ public sealed class MainScreenWorkflowTests
             logger,
             auditWriter,
             new RecommendationDetailAssembler(),
-            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator()),
+            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
             new ReportPayloadFactory(new ShareableReportBuilder()),
             new HistoryWriter(historyRepository),
             new HistorySummarizer(historyRepository));
@@ -89,7 +89,7 @@ public sealed class MainScreenWorkflowTests
             logger,
             new FakeAuditWriter(),
             new RecommendationDetailAssembler(),
-            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator()),
+            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
             new ReportPayloadFactory(new ShareableReportBuilder()),
             new HistoryWriter(historyRepository),
             new HistorySummarizer(historyRepository));
@@ -103,15 +103,16 @@ public sealed class MainScreenWorkflowTests
     public async Task RunScanAsync_ShouldFilterLowValueDevicesAndKeepUserRelevantResults()
     {
         var historyRepository = new FakeHistoryRepository();
+        var logger = new RecordingDiagnosticLogger();
         var workflow = new MainScreenWorkflow(
             new MixedScanOrchestrator(),
             new NoRecommendationPipeline(),
             new FakeProviderCatalogSummaryService(),
             new FakeSettingsRepository(),
-            new RecordingDiagnosticLogger(),
+            logger,
             new FakeAuditWriter(),
             new RecommendationDetailAssembler(),
-            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator()),
+            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
             new ReportPayloadFactory(new ShareableReportBuilder()),
             new HistoryWriter(historyRepository),
             new HistorySummarizer(historyRepository));

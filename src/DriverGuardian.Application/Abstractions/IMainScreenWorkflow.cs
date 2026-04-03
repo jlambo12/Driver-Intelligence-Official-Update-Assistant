@@ -48,9 +48,16 @@ public sealed record RecommendationDetailResult(
 public sealed record OpenOfficialSourceActionResult(
     bool IsReady,
     OfficialSourceResolutionOutcome ResolutionOutcome,
+    OfficialSourceActionTarget ActionTarget,
     string Status,
     string? ApprovedOfficialSourceUrl,
     string? BlockReason);
+
+public enum OfficialSourceActionTarget
+{
+    SourcePage = 0,
+    DirectDownloadPage = 1
+}
 
 public sealed record RecentHistoryEntryResult(
     DateTimeOffset OccurredAtUtc,
