@@ -1,5 +1,6 @@
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Contracts.DeviceDiscovery;
+using DriverGuardian.Contracts.DriverInspection;
 using DriverGuardian.Domain.Devices;
 using DriverGuardian.Domain.Scanning;
 
