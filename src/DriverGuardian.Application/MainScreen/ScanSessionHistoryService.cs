@@ -2,6 +2,7 @@ using DriverGuardian.Application.History;
 using DriverGuardian.Application.History.Models;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.Domain.Scanning;
+using DriverGuardian.Application.Abstractions;
 
 namespace DriverGuardian.Application.MainScreen;
 
