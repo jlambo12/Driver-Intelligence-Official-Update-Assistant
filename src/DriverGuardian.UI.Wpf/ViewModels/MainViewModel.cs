@@ -7,6 +7,7 @@ using DriverGuardian.Domain.Settings;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.Models;
+using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.ViewModels.Sections;
 

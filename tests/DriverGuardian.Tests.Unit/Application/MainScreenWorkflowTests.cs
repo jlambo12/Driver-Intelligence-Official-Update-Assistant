@@ -29,11 +29,11 @@ public sealed class MainScreenWorkflowTests
             new FakeSettingsRepository(),
             logger,
             auditWriter,
-            new RecommendationDetailAssembler(),
-            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
-            new ReportPayloadFactory(new ShareableReportBuilder()),
-            new HistoryWriter(historyRepository),
-            new HistorySummarizer(historyRepository));
+            new MainScreenResultAssembler(
+                new RecommendationDetailAssembler(),
+                new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+                new ShareableReportBuilder()),
+            new ScanSessionHistoryService(historyRepository));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
@@ -88,11 +88,11 @@ public sealed class MainScreenWorkflowTests
             new FakeSettingsRepository(),
             logger,
             new FakeAuditWriter(),
-            new RecommendationDetailAssembler(),
-            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
-            new ReportPayloadFactory(new ShareableReportBuilder()),
-            new HistoryWriter(historyRepository),
-            new HistorySummarizer(historyRepository));
+            new MainScreenResultAssembler(
+                new RecommendationDetailAssembler(),
+                new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+                new ShareableReportBuilder()),
+            new ScanSessionHistoryService(historyRepository));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => workflow.RunScanAsync(CancellationToken.None));
         Assert.Single(logger.ErrorEvents);
@@ -111,11 +111,11 @@ public sealed class MainScreenWorkflowTests
             new FakeSettingsRepository(),
             logger,
             new FakeAuditWriter(),
-            new RecommendationDetailAssembler(),
-            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
-            new ReportPayloadFactory(new ShareableReportBuilder()),
-            new HistoryWriter(historyRepository),
-            new HistorySummarizer(historyRepository));
+            new MainScreenResultAssembler(
+                new RecommendationDetailAssembler(),
+                new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+                new ShareableReportBuilder()),
+            new ScanSessionHistoryService(historyRepository));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 

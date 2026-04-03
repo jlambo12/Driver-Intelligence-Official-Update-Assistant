@@ -5,9 +5,9 @@ using DriverGuardian.Domain.Scanning;
 
 namespace DriverGuardian.Application.MainScreen;
 
-public sealed class HistoryWriter(IResultHistoryRepository resultHistoryRepository)
+public sealed class ScanSessionHistoryService(IResultHistoryRepository resultHistoryRepository)
 {
-    public async Task WriteAsync(
+    public async Task RecordAndTrimAsync(
         ScanResult scanResult,
         int recommendationCount,
         int manualHandoffUserActionCount,
@@ -40,10 +40,7 @@ public sealed class HistoryWriter(IResultHistoryRepository resultHistoryReposito
 
         await resultHistoryRepository.TrimToMaxEntriesAsync(settings.History.MaxEntries, cancellationToken);
     }
-}
 
-public sealed class HistorySummarizer(IResultHistoryRepository resultHistoryRepository)
-{
     public async Task<IReadOnlyCollection<RecentHistoryEntryResult>> GetRecentAsync(int maxEntries, CancellationToken cancellationToken)
     {
         var recentHistoryEntries = await resultHistoryRepository.GetRecentAsync(maxEntries, cancellationToken);

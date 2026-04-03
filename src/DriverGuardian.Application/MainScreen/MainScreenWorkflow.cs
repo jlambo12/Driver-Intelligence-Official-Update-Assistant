@@ -1,6 +1,6 @@
 using DriverGuardian.Application.Abstractions;
-using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Recommendations;
+using DriverGuardian.Domain.Scanning;
 
 namespace DriverGuardian.Application.MainScreen;
 
@@ -11,17 +11,15 @@ public sealed class MainScreenWorkflow(
     ISettingsRepository settingsRepository,
     IDiagnosticLogger diagnosticLogger,
     IAuditWriter auditWriter,
-    RecommendationDetailAssembler recommendationDetailAssembler,
-    OfficialSourceActionService officialSourceActionService,
-    ReportPayloadFactory reportPayloadFactory,
-    HistoryWriter historyWriter,
-    HistorySummarizer historySummarizer) : IMainScreenWorkflow
+    MainScreenResultAssembler resultAssembler,
+    ScanSessionHistoryService historyService) : IMainScreenWorkflow
 {
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
     {
         try
         {
             await diagnosticLogger.LogInfoAsync("scan.workflow.start", "Запущен workflow анализа.", cancellationToken);
+
             var scanResult = await scanOrchestrator.RunAsync(cancellationToken);
             await LogScanCompletedAsync(scanResult, cancellationToken);
 
@@ -29,28 +27,23 @@ public sealed class MainScreenWorkflow(
             var recommendationStats = BuildRecommendationStats(recommendations);
             await LogRecommendationCompletedAsync(recommendations.Count, recommendationStats, cancellationToken);
 
+            var assembled = await resultAssembler.AssembleAsync(scanResult, recommendations, cancellationToken);
+            await LogOfficialSourceStateAsync(assembled.OfficialSourceAction, cancellationToken);
+
             var providerCount = await providerCatalogSummaryService.GetProviderCountAsync(cancellationToken);
             var settings = await settingsRepository.GetAsync(cancellationToken);
-            var recommendationDetails = recommendationDetailAssembler.Assemble(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations);
-            var detailStats = BuildRecommendationDetailStats(recommendationDetails);
 
-            var officialSourceAction = await officialSourceActionService.BuildAsync(scanResult.Drivers, recommendations, cancellationToken);
-            await LogOfficialSourceStateAsync(officialSourceAction, cancellationToken);
-
-            var verificationSummary = BuildVerificationSummary(recommendationDetails);
-            var reportExportPayload = reportPayloadFactory.Create(scanResult, recommendations);
-
-            await historyWriter.WriteAsync(
+            await historyService.RecordAndTrimAsync(
                 scanResult,
                 recommendations.Count,
-                detailStats.ManualActionRequiredCount,
+                assembled.DetailStats.ManualActionRequiredCount,
                 recommendationStats.NotRecommendedCount,
-                verificationSummary,
+                assembled.VerificationSummary,
                 settings,
                 cancellationToken);
             await diagnosticLogger.LogInfoAsync("scan.history_report.completed", "История и данные отчёта обновлены.", cancellationToken);
 
-            var recentHistory = await historySummarizer.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
+            var recentHistory = await historyService.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
 
             await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
             await diagnosticLogger.LogInfoAsync(
@@ -66,14 +59,14 @@ public sealed class MainScreenWorkflow(
                 RecommendedCount: recommendationStats.RecommendedCount,
                 NotRecommendedCount: recommendationStats.NotRecommendedCount,
                 ProviderCount: providerCount,
-                ManualHandoffReadyCount: detailStats.ManualHandoffReadyCount,
-                ManualHandoffUserActionCount: detailStats.ManualActionRequiredCount,
-                VerificationSummary: verificationSummary,
+                ManualHandoffReadyCount: assembled.DetailStats.ManualHandoffReadyCount,
+                ManualHandoffUserActionCount: assembled.DetailStats.ManualActionRequiredCount,
+                VerificationSummary: assembled.VerificationSummary,
                 UiCulture: settings.UiCulture,
                 ScanSessionId: scanResult.Session.Id,
-                ReportExportPayload: reportExportPayload,
-                RecommendationDetails: recommendationDetails,
-                OfficialSourceAction: officialSourceAction,
+                ReportExportPayload: assembled.ReportPayload,
+                RecommendationDetails: assembled.RecommendationDetails,
+                OfficialSourceAction: assembled.OfficialSourceAction,
                 RecentHistory: recentHistory);
         }
         catch (Exception ex)
@@ -130,22 +123,5 @@ public sealed class MainScreenWorkflow(
         return new RecommendationStats(recommendedCount, recommendations.Count - recommendedCount);
     }
 
-    private static RecommendationDetailStats BuildRecommendationDetailStats(IReadOnlyCollection<RecommendationDetailResult> details)
-    {
-        return new RecommendationDetailStats(
-            details.Count(detail => detail.ManualHandoffReady),
-            details.Count(detail => detail.ManualActionRequired));
-    }
-
-    private static string BuildVerificationSummary(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)
-    {
-        var waitingForReturnCount = recommendationDetails.Count(detail => detail.VerificationAvailable);
-        return waitingForReturnCount > 0
-            ? $"Ожидается возврат пользователя по {waitingForReturnCount} устройств(ам). После ручной установки вернитесь и запустите повторный анализ: проверка будет доступна сразу."
-            : "Действие не требуется: активных задач на возврат для проверки нет.";
-    }
-
     private sealed record RecommendationStats(int RecommendedCount, int NotRecommendedCount);
-
-    private sealed record RecommendationDetailStats(int ManualHandoffReadyCount, int ManualActionRequiredCount);
 }

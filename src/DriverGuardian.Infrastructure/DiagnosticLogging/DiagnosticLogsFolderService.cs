@@ -1,7 +1,7 @@
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 
-namespace DriverGuardian.UI.Wpf.Services;
+namespace DriverGuardian.Infrastructure.DiagnosticLogging;
 
 public interface IDiagnosticLogsFolderService
 {

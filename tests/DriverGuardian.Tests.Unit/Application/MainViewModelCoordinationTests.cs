@@ -2,6 +2,7 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Domain.Settings;
+using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.Settings;
 using DriverGuardian.UI.Wpf.ViewModels;
 using DriverGuardian.UI.Wpf.Services;
