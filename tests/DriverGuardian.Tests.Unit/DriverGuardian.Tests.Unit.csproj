@@ -21,5 +21,6 @@
     <ProjectReference Include="../../src/DriverGuardian.ProviderAdapters.Abstractions/DriverGuardian.ProviderAdapters.Abstractions.csproj" />
     <ProjectReference Include="../../src/DriverGuardian.ProviderAdapters.Official/DriverGuardian.ProviderAdapters.Official.csproj" />
     <ProjectReference Include="../../src/DriverGuardian.SystemAdapters.Windows/DriverGuardian.SystemAdapters.Windows.csproj" />
+    <ProjectReference Include="../../src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj" />
   </ItemGroup>
 </Project>

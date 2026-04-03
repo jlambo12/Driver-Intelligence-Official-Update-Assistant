@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.MainScreen;
+using DriverGuardian.Domain.Settings;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.Models;
@@ -15,6 +16,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 {
     private readonly IMainScreenWorkflow _mainScreenWorkflow;
     private readonly PreviewScenarioMainScreenWorkflow? _previewWorkflow;
+    private readonly IDiagnosticLogsFolderService _diagnosticLogsFolderService;
     private MainUiState _state;
     private PreviewScenarioOption? _selectedPreviewScenario;
 
@@ -26,38 +28,41 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         _mainScreenWorkflow = mainScreenWorkflow;
         _previewWorkflow = mainScreenWorkflow as PreviewScenarioMainScreenWorkflow;
+        _diagnosticLogsFolderService = diagnosticLogsFolderService;
         _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusInitial, UiStrings.ScanAction);
 
         WorkflowSection = new WorkflowSectionViewModel(_state);
         HistorySection = new HistorySectionViewModel();
         ReportSection = new ReportSectionViewModel(reportFileSaveService);
-        SettingsSection = new SettingsSectionViewModel(settingsRepository, diagnosticLogsFolderService, () => ReportSection.SelectedReportFormat.Value);
+        SettingsSection = new SettingsSectionViewModel(
+            settingsRepository,
+            diagnosticLogsFolderService.ResolveEffectiveFolderPath(AppSettings.Default.DiagnosticLogging.CustomLogsFolderPath));
+
+        SettingsSection.PropertyChanged += OnSettingsSectionPropertyChanged;
 
         AvailablePreviewScenarios = BuildPreviewOptions();
         _selectedPreviewScenario = AvailablePreviewScenarios.FirstOrDefault();
 
         ScanCommand = new AsyncRelayCommand(ScanAsync);
         ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
+        ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
+        OpenDiagnosticLogsFolderCommand = new AsyncRelayCommand(OpenDiagnosticLogsFolderAsync);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand ScanCommand { get; }
-
     public ICommand ApplyPreviewScenarioCommand { get; }
+    public ICommand ExportReportCommand { get; }
+    public ICommand OpenDiagnosticLogsFolderCommand { get; }
 
     public bool IsPreviewMode => _previewWorkflow is not null;
-
     public string PreviewModeBannerText => UiStrings.PreviewModeBanner;
-
     public IReadOnlyList<PreviewScenarioOption> AvailablePreviewScenarios { get; }
 
     public WorkflowSectionViewModel WorkflowSection { get; }
-
     public HistorySectionViewModel HistorySection { get; }
-
     public ReportSectionViewModel ReportSection { get; }
-
     public SettingsSectionViewModel SettingsSection { get; }
 
     public PreviewScenarioOption? SelectedPreviewScenario
@@ -88,7 +93,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public async Task InitializeAsync()
     {
-        await SettingsSection.LoadSettingsAsync(ReportSection.ApplySettingsReportFormat);
+        await SettingsSection.LoadSettingsAsync(_diagnosticLogsFolderService.ResolveEffectiveFolderPath(null));
+        SyncEffectiveDiagnosticFolder();
 
         if (!IsPreviewMode)
         {
@@ -112,10 +118,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         SettingsSection.ApplyStatusMessage(recoveryMessage);
-        State = State with
-        {
-            StatusText = recoveryMessage
-        };
+        State = State with { StatusText = recoveryMessage };
     }
 
     private async Task ScanAsync()
@@ -127,9 +130,24 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         State = State with { StatusText = UiStrings.StatusScanning };
-
         var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
         ApplyWorkflowResult(result, isPreview: false);
+    }
+
+    private async Task ExportReportAsync()
+    {
+        await ReportSection.ExportAsync(SettingsSection.SelectedReportFormat.Value);
+    }
+
+    private async Task OpenDiagnosticLogsFolderAsync()
+    {
+        await Task.Yield();
+
+        var opened = _diagnosticLogsFolderService.OpenFolder(SettingsSection.EffectiveDiagnosticLogFolderPath);
+        if (!opened)
+        {
+            SettingsSection.ApplyStatusMessage(UiStrings.SettingsLogsFolderOpenFailed);
+        }
     }
 
     private async Task ApplyPreviewScenarioAsync()
@@ -164,6 +182,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
         WorkflowSection.ShowSecondaryRecommendations = false;
         HistorySection.RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);
         ReportSection.ApplyWorkflowPayload(result.ReportExportPayload);
+    }
+
+    private void OnSettingsSectionPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SettingsSectionViewModel.CustomDiagnosticLogFolderPath))
+        {
+            SyncEffectiveDiagnosticFolder();
+        }
+    }
+
+    private void SyncEffectiveDiagnosticFolder()
+    {
+        var effective = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(SettingsSection.CustomDiagnosticLogFolderPath);
+        SettingsSection.ApplyEffectiveDiagnosticFolder(effective);
     }
 
     private IReadOnlyList<PreviewScenarioOption> BuildPreviewOptions()

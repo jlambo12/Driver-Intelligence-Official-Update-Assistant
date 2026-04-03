@@ -5,46 +5,50 @@ using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
-using DriverGuardian.UI.Wpf.Services;
+using DriverGuardian.UI.Wpf.ViewModels;
 
 namespace DriverGuardian.UI.Wpf.ViewModels.Sections;
 
 public sealed class SettingsSectionViewModel : INotifyPropertyChanged
 {
     private readonly ISettingsRepository _settingsRepository;
-    private readonly IDiagnosticLogsFolderService _diagnosticLogsFolderService;
     private int _historyMaxEntries;
     private bool _showVerificationHints;
     private bool _isDiagnosticLoggingEnabled;
     private string _customDiagnosticLogFolderPath;
     private string _effectiveDiagnosticLogFolderPath;
     private string _settingsStatusText;
-    private readonly Func<ShareableReportFormat> _selectedReportFormatProvider;
+    private readonly string _defaultDiagnosticLogFolderPath;
+    private ReportFormatOption _selectedReportFormat;
+
+    private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
+    [
+        new(ShareableReportFormat.Markdown, UiStrings.SettingsReportFormatMarkdown),
+        new(ShareableReportFormat.PlainText, UiStrings.SettingsReportFormatPlainText)
+    ];
 
     public SettingsSectionViewModel(
         ISettingsRepository settingsRepository,
-        IDiagnosticLogsFolderService diagnosticLogsFolderService,
-        Func<ShareableReportFormat> selectedReportFormatProvider)
+        string defaultDiagnosticLogFolderPath)
     {
         _settingsRepository = settingsRepository;
-        _diagnosticLogsFolderService = diagnosticLogsFolderService;
-        _selectedReportFormatProvider = selectedReportFormatProvider;
+        _defaultDiagnosticLogFolderPath = defaultDiagnosticLogFolderPath;
         _historyMaxEntries = AppSettings.Default.History.MaxEntries;
         _showVerificationHints = AppSettings.Default.WorkflowGuidance.ShowPostInstallVerificationHints;
         _isDiagnosticLoggingEnabled = AppSettings.Default.DiagnosticLogging.Enabled;
         _customDiagnosticLogFolderPath = string.Empty;
-        _effectiveDiagnosticLogFolderPath = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(AppSettings.Default.DiagnosticLogging.CustomLogsFolderPath);
+        _effectiveDiagnosticLogFolderPath = defaultDiagnosticLogFolderPath;
         _settingsStatusText = UiStrings.SettingsLoadError;
+        _selectedReportFormat = ReportFormatItems[0];
 
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
-        OpenDiagnosticLogsFolderCommand = new AsyncRelayCommand(OpenDiagnosticLogsFolderAsync);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand SaveSettingsCommand { get; }
 
-    public ICommand OpenDiagnosticLogsFolderCommand { get; }
+    public IReadOnlyList<ReportFormatOption> AvailableReportFormats => ReportFormatItems;
 
     public int HistoryMaxEntries
     {
@@ -77,6 +81,21 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
         }
     }
 
+    public ReportFormatOption SelectedReportFormat
+    {
+        get => _selectedReportFormat;
+        set
+        {
+            if (_selectedReportFormat.Equals(value))
+            {
+                return;
+            }
+
+            _selectedReportFormat = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool IsDiagnosticLoggingEnabled
     {
         get => _isDiagnosticLoggingEnabled;
@@ -104,7 +123,9 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
             }
 
             _customDiagnosticLogFolderPath = nextValue;
-            EffectiveDiagnosticLogFolderPath = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(nextValue);
+            EffectiveDiagnosticLogFolderPath = string.IsNullOrWhiteSpace(nextValue)
+                ? _defaultDiagnosticLogFolderPath
+                : nextValue.Trim();
             OnPropertyChanged();
         }
     }
@@ -134,26 +155,31 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task LoadSettingsAsync(Action<ShareableReportFormat> reportFormatConsumer)
+    public async Task LoadSettingsAsync(string defaultDiagnosticLogFolderPath)
     {
         var settings = await _settingsRepository.GetAsync(CancellationToken.None);
         HistoryMaxEntries = settings.History.MaxEntries;
         ShowVerificationHints = settings.WorkflowGuidance.ShowPostInstallVerificationHints;
-        reportFormatConsumer(settings.Reports.DefaultFormat);
+        SelectedReportFormat = ReportFormatItems.First(option => option.Value == settings.Reports.DefaultFormat);
         IsDiagnosticLoggingEnabled = settings.DiagnosticLogging.Enabled;
         CustomDiagnosticLogFolderPath = settings.DiagnosticLogging.CustomLogsFolderPath ?? string.Empty;
-        EffectiveDiagnosticLogFolderPath = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(settings.DiagnosticLogging.CustomLogsFolderPath);
+        EffectiveDiagnosticLogFolderPath = string.IsNullOrWhiteSpace(settings.DiagnosticLogging.CustomLogsFolderPath)
+            ? defaultDiagnosticLogFolderPath
+            : settings.DiagnosticLogging.CustomLogsFolderPath.Trim();
         SettingsStatusText = UiStrings.SettingsLoaded;
     }
 
     public void ApplyStatusMessage(string statusMessage)
     {
-        if (string.IsNullOrWhiteSpace(statusMessage))
+        if (!string.IsNullOrWhiteSpace(statusMessage))
         {
-            return;
+            SettingsStatusText = statusMessage;
         }
+    }
 
-        SettingsStatusText = statusMessage;
+    public void ApplyEffectiveDiagnosticFolder(string folderPath)
+    {
+        EffectiveDiagnosticLogFolderPath = folderPath;
     }
 
     private async Task SaveSettingsAsync()
@@ -162,7 +188,7 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
         var updated = current with
         {
             History = current.History with { MaxEntries = HistoryMaxEntries },
-            Reports = current.Reports with { DefaultFormat = _selectedReportFormatProvider() },
+            Reports = current.Reports with { DefaultFormat = SelectedReportFormat.Value },
             WorkflowGuidance = current.WorkflowGuidance with { ShowPostInstallVerificationHints = ShowVerificationHints },
             DiagnosticLogging = current.DiagnosticLogging with
             {
@@ -176,19 +202,7 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
         var normalized = updated.Normalize();
         await _settingsRepository.SaveAsync(normalized, CancellationToken.None);
         CustomDiagnosticLogFolderPath = normalized.DiagnosticLogging.CustomLogsFolderPath ?? string.Empty;
-        EffectiveDiagnosticLogFolderPath = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(normalized.DiagnosticLogging.CustomLogsFolderPath);
         SettingsStatusText = UiStrings.SettingsSaved;
-    }
-
-    private async Task OpenDiagnosticLogsFolderAsync()
-    {
-        await Task.Yield();
-
-        var opened = _diagnosticLogsFolderService.OpenFolder(EffectiveDiagnosticLogFolderPath);
-        if (!opened)
-        {
-            SettingsStatusText = UiStrings.SettingsLogsFolderOpenFailed;
-        }
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

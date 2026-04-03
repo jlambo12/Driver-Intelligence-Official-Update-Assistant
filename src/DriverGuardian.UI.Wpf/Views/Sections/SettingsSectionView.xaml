@@ -22,8 +22,8 @@
                 <ComboBox Grid.Column="1"
                           Width="220"
                           HorizontalAlignment="Left"
-                          ItemsSource="{Binding ReportSection.AvailableReportFormats}"
-                          SelectedItem="{Binding ReportSection.SelectedReportFormat}">
+                          ItemsSource="{Binding SettingsSection.AvailableReportFormats}"
+                          SelectedItem="{Binding SettingsSection.SelectedReportFormat}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding DisplayName}" />
@@ -83,7 +83,7 @@
                         Height="32"
                         Margin="8 0 0 0"
                         HorizontalAlignment="Left"
-                        Command="{Binding SettingsSection.OpenDiagnosticLogsFolderCommand}" />
+                        Command="{Binding OpenDiagnosticLogsFolderCommand}" />
             </StackPanel>
             <TextBlock Text="{Binding SettingsSection.SettingsStatusText}" Margin="0 6 0 0" TextWrapping="Wrap"/>
         </StackPanel>

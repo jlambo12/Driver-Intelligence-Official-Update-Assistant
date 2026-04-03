@@ -266,18 +266,7 @@
 
                     <sections:HistorySectionView DataContext="{Binding HistorySection}"/>
 
-                    <Border Style="{StaticResource SecondaryCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="{x:Static localization:UiStrings.ReportExportTitle}" FontWeight="SemiBold" Margin="0 0 0 6"/>
-                            <TextBlock Text="{x:Static localization:UiStrings.ReportExportHint}" TextWrapping="Wrap" Margin="0 0 0 6"/>
-                            <Button Content="{x:Static localization:UiStrings.ReportExportAction}"
-                                    Width="220"
-                                    Height="32"
-                                    HorizontalAlignment="Left"
-                                    Command="{Binding ReportSection.ExportReportCommand}" />
-                            <TextBlock Text="{Binding ReportSection.ReportExportStatusText}" Margin="0 6 0 0" TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
+                    <sections:ReportSectionView />
 
                     <sections:SettingsSectionView />
                 </StackPanel>
