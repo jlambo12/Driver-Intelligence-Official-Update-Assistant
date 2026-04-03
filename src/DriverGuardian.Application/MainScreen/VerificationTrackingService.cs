@@ -16,15 +16,15 @@ public sealed class VerificationTrackingService(
         CancellationToken cancellationToken)
     {
         var baselines = await baselineStore.GetAllAsync(cancellationToken);
-        var baselineByDevice = baselines.ToDictionary(x => x.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
+        var baselineByDevice = baselines.ToDictionary(x => x.Snapshot.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
         var currentByDevice = currentDrivers.ToDictionary(x => x.DeviceIdentity.InstanceId, StringComparer.OrdinalIgnoreCase);
 
         var verifications = new List<VerificationReportItem>();
         foreach (var baseline in baselines)
         {
-            currentByDevice.TryGetValue(baseline.DeviceIdentity.InstanceId, out var current);
-            var result = evaluator.Evaluate(new PostInstallVerificationRequest(baseline.DeviceIdentity, baseline, current));
-            verifications.Add(new VerificationReportItem(baseline.DeviceIdentity, result));
+            currentByDevice.TryGetValue(baseline.Snapshot.DeviceIdentity.InstanceId, out var current);
+            var result = evaluator.Evaluate(new PostInstallVerificationRequest(baseline.Snapshot.DeviceIdentity, baseline, current));
+            verifications.Add(new VerificationReportItem(baseline.Snapshot.DeviceIdentity, result));
         }
 
         var nextBaselines = new List<VerificationBaselineSnapshot>();
@@ -35,13 +35,7 @@ public sealed class VerificationTrackingService(
                 continue;
             }
 
-            var baseline = new VerificationBaselineSnapshot(
-                snapshot.DeviceIdentity,
-                snapshot.DriverVersion,
-                snapshot.DriverDate,
-                snapshot.ProviderName,
-                snapshot.HardwareIdentifier.Value,
-                DateTimeOffset.UtcNow);
+            var baseline = new VerificationBaselineSnapshot(snapshot, DateTimeOffset.UtcNow);
 
             nextBaselines.Add(baseline);
             baselineByDevice[recommendation.DeviceIdentity.InstanceId] = baseline;
