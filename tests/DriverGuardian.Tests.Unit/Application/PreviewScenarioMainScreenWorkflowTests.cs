@@ -1,5 +1,6 @@
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Application.OfficialSources;
+using DriverGuardian.Application.Abstractions;
 
 namespace DriverGuardian.Tests.Unit.Application;
 
@@ -31,7 +32,7 @@ public sealed class PreviewScenarioMainScreenWorkflowTests
         Assert.Equal(1, result.ManualHandoffReadyCount);
         Assert.True(result.OfficialSourceAction.IsReady);
         Assert.Equal(OfficialSourceResolutionOutcome.ConfirmedDirectOfficialDriverPage, result.OfficialSourceAction.ResolutionOutcome);
-        Assert.Contains(result.RecommendationDetails, detail => detail.ManualHandoffReady);
+        Assert.Contains(result.RecommendationDetails, detail => detail.IsManualHandoffReady);
     }
 
     [Fact]
@@ -59,9 +60,10 @@ public sealed class PreviewScenarioMainScreenWorkflowTests
         Assert.Equal(OfficialSourceResolutionOutcome.InsufficientEvidence, result.OfficialSourceAction.ResolutionOutcome);
         Assert.All(result.RecommendationDetails, detail =>
         {
-            Assert.False(detail.ManualHandoffReady);
-            Assert.False(detail.ManualActionRequired);
-            Assert.False(detail.VerificationAvailable);
+            Assert.Equal(RecommendationWorkflowState.RecommendationAvailable, detail.WorkflowState);
+            Assert.False(detail.IsManualHandoffReady);
+            Assert.False(detail.IsManualActionRequired);
+            Assert.False(detail.IsAwaitingVerification);
         });
     }
 
@@ -74,10 +76,10 @@ public sealed class PreviewScenarioMainScreenWorkflowTests
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
         Assert.Equal(
-            result.RecommendationDetails.Count(detail => detail.ManualHandoffReady),
+            result.RecommendationDetails.Count(detail => detail.IsManualHandoffReady),
             result.ManualHandoffReadyCount);
         Assert.Equal(
-            result.RecommendationDetails.Count(detail => detail.ManualActionRequired),
+            result.RecommendationDetails.Count(detail => detail.IsManualActionRequired),
             result.ManualHandoffUserActionCount);
     }
 }

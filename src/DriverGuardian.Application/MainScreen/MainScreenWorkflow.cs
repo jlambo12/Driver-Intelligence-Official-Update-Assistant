@@ -49,8 +49,8 @@ public sealed class MainScreenWorkflow(
             var providerCount = await providerCatalogSummaryService.GetProviderCountAsync(cancellationToken);
             var settings = await settingsRepository.GetAsync(cancellationToken);
             var recommendationDetails = recommendationDetailAssembler.Assemble(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations);
-            var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
-            var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
+            var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.IsManualHandoffReady);
+            var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.IsManualActionRequired);
             var officialSourceAction = await officialSourceActionService.BuildAsync(scanResult.Drivers, recommendations, cancellationToken);
             await diagnosticLogger.LogInfoAsync(
                 "scan.official_source.state",
@@ -107,7 +107,7 @@ public sealed class MainScreenWorkflow(
 
     private static string BuildVerificationSummary(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)
     {
-        var waitingForReturnCount = recommendationDetails.Count(detail => detail.VerificationAvailable);
+        var waitingForReturnCount = recommendationDetails.Count(detail => detail.HasRecommendation);
         return waitingForReturnCount > 0
             ? $"Ожидается возврат пользователя по {waitingForReturnCount} устройств(ам). После ручной установки вернитесь и запустите повторный анализ: проверка будет доступна сразу."
             : "Действие не требуется: активных задач на возврат для проверки нет.";

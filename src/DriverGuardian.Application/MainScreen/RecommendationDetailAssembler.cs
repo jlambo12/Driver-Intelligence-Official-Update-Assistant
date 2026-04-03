@@ -1,3 +1,4 @@
+using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.Presentation;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Drivers;
@@ -28,16 +29,15 @@ public sealed class RecommendationDetailAssembler
                     DeviceDisplayName: displayName,
                     DeviceId: driver.DeviceIdentity.InstanceId,
                     PriorityBucket: DevicePresentationHeuristics.ResolvePriorityBucket(discoveredDevice, hasRecommendation),
-                    HasRecommendation: hasRecommendation,
+                    WorkflowState: hasRecommendation
+                        ? RecommendationWorkflowState.ManualActionRequired
+                        : RecommendationWorkflowState.NoActionRequired,
                     RecommendationReason: recommendation?.Reason ?? string.Empty,
                     InstalledVersion: driver.DriverVersion,
                     InstalledProvider: driver.ProviderName,
                     RecommendedVersion: recommendation?.RecommendedVersion,
-                    ManualHandoffReady: false,
-                    ManualActionRequired: hasRecommendation,
-                    VerificationAvailable: hasRecommendation,
                     VerificationStatus: hasRecommendation
-                        ? "Ожидается ваш возврат: после ручной установки выполните повторный анализ для проверки результата."
+                        ? "Сначала подтвердите официальный источник; затем выполните ручную установку и вернитесь для проверки."
                         : "Действие не требуется: возврат для проверки по этому устройству не ожидается.");
             })
             .Where(detail =>

@@ -173,8 +173,8 @@ public sealed record ScanResultsPresentation(
             reasonSummary,
             string.Format(UiStrings.RecommendationInstalledDriverFormat, detail.InstalledVersion, detail.InstalledProvider ?? UiStrings.RecommendationProviderUnknown),
             candidateSummary,
-            string.Format(UiStrings.RecommendationManualHandoffFormat, detail.ManualHandoffReady ? UiStrings.ActionStatusAvailable : UiStrings.ActionStatusBlocked),
-            string.Format(UiStrings.RecommendationManualActionFormat, detail.ManualActionRequired ? UiStrings.ActionStatusRequired : UiStrings.ActionStatusWait),
+            string.Format(UiStrings.RecommendationManualHandoffFormat, detail.IsManualHandoffReady ? UiStrings.ActionStatusAvailable : UiStrings.ActionStatusBlocked),
+            string.Format(UiStrings.RecommendationManualActionFormat, detail.IsManualActionRequired ? UiStrings.ActionStatusRequired : UiStrings.ActionStatusWait),
             string.Format(UiStrings.RecommendationVerificationFormat, verificationStateLabel),
             string.Format(UiStrings.RecommendationVerificationStatusFormat, detail.VerificationStatus),
             nextStep);
@@ -223,29 +223,29 @@ public sealed record ScanResultsPresentation(
 
     private static (string State, string Hint) ResolveDetailState(RecommendationDetailResult detail)
     {
-        if (!detail.HasRecommendation)
+        return detail.WorkflowState switch
         {
-            return (UiStrings.RecommendationStateInsufficientEvidence, UiStrings.RecommendationStateInsufficientEvidenceHint);
-        }
-
-        if (detail.ManualHandoffReady)
-        {
-            return (UiStrings.RecommendationStateReadyForManualAction, UiStrings.RecommendationStateReadyForManualActionHint);
-        }
-
-        return (UiStrings.RecommendationStateBlocked, UiStrings.RecommendationStateBlockedHint);
+            RecommendationWorkflowState.NoActionRequired =>
+                (UiStrings.RecommendationStateInsufficientEvidence, UiStrings.RecommendationStateInsufficientEvidenceHint),
+            RecommendationWorkflowState.RecommendationAvailable =>
+                (UiStrings.RecommendationStateBlocked, UiStrings.RecommendationStateBlockedHint),
+            RecommendationWorkflowState.ManualActionRequired =>
+                (UiStrings.RecommendationStateReadyForManualAction, UiStrings.RecommendationStateReadyForManualActionHint),
+            RecommendationWorkflowState.AwaitingVerification =>
+                (UiStrings.RecommendationStateReadyForManualAction, UiStrings.RecommendationStateReadyForManualActionHint),
+            _ =>
+                (UiStrings.RecommendationStateBlocked, UiStrings.RecommendationStateBlockedHint)
+        };
     }
 
     private static string ResolveVerificationStateLabel(RecommendationDetailResult detail)
     {
-        if (!detail.VerificationAvailable)
+        return detail.WorkflowState switch
         {
-            return UiStrings.ActionStatusNoActionNeeded;
-        }
-
-        return detail.ManualHandoffReady
-            ? UiStrings.ActionStatusVerificationExpected
-            : UiStrings.ActionStatusWaitingForReturn;
+            RecommendationWorkflowState.AwaitingVerification => UiStrings.ActionStatusVerificationExpected,
+            RecommendationWorkflowState.ManualActionRequired => UiStrings.ActionStatusWaitingForReturn,
+            _ => UiStrings.ActionStatusNoActionNeeded
+        };
     }
 
     private static string BuildOfficialSourceSummary(OpenOfficialSourceActionResult officialSourceAction)

@@ -31,19 +31,33 @@ public sealed record ReportExportPayload(
     string PlainTextContent,
     string MarkdownContent);
 
+public enum RecommendationWorkflowState
+{
+    NoActionRequired = 0,
+    RecommendationAvailable = 1,
+    ManualActionRequired = 2,
+    AwaitingVerification = 3
+}
+
 public sealed record RecommendationDetailResult(
     string DeviceDisplayName,
     string DeviceId,
     int PriorityBucket,
-    bool HasRecommendation,
+    RecommendationWorkflowState WorkflowState,
     string RecommendationReason,
     string InstalledVersion,
     string? InstalledProvider,
     string? RecommendedVersion,
-    bool ManualHandoffReady,
-    bool ManualActionRequired,
-    bool VerificationAvailable,
-    string VerificationStatus);
+    string VerificationStatus)
+{
+    public bool HasRecommendation => WorkflowState != RecommendationWorkflowState.NoActionRequired;
+
+    public bool IsManualHandoffReady => WorkflowState is RecommendationWorkflowState.ManualActionRequired or RecommendationWorkflowState.AwaitingVerification;
+
+    public bool IsManualActionRequired => WorkflowState == RecommendationWorkflowState.ManualActionRequired;
+
+    public bool IsAwaitingVerification => WorkflowState == RecommendationWorkflowState.AwaitingVerification;
+}
 
 public sealed record OpenOfficialSourceActionResult(
     bool IsReady,
