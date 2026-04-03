@@ -21,7 +21,7 @@ public sealed class MainViewModelCoordinationTests
             WorkflowGuidance = AppSettings.Default.WorkflowGuidance with { ShowPostInstallVerificationHints = false }
         };
 
-        var repository = new InMemorySettingsRepository(settings);
+        var repository = await CreateSettingsRepositoryAsync(settings);
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(CreateResult()), repository);
 
         await viewModel.InitializeAsync();
@@ -35,7 +35,7 @@ public sealed class MainViewModelCoordinationTests
     public async Task PreviewFirstRunScenario_ResetsHistoryAndReportState()
     {
         var previewWorkflow = new PreviewScenarioMainScreenWorkflow();
-        var viewModel = CreateMainViewModel(previewWorkflow, new InMemorySettingsRepository(AppSettings.Default));
+        var viewModel = CreateMainViewModel(previewWorkflow, await CreateSettingsRepositoryAsync(AppSettings.Default));
 
         await viewModel.InitializeAsync();
 
@@ -54,7 +54,7 @@ public sealed class MainViewModelCoordinationTests
                 new RecentHistoryEntryResult(DateTimeOffset.UtcNow, RecentHistoryEntryKind.Scan, Guid.NewGuid(), 1, 1, 0, null, null)
             ]);
 
-        var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), new InMemorySettingsRepository(AppSettings.Default));
+        var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default));
         await viewModel.InitializeAsync();
 
         await ExecuteAsync(viewModel.ScanCommand);
@@ -71,6 +71,13 @@ public sealed class MainViewModelCoordinationTests
             new FakeReportFileSaveService(),
             new FakeDiagnosticLogsFolderService(),
             new FakeOfficialSourceLauncher());
+
+    private static async Task<InMemorySettingsRepository> CreateSettingsRepositoryAsync(AppSettings settings)
+    {
+        var repository = new InMemorySettingsRepository();
+        await repository.SaveAsync(settings, CancellationToken.None);
+        return repository;
+    }
 
     private static async Task ExecuteAsync(System.Windows.Input.ICommand command)
     {
