@@ -4,6 +4,7 @@ using DriverGuardian.Domain.Drivers;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 using DriverGuardian.ProviderAdapters.Abstractions.Models;
 using DriverGuardian.ProviderAdapters.Abstractions.Providers;
+using ApplicationProviderPrecedence = DriverGuardian.Application.Recommendations.ProviderPrecedence;
 
 namespace DriverGuardian.Tests.Unit.Application.Recommendations;
 
@@ -71,7 +72,7 @@ public sealed class RecommendationPipelineTests
         var pipeline = new RecommendationPipeline([
             new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("2.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)])),
             new TestProviderAdapter(CreateSuccessResponse("oem", [CreateCandidate("2.2.0", CompatibilityConfidence.High, false, SourceTrustLevel.OemSupportPortal)]), "oem")
-        ], providerPrecedence: ProviderPrecedence.OemFirst);
+        ], providerPrecedence: ApplicationProviderPrecedence.OemFirst);
 
         var result = await pipeline.BuildAsync([CreateInstalled("DEV-1", "1.0.0")], CancellationToken.None);
 

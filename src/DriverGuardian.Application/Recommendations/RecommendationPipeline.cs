@@ -68,6 +68,8 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
 
     private static string BuildReason(RecommendationDecision decision, IReadOnlyCollection<ProviderLookupFailure> failures)
     {
+        var firstFailure = failures.Count > 0 ? GetFirstFailure(failures) : null;
+
         return decision.Outcome switch
         {
             RecommendationOutcome.Recommended =>
@@ -78,13 +80,24 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
                 "No recommendation: available candidate is marked as incompatible.",
             RecommendationOutcome.NotRecommended =>
                 "No recommendation: candidate compatibility is unknown.",
-            RecommendationOutcome.InsufficientEvidence when failures.Count > 0 =>
-                $"No recommendation: insufficient evidence because provider lookup failed ({failures[0].ProviderCode}: {failures[0].FailureReason}).",
+            RecommendationOutcome.InsufficientEvidence when firstFailure is not null =>
+                $"No recommendation: insufficient evidence because provider lookup failed ({firstFailure.ProviderCode}: {firstFailure.FailureReason}).",
             RecommendationOutcome.InsufficientEvidence =>
                 "No recommendation: insufficient evidence from providers.",
             _ =>
                 "No recommendation: insufficient evidence from providers."
         };
+    }
+
+    private static ProviderLookupFailure GetFirstFailure(IReadOnlyCollection<ProviderLookupFailure> failures)
+    {
+        using var enumerator = failures.GetEnumerator();
+        if (enumerator.MoveNext())
+        {
+            return enumerator.Current;
+        }
+
+        throw new InvalidOperationException("No provider lookup failures were supplied.");
     }
 
     private sealed class ProviderLookupOrchestrator(IEnumerable<IOfficialProviderAdapter> providers)
