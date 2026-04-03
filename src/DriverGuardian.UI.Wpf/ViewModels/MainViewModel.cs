@@ -318,9 +318,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void ApplyWorkflowResult(MainScreenWorkflowResult result, bool isPreview, string? scenarioName = null)
     {
-        var status = result.RecommendedCount > 0
+        var status = result.ScanExecutionStatus switch
+        {
+            ScanExecutionStatus.Failed => "Сканирование завершилось с ошибкой: данные недостоверны.",
+            ScanExecutionStatus.Partial => "Сканирование частично завершено: часть данных может отсутствовать.",
+            _ => result.RecommendedCount > 0
             ? UiStrings.StatusScanCompletedReady
-            : UiStrings.StatusScanCompletedNoAction;
+            : UiStrings.StatusScanCompletedNoAction
+        };
 
         if (isPreview)
         {

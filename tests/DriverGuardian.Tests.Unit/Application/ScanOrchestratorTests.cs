@@ -21,6 +21,7 @@ public sealed class ScanOrchestratorTests
 
         Assert.Single(result.Drivers);
         Assert.Equal(1, result.DiscoveredDeviceCount);
+        Assert.Equal(ScanExecutionStatus.Completed, result.ExecutionStatus);
         Assert.NotNull(result.Session.CompletedAtUtc);
         Assert.Equal(1, inspector.CallCount);
     }
@@ -38,6 +39,7 @@ public sealed class ScanOrchestratorTests
 
         Assert.Empty(result.Drivers);
         Assert.Equal(0, result.DiscoveredDeviceCount);
+        Assert.Equal(ScanExecutionStatus.Completed, result.ExecutionStatus);
         Assert.Equal(0, inspector.CallCount);
     }
 
@@ -65,7 +67,7 @@ public sealed class ScanOrchestratorTests
     {
         private readonly string[] _instanceIds = instanceIds;
 
-        public Task<IReadOnlyCollection<DiscoveredDevice>> DiscoverAsync(CancellationToken cancellationToken)
+        public Task<DeviceDiscoveryResult> DiscoverAsync(CancellationToken cancellationToken)
         {
             IReadOnlyCollection<DiscoveredDevice> devices = _instanceIds
                 .Select(id => DiscoveredDevice.Create(
@@ -78,7 +80,7 @@ public sealed class ScanOrchestratorTests
                     rawStatus: "OK"))
                 .ToArray();
 
-            return Task.FromResult(devices);
+            return Task.FromResult(new DeviceDiscoveryResult(DeviceDiscoveryStatus.Completed, devices, []));
         }
     }
 
@@ -88,7 +90,7 @@ public sealed class ScanOrchestratorTests
 
         public IReadOnlyCollection<DiscoveredDevice> LastRequestedDevices { get; private set; } = [];
 
-        public Task<IReadOnlyCollection<InstalledDriverSnapshot>> InspectAsync(
+        public Task<DriverInspectionResult> InspectAsync(
             IReadOnlyCollection<DiscoveredDevice> devices,
             CancellationToken cancellationToken)
         {
@@ -98,7 +100,7 @@ public sealed class ScanOrchestratorTests
             var firstDevice = devices.FirstOrDefault();
             if (firstDevice is null)
             {
-                return Task.FromResult<IReadOnlyCollection<InstalledDriverSnapshot>>([]);
+                return Task.FromResult(new DriverInspectionResult(DriverInspectionStatus.Completed, [], []));
             }
 
             IReadOnlyCollection<InstalledDriverSnapshot> snapshots =
@@ -111,7 +113,7 @@ public sealed class ScanOrchestratorTests
                     "Fake")
             ];
 
-            return Task.FromResult(snapshots);
+            return Task.FromResult(new DriverInspectionResult(DriverInspectionStatus.Completed, snapshots, []));
         }
     }
 }

@@ -9,25 +9,27 @@ public sealed class WindowsDriverMetadataInspector : IDriverMetadataInspector
 {
     private const string Query = "SELECT DeviceID, DriverVersion, DriverDate, DriverProviderName FROM Win32_PnPSignedDriver";
 
-    public Task<IReadOnlyCollection<InstalledDriverSnapshot>> InspectAsync(
+    public Task<DriverInspectionResult> InspectAsync(
         IReadOnlyCollection<DiscoveredDevice> devices,
         CancellationToken cancellationToken)
     {
         if (devices.Count == 0)
         {
-            return Task.FromResult<IReadOnlyCollection<InstalledDriverSnapshot>>([]);
+            return Task.FromResult(new DriverInspectionResult(DriverInspectionStatus.Completed, [], []));
         }
 
         var devicesByInstanceId = devices
             .GroupBy(d => d.Identity.InstanceId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
+        var issues = new List<ScanIssue>();
         try
         {
             using var searcher = new ManagementObjectSearcher(Query);
             using var collection = searcher.Get();
 
             var snapshots = new List<InstalledDriverSnapshot>();
+            var hasSkippedEntries = false;
 
             foreach (ManagementObject entry in collection)
             {
@@ -40,6 +42,7 @@ public sealed class WindowsDriverMetadataInspector : IDriverMetadataInspector
                 }
                 catch (ManagementException)
                 {
+                    hasSkippedEntries = true;
                     continue;
                 }
 
@@ -56,19 +59,28 @@ public sealed class WindowsDriverMetadataInspector : IDriverMetadataInspector
                 }
             }
 
-            return Task.FromResult<IReadOnlyCollection<InstalledDriverSnapshot>>(snapshots);
+            if (hasSkippedEntries)
+            {
+                issues.Add(new ScanIssue("inspection", "entry_parse_error", "Часть записей драйверов не удалось разобрать во время inspection."));
+            }
+
+            var status = hasSkippedEntries ? DriverInspectionStatus.Partial : DriverInspectionStatus.Completed;
+            return Task.FromResult(new DriverInspectionResult(status, snapshots, issues));
         }
-        catch (ManagementException)
+        catch (ManagementException ex)
         {
-            return Task.FromResult<IReadOnlyCollection<InstalledDriverSnapshot>>([]);
+            issues.Add(new ScanIssue("inspection", "wmi_management_error", ex.Message));
+            return Task.FromResult(new DriverInspectionResult(DriverInspectionStatus.Failed, [], issues));
         }
-        catch (PlatformNotSupportedException)
+        catch (PlatformNotSupportedException ex)
         {
-            return Task.FromResult<IReadOnlyCollection<InstalledDriverSnapshot>>([]);
+            issues.Add(new ScanIssue("inspection", "platform_not_supported", ex.Message));
+            return Task.FromResult(new DriverInspectionResult(DriverInspectionStatus.Failed, [], issues));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Task.FromResult<IReadOnlyCollection<InstalledDriverSnapshot>>([]);
+            issues.Add(new ScanIssue("inspection", "access_denied", ex.Message));
+            return Task.FromResult(new DriverInspectionResult(DriverInspectionStatus.Failed, [], issues));
         }
     }
 }
