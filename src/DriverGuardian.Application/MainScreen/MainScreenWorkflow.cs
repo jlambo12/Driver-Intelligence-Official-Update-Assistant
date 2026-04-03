@@ -252,6 +252,7 @@ public sealed class MainScreenWorkflow(
         {
             return new OpenOfficialSourceActionResult(
                 IsReady: false,
+                ResolutionOutcome: OfficialSourceResolutionOutcome.InsufficientEvidence,
                 Status: "Нет рекомендаций для перехода к официальному источнику.",
                 ApprovedOfficialSourceUrl: null,
                 BlockReason: null);
@@ -269,10 +270,26 @@ public sealed class MainScreenWorkflow(
 
         return new OpenOfficialSourceActionResult(
             IsReady: decision.IsAllowed,
-            Status: decision.IsAllowed
-                ? "Официальный источник подтверждён для ручного перехода."
-                : "Открытие официального источника требует ручной проверки.",
+            ResolutionOutcome: decision.ResolutionOutcome,
+            Status: BuildOfficialSourceStatus(decision),
             ApprovedOfficialSourceUrl: decision.Link?.OfficialSourceUri.ToString(),
             BlockReason: decision.Blockers.FirstOrDefault()?.Reason.ToString());
+    }
+
+    private static string BuildOfficialSourceStatus(OpenOfficialSourceActionDecision decision)
+    {
+        if (!decision.IsAllowed)
+        {
+            return "Открытие официального источника требует ручной проверки.";
+        }
+
+        return decision.ResolutionOutcome switch
+        {
+            OfficialSourceResolutionOutcome.ConfirmedDirectOfficialDriverPage =>
+                "Подтверждена прямая официальная страница драйвера для ручного перехода.",
+            OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage =>
+                "Подтверждена официальная страница поддержки производителя для ручного перехода.",
+            _ => "Официальный источник требует ручной проверки."
+        };
     }
 }

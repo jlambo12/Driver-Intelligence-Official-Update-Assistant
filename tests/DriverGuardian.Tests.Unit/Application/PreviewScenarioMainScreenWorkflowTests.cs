@@ -1,4 +1,5 @@
 using DriverGuardian.Application.MainScreen;
+using DriverGuardian.Application.OfficialSources;
 
 namespace DriverGuardian.Tests.Unit.Application;
 
@@ -29,6 +30,7 @@ public sealed class PreviewScenarioMainScreenWorkflowTests
         Assert.Equal(1, result.RecommendedCount);
         Assert.Equal(1, result.ManualHandoffReadyCount);
         Assert.True(result.OfficialSourceAction.IsReady);
+        Assert.Equal(OfficialSourceResolutionOutcome.ConfirmedDirectOfficialDriverPage, result.OfficialSourceAction.ResolutionOutcome);
         Assert.Contains(result.RecommendationDetails, detail => detail.ManualHandoffReady);
     }
 
@@ -54,6 +56,7 @@ public sealed class PreviewScenarioMainScreenWorkflowTests
 
         Assert.Equal(0, result.ManualHandoffReadyCount);
         Assert.Equal(0, result.ManualHandoffUserActionCount);
+        Assert.Equal(OfficialSourceResolutionOutcome.InsufficientEvidence, result.OfficialSourceAction.ResolutionOutcome);
         Assert.All(result.RecommendationDetails, detail =>
         {
             Assert.False(detail.ManualHandoffReady);

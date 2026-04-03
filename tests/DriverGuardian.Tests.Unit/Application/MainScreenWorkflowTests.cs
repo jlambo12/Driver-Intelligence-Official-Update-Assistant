@@ -54,6 +54,7 @@ public sealed class MainScreenWorkflowTests
         Assert.Contains("DriverGuardian Shareable Scan Report", result.ReportExportPayload.MarkdownContent);
         Assert.Single(result.RecommendationDetails);
         Assert.False(result.OfficialSourceAction.IsReady);
+        Assert.Equal(OfficialSourceResolutionOutcome.InsufficientEvidence, result.OfficialSourceAction.ResolutionOutcome);
         Assert.Equal(3, result.RecentHistory.Count);
         Assert.Equal(37, historyRepository.LastTrimMaxEntries);
         Assert.Equal(37, historyRepository.LastRequestedTake);
