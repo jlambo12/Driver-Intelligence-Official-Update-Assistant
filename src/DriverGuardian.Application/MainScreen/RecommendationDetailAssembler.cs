@@ -2,6 +2,7 @@ using DriverGuardian.Application.Presentation;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
+using DriverGuardian.Application.Abstractions;
 
 namespace DriverGuardian.Application.MainScreen;
 
