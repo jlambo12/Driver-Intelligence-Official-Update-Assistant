@@ -35,7 +35,10 @@ public sealed record RecentHistoryPresentation(
                 timestamp,
                 UiStrings.RecentHistoryTypeVerification,
                 UiStrings.RecentHistoryVerificationSummary,
-                string.Format(UiStrings.RecentHistoryVerificationStatusFormat, MapVerificationStatus(entry.StatusCode), string.IsNullOrWhiteSpace(entry.Note) ? UiStrings.RecentHistoryVerificationNoteEmpty : entry.Note),
+                string.Format(
+                    UiStrings.RecentHistoryVerificationStatusFormat,
+                    ResolveVerificationOutcome(entry.StatusCode, entry.Note),
+                    string.IsNullOrWhiteSpace(entry.Note) ? UiStrings.RecentHistoryVerificationNoteEmpty : entry.Note),
                 UiStrings.RecentHistoryVerificationGuidance),
             _ => new RecentHistoryPresentation(
                 timestamp,
@@ -49,12 +52,36 @@ public sealed record RecentHistoryPresentation(
     private static string FormatScanSessionId(Guid scanSessionId)
         => $"#{scanSessionId.ToString("N")[..8]}";
 
-    private static string MapVerificationStatus(string? statusCode)
-        => statusCode switch
+    private static string ResolveVerificationOutcome(string? statusCode, string? note)
+    {
+        if (statusCode == "passed")
         {
-            "passed" => UiStrings.RecentHistoryVerificationStatusPassed,
-            "failed" => UiStrings.RecentHistoryVerificationStatusFailed,
-            "skipped" => UiStrings.RecentHistoryVerificationStatusSkipped,
-            _ => UiStrings.RecentHistoryVerificationStatusUnknown
+            return UiStrings.RecentHistoryVerificationOutcomeUpdated;
+        }
+
+        if (statusCode == "skipped")
+        {
+            return LooksPostponed(note)
+                ? UiStrings.RecentHistoryVerificationOutcomePostponed
+                : UiStrings.RecentHistoryVerificationOutcomeNeedsUserAction;
+        }
+
+        return statusCode switch
+        {
+            "failed" => UiStrings.RecentHistoryVerificationOutcomeInconclusive,
+            _ => UiStrings.RecentHistoryVerificationOutcomeInconclusive
         };
+
+        static bool LooksPostponed(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return false;
+            }
+
+            return raw.Contains("перен", StringComparison.OrdinalIgnoreCase) ||
+                   raw.Contains("postpon", StringComparison.OrdinalIgnoreCase) ||
+                   raw.Contains("later", StringComparison.OrdinalIgnoreCase);
+        }
+    }
 }

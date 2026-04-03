@@ -280,19 +280,19 @@
     <value>Что произошло: зафиксирован результат возврата для проверки после ручной установки.</value>
   </data>
   <data name="Recent_History_Verification_Status_Format" xml:space="preserve">
-    <value>Текущий статус: {0}; заметка пользователя: {1}.</value>
+    <value>Итог проверки: {0}. Комментарий: {1}.</value>
   </data>
   <data name="Recent_History_Verification_Status_Passed" xml:space="preserve">
-    <value>изменения подтверждены</value>
+    <value>проверка пройдена: версия выглядит обновлённой</value>
   </data>
   <data name="Recent_History_Verification_Status_Failed" xml:space="preserve">
-    <value>обнаружены расхождения</value>
+    <value>проверка пока не подтверждена</value>
   </data>
   <data name="Recent_History_Verification_Status_Skipped" xml:space="preserve">
-    <value>ожидается повторный анализ</value>
+    <value>проверка отложена</value>
   </data>
   <data name="Recent_History_Verification_Status_Unknown" xml:space="preserve">
-    <value>статус не определён</value>
+    <value>проверка пока не подтверждена</value>
   </data>
   <data name="Recent_History_Verification_Note_Empty" xml:space="preserve">
     <value>заметка не добавлена</value>
@@ -391,7 +391,7 @@
     <value>Что сделать дальше: сверяйте рекомендации с официальным источником перед загрузкой пакета.</value>
   </data>
   <data name="Recent_History_Verification_Guidance" xml:space="preserve">
-    <value>Что сделать дальше: если результат спорный, выполните повторный анализ после проверки ручных шагов.</value>
+    <value>Что сделать дальше: если статус «Требуется действие пользователя», завершите ручной шаг и повторите анализ. Если статус «Проверка пока не подтверждена», проверьте источник и выполните повторный контрольный анализ позже.</value>
   </data>
   <data name="Recent_History_Unknown_Guidance" xml:space="preserve">
     <value>Что сделать дальше: выполните новый анализ, чтобы получить структурированную запись.</value>
@@ -407,4 +407,4 @@
     <value>Дополнительные записи остаются вспомогательными и не влияют на основной приоритетный список.</value>
   </data>
 
-<data name="Action_Status_No_Action_Needed" xml:space="preserve"><value>действие не требуется</value></data><data name="Action_Status_Waiting_For_Return" xml:space="preserve"><value>ожидается возврат пользователя</value></data><data name="Action_Status_Verification_Expected" xml:space="preserve"><value>проверка доступна после возврата</value></data></root>
+<data name="Action_Status_No_Action_Needed" xml:space="preserve"><value>действие не требуется</value></data><data name="Action_Status_Waiting_For_Return" xml:space="preserve"><value>ожидается возврат пользователя</value></data><data name="Action_Status_Verification_Expected" xml:space="preserve"><value>проверка доступна после возврата</value></data><data name="Recent_History_Verification_Outcome_Updated" xml:space="preserve"><value>проверка пройдена: версия выглядит обновлённой</value></data><data name="Recent_History_Verification_Outcome_Inconclusive" xml:space="preserve"><value>проверка пока не подтверждена</value></data><data name="Recent_History_Verification_Outcome_Postponed" xml:space="preserve"><value>проверка отложена пользователем</value></data><data name="Recent_History_Verification_Outcome_Needs_User_Action" xml:space="preserve"><value>требуется действие пользователя</value></data></root>

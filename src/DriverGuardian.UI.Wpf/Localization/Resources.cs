@@ -159,6 +159,10 @@ public static class Resources
     public static string Recent_History_Verification_Status_Failed => GetString(nameof(Recent_History_Verification_Status_Failed));
     public static string Recent_History_Verification_Status_Skipped => GetString(nameof(Recent_History_Verification_Status_Skipped));
     public static string Recent_History_Verification_Status_Unknown => GetString(nameof(Recent_History_Verification_Status_Unknown));
+    public static string Recent_History_Verification_Outcome_Updated => GetString(nameof(Recent_History_Verification_Outcome_Updated));
+    public static string Recent_History_Verification_Outcome_Inconclusive => GetString(nameof(Recent_History_Verification_Outcome_Inconclusive));
+    public static string Recent_History_Verification_Outcome_Postponed => GetString(nameof(Recent_History_Verification_Outcome_Postponed));
+    public static string Recent_History_Verification_Outcome_Needs_User_Action => GetString(nameof(Recent_History_Verification_Outcome_Needs_User_Action));
     public static string Recent_History_Verification_Note_Empty => GetString(nameof(Recent_History_Verification_Note_Empty));
     public static string Recent_History_Unknown_Summary => GetString(nameof(Recent_History_Unknown_Summary));
     public static string Recent_History_Unknown_Status => GetString(nameof(Recent_History_Unknown_Status));

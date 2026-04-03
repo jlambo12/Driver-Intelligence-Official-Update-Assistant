@@ -153,6 +153,10 @@ public static class UiStrings
     public static string RecentHistoryVerificationStatusFailed => Resources.Recent_History_Verification_Status_Failed;
     public static string RecentHistoryVerificationStatusSkipped => Resources.Recent_History_Verification_Status_Skipped;
     public static string RecentHistoryVerificationStatusUnknown => Resources.Recent_History_Verification_Status_Unknown;
+    public static string RecentHistoryVerificationOutcomeUpdated => Resources.Recent_History_Verification_Outcome_Updated;
+    public static string RecentHistoryVerificationOutcomeInconclusive => Resources.Recent_History_Verification_Outcome_Inconclusive;
+    public static string RecentHistoryVerificationOutcomePostponed => Resources.Recent_History_Verification_Outcome_Postponed;
+    public static string RecentHistoryVerificationOutcomeNeedsUserAction => Resources.Recent_History_Verification_Outcome_Needs_User_Action;
     public static string RecentHistoryVerificationNoteEmpty => Resources.Recent_History_Verification_Note_Empty;
     public static string RecentHistoryUnknownSummary => Resources.Recent_History_Unknown_Summary;
     public static string RecentHistoryUnknownStatus => Resources.Recent_History_Unknown_Status;
