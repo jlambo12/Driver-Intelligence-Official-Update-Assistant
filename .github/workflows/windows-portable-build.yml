@@ -54,6 +54,15 @@ jobs:
             | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/build.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Run unit tests
+        id: test
+        shell: pwsh
+        run: |
+          & dotnet test "${{ env.SOLUTION_PATH }}" --configuration Release --runtime win-x64 --no-build `
+            --logger "trx;LogFileName=unit-tests.trx" *>&1 `
+            | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/test.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Publish WPF app (win-x64 portable)
         id: publish
         shell: pwsh
@@ -106,6 +115,7 @@ jobs:
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## Windows portable build diagnostics"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- restore status: ${{ steps.restore.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- build status: ${{ steps.build.outcome }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- test status: ${{ steps.test.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish status: ${{ steps.publish.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish directory exists: ${{ steps.inspect_outputs.outputs.publish_directory_exists }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish file count: ${{ steps.inspect_outputs.outputs.publish_file_count }}"
