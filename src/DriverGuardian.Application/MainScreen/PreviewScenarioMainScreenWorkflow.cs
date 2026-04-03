@@ -58,6 +58,8 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
 
     private static MainScreenWorkflowResult CreatePlaceholderResult()
         => new(
+            ScanExecutionStatus: ScanExecutionStatus.Completed,
+            ScanIssues: [],
             DiscoveredDeviceCount: 0,
             InspectedDriverCount: 0,
             RecommendedCount: 0,
@@ -75,6 +77,8 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
 
     private static MainScreenWorkflowResult BuildNoActionableRecommendation()
         => new(
+            ScanExecutionStatus: ScanExecutionStatus.Completed,
+            ScanIssues: [],
             DiscoveredDeviceCount: 6,
             InspectedDriverCount: 6,
             RecommendedCount: 0,
@@ -110,6 +114,8 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
 
     private static MainScreenWorkflowResult BuildRecommendationWithLimitedEvidence()
         => new(
+            ScanExecutionStatus: ScanExecutionStatus.Completed,
+            ScanIssues: [],
             DiscoveredDeviceCount: 5,
             InspectedDriverCount: 5,
             RecommendedCount: 1,
@@ -145,6 +151,8 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
 
     private static MainScreenWorkflowResult BuildRecommendationReadyForManualAction()
         => new(
+            ScanExecutionStatus: ScanExecutionStatus.Completed,
+            ScanIssues: [],
             DiscoveredDeviceCount: 7,
             InspectedDriverCount: 7,
             RecommendedCount: 1,
@@ -180,6 +188,8 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
 
     private static MainScreenWorkflowResult BuildVerificationReturnGuidance()
         => new(
+            ScanExecutionStatus: ScanExecutionStatus.Completed,
+            ScanIssues: [],
             DiscoveredDeviceCount: 4,
             InspectedDriverCount: 4,
             RecommendedCount: 1,
@@ -219,6 +229,8 @@ public sealed class PreviewScenarioMainScreenWorkflow : IMainScreenWorkflow
 
     private static MainScreenWorkflowResult BuildPopulatedHistoryAndExport()
         => new(
+            ScanExecutionStatus: ScanExecutionStatus.Completed,
+            ScanIssues: [],
             DiscoveredDeviceCount: 9,
             InspectedDriverCount: 9,
             RecommendedCount: 2,

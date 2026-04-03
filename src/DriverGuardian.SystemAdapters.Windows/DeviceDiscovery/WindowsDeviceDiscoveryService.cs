@@ -7,14 +7,16 @@ public sealed class WindowsDeviceDiscoveryService : IDeviceDiscoveryService
 {
     private const string Query = "SELECT DeviceID, Name, PNPDeviceID, HardwareID, Manufacturer, PNPClass, ConfigManagerErrorCode, Status FROM Win32_PnPEntity";
 
-    public Task<IReadOnlyCollection<DiscoveredDevice>> DiscoverAsync(CancellationToken cancellationToken)
+    public Task<DeviceDiscoveryResult> DiscoverAsync(CancellationToken cancellationToken)
     {
+        var issues = new List<ScanIssue>();
         try
         {
             using var searcher = new ManagementObjectSearcher(Query);
             using var collection = searcher.Get();
 
             var devices = new List<DiscoveredDevice>();
+            var hasSkippedEntities = false;
 
             foreach (ManagementObject entity in collection)
             {
@@ -33,22 +35,32 @@ public sealed class WindowsDeviceDiscoveryService : IDeviceDiscoveryService
                 catch (ManagementException)
                 {
                     // skip malformed entity and continue collecting partial results
+                    hasSkippedEntities = true;
                 }
             }
 
-            return Task.FromResult<IReadOnlyCollection<DiscoveredDevice>>(devices);
+            if (hasSkippedEntities)
+            {
+                issues.Add(new ScanIssue("discovery", "entity_parse_error", "Часть устройств не удалось разобрать во время discovery."));
+            }
+
+            var status = hasSkippedEntities ? DeviceDiscoveryStatus.Partial : DeviceDiscoveryStatus.Completed;
+            return Task.FromResult(new DeviceDiscoveryResult(status, devices, issues));
         }
-        catch (ManagementException)
+        catch (ManagementException ex)
         {
-            return Task.FromResult<IReadOnlyCollection<DiscoveredDevice>>([]);
+            issues.Add(new ScanIssue("discovery", "wmi_management_error", ex.Message));
+            return Task.FromResult(new DeviceDiscoveryResult(DeviceDiscoveryStatus.Failed, [], issues));
         }
-        catch (PlatformNotSupportedException)
+        catch (PlatformNotSupportedException ex)
         {
-            return Task.FromResult<IReadOnlyCollection<DiscoveredDevice>>([]);
+            issues.Add(new ScanIssue("discovery", "platform_not_supported", ex.Message));
+            return Task.FromResult(new DeviceDiscoveryResult(DeviceDiscoveryStatus.Failed, [], issues));
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            return Task.FromResult<IReadOnlyCollection<DiscoveredDevice>>([]);
+            issues.Add(new ScanIssue("discovery", "access_denied", ex.Message));
+            return Task.FromResult(new DeviceDiscoveryResult(DeviceDiscoveryStatus.Failed, [], issues));
         }
     }
 }

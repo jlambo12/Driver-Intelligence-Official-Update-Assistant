@@ -13,4 +13,13 @@ public sealed record ScanResult(
     ScanSession Session,
     int DiscoveredDeviceCount,
     IReadOnlyCollection<DiscoveredDevice> DiscoveredDevices,
-    IReadOnlyCollection<InstalledDriverSnapshot> Drivers);
+    IReadOnlyCollection<InstalledDriverSnapshot> Drivers,
+    ScanExecutionStatus ExecutionStatus,
+    IReadOnlyCollection<ScanIssue> Issues);
+
+public enum ScanExecutionStatus
+{
+    Completed = 0,
+    Partial = 1,
+    Failed = 2
+}

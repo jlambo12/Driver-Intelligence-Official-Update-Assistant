@@ -15,17 +15,52 @@ public sealed class ScanOrchestrator(
         var started = clock.UtcNow;
         var session = ScanSession.Start(Guid.NewGuid(), started);
 
-        var discoveredDevices = await discoveryService.DiscoverAsync(cancellationToken);
-        var distinctDevices = discoveredDevices
+        var discoveryResult = await discoveryService.DiscoverAsync(cancellationToken);
+        var distinctDevices = discoveryResult.Devices
             .Distinct(DiscoveredDeviceInstanceIdComparer.Instance)
             .ToArray();
 
-        var drivers = distinctDevices.Length == 0
-            ? []
-            : await inspectionOrchestrator.InspectAsync(distinctDevices, cancellationToken);
+        var issues = new List<ScanIssue>(discoveryResult.Issues);
+        DriverInspectionResult inspectionResult;
+        if (discoveryResult.Status is DeviceDiscoveryStatus.Failed)
+        {
+            inspectionResult = new DriverInspectionResult(DriverInspectionStatus.Failed, [], []);
+        }
+        else if (distinctDevices.Length == 0)
+        {
+            inspectionResult = new DriverInspectionResult(DriverInspectionStatus.Completed, [], []);
+        }
+        else
+        {
+            inspectionResult = await inspectionOrchestrator.InspectAsync(distinctDevices, cancellationToken);
+            issues.AddRange(inspectionResult.Issues);
+        }
 
         var completed = session.Complete(clock.UtcNow);
-        return new ScanResult(completed, distinctDevices.Length, distinctDevices, drivers);
+        return new ScanResult(
+            completed,
+            distinctDevices.Length,
+            distinctDevices,
+            inspectionResult.Drivers,
+            ResolveExecutionStatus(discoveryResult.Status, inspectionResult.Status),
+            issues);
+    }
+
+    private static ScanExecutionStatus ResolveExecutionStatus(
+        DeviceDiscoveryStatus discoveryStatus,
+        DriverInspectionStatus inspectionStatus)
+    {
+        if (discoveryStatus is DeviceDiscoveryStatus.Failed)
+        {
+            return ScanExecutionStatus.Failed;
+        }
+
+        if (discoveryStatus is DeviceDiscoveryStatus.Partial || inspectionStatus is DriverInspectionStatus.Partial or DriverInspectionStatus.Failed)
+        {
+            return ScanExecutionStatus.Partial;
+        }
+
+        return ScanExecutionStatus.Completed;
     }
 
     private sealed class DiscoveredDeviceInstanceIdComparer : IEqualityComparer<DiscoveredDevice>

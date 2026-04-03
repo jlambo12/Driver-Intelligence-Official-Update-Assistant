@@ -1,4 +1,5 @@
 using DriverGuardian.Application.OfficialSources;
+using DriverGuardian.Contracts.DeviceDiscovery;
 
 namespace DriverGuardian.Application.Abstractions;
 
@@ -8,6 +9,8 @@ public interface IMainScreenWorkflow
 }
 
 public sealed record MainScreenWorkflowResult(
+    ScanExecutionStatus ScanExecutionStatus,
+    IReadOnlyCollection<ScanIssue> ScanIssues,
     int DiscoveredDeviceCount,
     int InspectedDriverCount,
     int RecommendedCount,
