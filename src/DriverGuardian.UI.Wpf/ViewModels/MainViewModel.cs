@@ -272,6 +272,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
         await ApplyPreviewScenarioAsync();
     }
 
+    public void ApplyStartupRecoveryStatus(string recoveryMessage)
+    {
+        if (string.IsNullOrWhiteSpace(recoveryMessage))
+        {
+            return;
+        }
+
+        SettingsStatusText = recoveryMessage;
+        State = State with
+        {
+            StatusText = recoveryMessage
+        };
+    }
+
     private async Task ScanAsync()
     {
         if (IsPreviewMode)

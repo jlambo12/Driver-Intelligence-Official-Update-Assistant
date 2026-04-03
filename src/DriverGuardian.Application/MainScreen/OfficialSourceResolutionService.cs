@@ -58,13 +58,13 @@ public sealed class OfficialSourceResolutionService(IEnumerable<IOfficialProvide
             }
             catch (Exception ex)
             {
-                failures.Add(new OfficialSourceProviderFailure(provider.Descriptor.Code, ex.Message));
+                failures.Add(new OfficialSourceProviderFailure(provider.Descriptor.Code, ex.Message, ex.GetType().Name));
                 continue;
             }
 
             if (!response.IsSuccess)
             {
-                failures.Add(new OfficialSourceProviderFailure(provider.Descriptor.Code, response.FailureReason ?? "Unknown provider failure."));
+                failures.Add(new OfficialSourceProviderFailure(provider.Descriptor.Code, response.FailureReason ?? "Unknown provider failure.", null));
                 continue;
             }
 
@@ -185,7 +185,8 @@ public sealed record OfficialSourcePolicyCandidate(
 
 public sealed record OfficialSourceProviderFailure(
     string ProviderCode,
-    string Message);
+    string Message,
+    string? ExceptionType);
 
 public sealed class OfficialSourceActionService(
     OfficialSourceResolutionService sourceResolutionService,
@@ -214,7 +215,7 @@ public sealed class OfficialSourceActionService(
         {
             await diagnosticLogger.LogWarningAsync(
                 "scan.official_source.provider_lookup.failed",
-                $"Provider={failure.ProviderCode}; reason={failure.Message}",
+                $"Provider={failure.ProviderCode}; reason={failure.Message}; exceptionType={failure.ExceptionType ?? "n/a"}",
                 cancellationToken);
         }
 

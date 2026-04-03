@@ -70,6 +70,52 @@ public sealed class OfficialSourceResolutionServiceTests
         Assert.Equal("https://download.windowsupdate.com/file.cab", action.ApprovedOfficialSourceUrl);
     }
 
+    [Fact]
+    public async Task BuildAsync_WhenDownloadHostIsNotAllowlisted_ShouldFallbackToSourcePage()
+    {
+        var provider = new FakeProvider("oem", [
+            BuildCandidate(
+                SourceTrustLevel.OemSupportPortal,
+                CompatibilityConfidence.High,
+                new Uri("https://cdn.vendor.test/file.exe"),
+                sourceUri: new Uri("https://support.vendor.test/drivers"))]);
+
+        var logger = new RecordingDiagnosticLogger();
+        var actionService = new OfficialSourceActionService(
+            new OfficialSourceResolutionService([provider]),
+            new OpenOfficialSourceActionEvaluator(),
+            logger);
+
+        var action = await actionService.BuildAsync(BuildDrivers(), BuildRecommendations(), CancellationToken.None);
+
+        Assert.True(action.IsReady);
+        Assert.Equal(OfficialSourceActionTarget.SourcePage, action.ActionTarget);
+        Assert.Equal("https://support.vendor.test/drivers", action.ApprovedOfficialSourceUrl);
+    }
+
+    [Fact]
+    public async Task BuildAsync_WhenProviderThrows_ShouldLogWarningAndKeepWorkflowAlive()
+    {
+        var providers = new IOfficialProviderAdapter[]
+        {
+            new ThrowingProvider("broken"),
+            new FakeProvider("healthy", [BuildCandidate(SourceTrustLevel.OemSupportPortal, CompatibilityConfidence.Medium, null)])
+        };
+
+        var logger = new RecordingDiagnosticLogger();
+        var actionService = new OfficialSourceActionService(
+            new OfficialSourceResolutionService(providers),
+            new OpenOfficialSourceActionEvaluator(),
+            logger);
+
+        var action = await actionService.BuildAsync(BuildDrivers(), BuildRecommendations(), CancellationToken.None);
+
+        Assert.True(action.IsReady);
+        Assert.Single(logger.WarningEvents);
+        Assert.Contains("Provider=broken", logger.WarningEvents[0], StringComparison.Ordinal);
+        Assert.Contains("exceptionType=InvalidOperationException", logger.WarningEvents[0], StringComparison.Ordinal);
+    }
+
     private static IReadOnlyCollection<InstalledDriverSnapshot> BuildDrivers()
         =>
         [
@@ -123,8 +169,15 @@ public sealed class OfficialSourceResolutionServiceTests
 
     private sealed class RecordingDiagnosticLogger : IDiagnosticLogger
     {
+        public List<string> WarningEvents { get; } = [];
+
         public Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken) => Task.CompletedTask;
-        public Task LogWarningAsync(string eventName, string message, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task LogWarningAsync(string eventName, string message, CancellationToken cancellationToken)
+        {
+            WarningEvents.Add($"{eventName}:{message}");
+            return Task.CompletedTask;
+        }
+
         public Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

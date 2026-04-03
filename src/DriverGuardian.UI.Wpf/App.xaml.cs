@@ -64,8 +64,9 @@ public partial class App : WpfApplication
         catch (Exception ex)
         {
             await startupLogger.LogErrorAsync("app.startup.failed", "Primary startup flow failed. Recovery mode will be activated.", ex, CancellationToken.None);
+            var recoveryStatus = $"Startup recovery mode: {ex.GetType().Name} — {ex.Message}";
             MessageBox.Show(
-                "Не удалось запустить приложение в production-режиме. Активирован recovery-режим (preview) для безопасного продолжения.",
+                $"Не удалось запустить приложение в production-режиме. Активирован recovery-режим (preview).{Environment.NewLine}{Environment.NewLine}{recoveryStatus}",
                 "DriverGuardian startup recovery",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -75,6 +76,7 @@ public partial class App : WpfApplication
                 new ReportFileSaveService(),
                 new DiagnosticLogsFolderService(GetDefaultLogsDirectory()));
             await fallbackVm.InitializeAsync();
+            fallbackVm.ApplyStartupRecoveryStatus(recoveryStatus);
             var fallbackWindow = new MainWindow { DataContext = fallbackVm };
             fallbackWindow.Show();
             await startupLogger.LogWarningAsync("app.startup.recovery_mode.enabled", "Application is running in recovery preview mode after startup failure.", CancellationToken.None);
