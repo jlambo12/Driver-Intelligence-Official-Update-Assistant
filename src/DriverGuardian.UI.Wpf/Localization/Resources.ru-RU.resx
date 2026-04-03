@@ -217,25 +217,25 @@
     <value>Настройки загружаются...</value>
   </data>
   <data name="Report_Export_Title" xml:space="preserve">
-    <value>Экспорт отчёта</value>
+    <value>Поделиться отчётом</value>
   </data>
   <data name="Report_Export_Hint" xml:space="preserve">
-    <value>Это вспомогательный инструмент: отчёт сохраняется вручную и помогает поделиться результатами без автоматических действий.</value>
+    <value>Сохраните отчёт вручную, чтобы отправить результаты коллегам или в поддержку. DriverGuardian не выполняет автоматическую установку или исправления.</value>
   </data>
   <data name="Report_Export_Action" xml:space="preserve">
-    <value>Экспортировать отчёт</value>
+    <value>Сохранить отчёт для отправки</value>
   </data>
   <data name="Report_Export_Status_No_Data" xml:space="preserve">
     <value>Сначала запустите анализ, чтобы подготовить отчёт.</value>
   </data>
   <data name="Report_Export_Status_Ready" xml:space="preserve">
-    <value>Отчёт подготовлен. Выберите «Экспортировать отчёт» для сохранения.</value>
+    <value>Отчёт готов к отправке. Нажмите «Сохранить отчёт для отправки».</value>
   </data>
   <data name="Report_Export_Status_Saved" xml:space="preserve">
-    <value>Отчёт сохранён вручную.</value>
+    <value>Отчёт сохранён. Теперь его можно отправить вручную.</value>
   </data>
   <data name="Report_Export_Status_Canceled" xml:space="preserve">
-    <value>Сохранение отчёта отменено пользователем.</value>
+    <value>Сохранение отменено. Файл отчёта не был создан.</value>
   </data>
   <data name="Report_Export_Status_Save_Failed" xml:space="preserve">
     <value>Не удалось сохранить отчёт в выбранный файл. Проверьте путь и права доступа, затем повторите попытку.</value>
@@ -247,7 +247,7 @@
     <value>Текстовый файл (*.txt)|*.txt</value>
   </data>
   <data name="Recent_History_Section_Title" xml:space="preserve">
-    <value>Последние события анализа</value>
+    <value>История анализа</value>
   </data>
   <data name="Recent_History_Empty_State" xml:space="preserve">
     <value>Пока нет событий. Запустите анализ — здесь появятся этапы: сканирование, сводка рекомендаций и проверка после установки.</value>
@@ -256,7 +256,7 @@
     <value>Сканирование завершено</value>
   </data>
   <data name="Recent_History_Type_Recommendation" xml:space="preserve">
-    <value>Сводка рекомендаций обновлена</value>
+    <value>Обновление рекомендаций</value>
   </data>
   <data name="Recent_History_Type_Verification" xml:space="preserve">
     <value>Проверка после установки</value>
@@ -268,19 +268,19 @@
     <value>Что произошло: завершён сеанс анализа {0}.</value>
   </data>
   <data name="Recent_History_Scan_Status_Format" xml:space="preserve">
-    <value>Текущий статус: обнаружено устройств {0}; проверено драйверов {1}.</value>
+    <value>Текущее состояние: обнаружено устройств — {0}; проверено драйверов — {1}.</value>
   </data>
   <data name="Recent_History_Recommendation_Summary" xml:space="preserve">
     <value>Что произошло: сформирована сводка рекомендаций по текущему анализу.</value>
   </data>
   <data name="Recent_History_Recommendation_Status_Format" xml:space="preserve">
-    <value>Текущий статус: релевантных записей {0}; требуют ручной проверки {1}; отложено как небезопасно {2}.</value>
+    <value>Текущее состояние: подходящих записей — {0}; требуют ручной проверки — {1}; отложены как небезопасные — {2}.</value>
   </data>
   <data name="Recent_History_Verification_Summary" xml:space="preserve">
     <value>Что произошло: зафиксирован результат возврата для проверки после ручной установки.</value>
   </data>
   <data name="Recent_History_Verification_Status_Format" xml:space="preserve">
-    <value>Текущий статус: {0}; заметка пользователя: {1}.</value>
+    <value>Текущее состояние: {0}; комментарий пользователя: {1}.</value>
   </data>
   <data name="Recent_History_Verification_Status_Passed" xml:space="preserve">
     <value>изменения подтверждены</value>
@@ -301,7 +301,7 @@
     <value>Что произошло: тип события не распознан.</value>
   </data>
   <data name="Recent_History_Unknown_Status" xml:space="preserve">
-    <value>Текущий статус: сведения недоступны.</value>
+    <value>Текущее состояние: подробности недоступны.</value>
   </data>
   <data name="Scan_Overview_Title" xml:space="preserve">
     <value>Что обнаружено на этом анализе</value>
@@ -382,13 +382,13 @@
     <value>Сейчас действие не требуется. Когда выполните ручную установку, вернитесь и запустите повторный анализ.</value>
   </data>
   <data name="Recent_History_Section_Hint" xml:space="preserve">
-    <value>Короткая лента последних шагов: что произошло, текущий статус и что сделать дальше.</value>
+    <value>Здесь собраны последние шаги: что произошло, текущее состояние и рекомендуемое следующее действие.</value>
   </data>
   <data name="Recent_History_Scan_Guidance" xml:space="preserve">
     <value>Что сделать дальше: используйте этот результат как отправную точку перед ручными действиями.</value>
   </data>
   <data name="Recent_History_Recommendation_Guidance" xml:space="preserve">
-    <value>Что сделать дальше: сверяйте рекомендации с официальным источником перед загрузкой пакета.</value>
+    <value>Что дальше: перед загрузкой пакета подтвердите рекомендацию на официальной странице производителя.</value>
   </data>
   <data name="Recent_History_Verification_Guidance" xml:space="preserve">
     <value>Что сделать дальше: если результат спорный, выполните повторный анализ после проверки ручных шагов.</value>
