@@ -55,7 +55,12 @@ public sealed class ScanOrchestrator(
             return ScanExecutionStatus.Failed;
         }
 
-        if (discoveryStatus is DeviceDiscoveryStatus.Partial || inspectionStatus is DriverInspectionStatus.Partial or DriverInspectionStatus.Failed)
+        if (inspectionStatus is DriverInspectionStatus.Failed)
+        {
+            return ScanExecutionStatus.Failed;
+        }
+
+        if (discoveryStatus is DeviceDiscoveryStatus.Partial || inspectionStatus is DriverInspectionStatus.Partial)
         {
             return ScanExecutionStatus.Partial;
         }

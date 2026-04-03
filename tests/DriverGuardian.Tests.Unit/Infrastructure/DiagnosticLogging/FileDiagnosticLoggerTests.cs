@@ -55,4 +55,30 @@ public sealed class FileDiagnosticLoggerTests
             }
         }
     }
+
+    [Fact]
+    public async Task LogWarningAsync_ShouldWriteWarningLevel()
+    {
+        var logsDirectory = Path.Combine(Path.GetTempPath(), $"driverguardian-logs-{Guid.NewGuid():N}");
+        var logger = new FileDiagnosticLogger(logsDirectory);
+
+        try
+        {
+            await logger.LogWarningAsync("scan.warn", "warning message", CancellationToken.None);
+
+            var filePath = Directory.GetFiles(logsDirectory, "scan-*.log").Single();
+            var content = await File.ReadAllTextAsync(filePath, CancellationToken.None);
+
+            Assert.Contains("[WARN]", content, StringComparison.Ordinal);
+            Assert.Contains("[scan.warn]", content, StringComparison.Ordinal);
+            Assert.Contains("warning message", content, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (Directory.Exists(logsDirectory))
+            {
+                Directory.Delete(logsDirectory, recursive: true);
+            }
+        }
+    }
 }

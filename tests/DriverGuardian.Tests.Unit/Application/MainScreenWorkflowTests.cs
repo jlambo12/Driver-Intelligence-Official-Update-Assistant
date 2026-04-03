@@ -70,6 +70,7 @@ public sealed class MainScreenWorkflowTests
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.official_source.state:", StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.history_report.completed:", StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.summary:", StringComparison.Ordinal));
+        Assert.Empty(logger.WarningEvents);
         Assert.Empty(logger.ErrorEvents);
     }
 
@@ -140,7 +141,7 @@ public sealed class MainScreenWorkflowTests
                     null)
             ];
 
-            return Task.FromResult(new ScanResult(session, 2, discoveredDevices, drivers));
+            return Task.FromResult(new ScanResult(session, 2, discoveredDevices, drivers, ScanExecutionStatus.Completed, []));
         }
     }
 
@@ -259,7 +260,7 @@ public sealed class MainScreenWorkflowTests
                     "Intel")
             ];
 
-            return Task.FromResult(new ScanResult(session, 2, discoveredDevices, drivers));
+            return Task.FromResult(new ScanResult(session, 2, discoveredDevices, drivers, ScanExecutionStatus.Completed, []));
         }
     }
 
@@ -277,11 +278,18 @@ public sealed class MainScreenWorkflowTests
     private sealed class RecordingDiagnosticLogger : IDiagnosticLogger
     {
         public List<string> InfoEvents { get; } = [];
+        public List<string> WarningEvents { get; } = [];
         public List<string> ErrorEvents { get; } = [];
 
         public Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken)
         {
             InfoEvents.Add($"{eventName}:{message}");
+            return Task.CompletedTask;
+        }
+
+        public Task LogWarningAsync(string eventName, string message, CancellationToken cancellationToken)
+        {
+            WarningEvents.Add($"{eventName}:{message}");
             return Task.CompletedTask;
         }
 

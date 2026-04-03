@@ -71,7 +71,9 @@ public sealed class ShareableReportBuilderTests
                     DiscoveredDevice.Create("SWD\\MMDEVAPI\\{FAKE}", "SWD\\MMDEVAPI\\{FAKE}", ["ROOT\\MMDEVAPI"], "Microsoft", "AudioEndpoint", DevicePresenceStatus.Present, null),
                     DiscoveredDevice.Create("PCI\\VEN_10DE&DEV_1C8D", "PCI\\VEN_10DE&DEV_1C8D", ["PCI\\VEN_10DE&DEV_1C8D"], "NVIDIA", "Display", DevicePresenceStatus.Present, null)
                 ],
-                [swdDriver, gpuDriver]),
+                [swdDriver, gpuDriver],
+                ScanExecutionStatus.Completed,
+                []),
             [
                 new RecommendationSummary(swdDriver.DeviceIdentity, false, "No action", null),
                 new RecommendationSummary(gpuDriver.DeviceIdentity, false, "No action", null)
@@ -121,7 +123,7 @@ public sealed class ShareableReportBuilderTests
             []);
 
         var request = new ShareableReportRequest(
-            new ScanResult(session, 1, BuildDiscoveredDevices(driver), [driver]),
+            new ScanResult(session, 1, BuildDiscoveredDevices(driver), [driver], ScanExecutionStatus.Completed, []),
             [new RecommendationSummary(driver.DeviceIdentity, true, "Upgrade available", "4.3.0")],
             [new ManualInstallHandoffReportItem(driver.DeviceIdentity, handoff)],
             [],
@@ -142,7 +144,7 @@ public sealed class ShareableReportBuilderTests
         var driver2 = BuildDriver("PCI\\VEN_2222", "1.5.0", "VendorB");
 
         return new ShareableReportRequest(
-            new ScanResult(session, 2, BuildDiscoveredDevices(driver1, driver2), [driver1, driver2]),
+            new ScanResult(session, 2, BuildDiscoveredDevices(driver1, driver2), [driver1, driver2], ScanExecutionStatus.Completed, []),
             [
                 new RecommendationSummary(new DeviceIdentity("PCI\\VEN_1111"), true, "Compatible upgrade available", "2.0.0"),
                 new RecommendationSummary(new DeviceIdentity("PCI\\VEN_2222"), false, "Already up to date", null)
