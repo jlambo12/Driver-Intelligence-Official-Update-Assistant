@@ -68,7 +68,7 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         Assert.True(response.IsSuccess);
         var candidate = Assert.Single(response.Candidates);
         Assert.Equal("31.0.101.2125", candidate.CandidateVersion);
-        Assert.Contains("normalized", candidate.SourceEvidence.Note, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("normalized", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         Assert.True(response.IsSuccess);
         var candidate = Assert.Single(response.Candidates);
         Assert.Equal("10.63.20.1028", candidate.CandidateVersion);
-        Assert.Contains("normalized", candidate.SourceEvidence.Note, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("normalized", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
