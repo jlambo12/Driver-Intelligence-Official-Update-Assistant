@@ -6,7 +6,7 @@ namespace DriverGuardian.Tests.Unit.Application.Verification;
 
 public sealed class PostInstallVerificationEvaluatorTests
 {
-    private static readonly DeviceIdentity DeviceIdentity = new("PCI\\VEN_8086&DEV_15F3", "Intel Ethernet");
+    private static readonly DeviceIdentity DeviceIdentity = new("PCI\\VEN_8086&DEV_15F3");
     private static readonly HardwareIdentifier HardwareIdentifier = new("PCI\\VEN_8086&DEV_15F3");
 
     private readonly PostInstallVerificationEvaluator _evaluator = new();

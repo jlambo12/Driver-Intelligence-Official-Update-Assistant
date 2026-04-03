@@ -59,6 +59,7 @@ jobs:
         shell: pwsh
         run: |
           & dotnet test "tests/DriverGuardian.Tests.Unit/DriverGuardian.Tests.Unit.csproj" --configuration Release `
+            --no-restore `
             --logger "trx;LogFileName=unit-tests.trx" *>&1 `
             | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/test.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -123,7 +124,7 @@ jobs:
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- artifact file count: ${{ steps.inspect_outputs.outputs.artifact_file_count }}"
 
       - name: Upload portable app artifact
-        if: always()
+        if: ${{ steps.publish.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: DriverGuardian-win-x64-portable
