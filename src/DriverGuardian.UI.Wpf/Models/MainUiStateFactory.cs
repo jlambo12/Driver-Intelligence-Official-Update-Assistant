@@ -1,4 +1,4 @@
-using DriverGuardian.Application.MainScreen;
+using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.UI.Wpf.Localization;
 
