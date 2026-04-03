@@ -10,6 +10,9 @@ public sealed class FileDiagnosticLogger(string logsDirectoryPath) : IDiagnostic
     public Task LogInfoAsync(string eventName, string message, CancellationToken cancellationToken)
         => WriteAsync("INFO", eventName, message, null, cancellationToken);
 
+    public Task LogWarningAsync(string eventName, string message, CancellationToken cancellationToken)
+        => WriteAsync("WARN", eventName, message, null, cancellationToken);
+
     public Task LogErrorAsync(string eventName, string message, Exception exception, CancellationToken cancellationToken)
         => WriteAsync("ERROR", eventName, message, exception, cancellationToken);
 

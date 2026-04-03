@@ -34,6 +34,13 @@ public sealed class MainScreenWorkflow(
                 "scan.inspection.completed",
                 $"Проинспектировано драйверов: {scanResult.Drivers.Count}.",
                 cancellationToken);
+            if (scanResult.ExecutionStatus is ScanExecutionStatus.Partial or ScanExecutionStatus.Failed)
+            {
+                await diagnosticLogger.LogWarningAsync(
+                    "scan.integrity.warning",
+                    $"Анализ завершён со статусом {scanResult.ExecutionStatus}; проблем: {scanResult.Issues.Count}.",
+                    cancellationToken);
+            }
 
             var recommendations = await recommendationPipeline.BuildAsync(scanResult.Drivers, cancellationToken);
             var recommendedCount = recommendations.Count(r => r.HasRecommendation);
@@ -93,6 +100,8 @@ public sealed class MainScreenWorkflow(
                 cancellationToken);
 
             return new MainScreenWorkflowResult(
+                ScanExecutionStatus: scanResult.ExecutionStatus,
+                ScanIssues: scanResult.Issues,
                 DiscoveredDeviceCount: scanResult.DiscoveredDeviceCount,
                 InspectedDriverCount: scanResult.Drivers.Count,
                 RecommendedCount: recommendedCount,

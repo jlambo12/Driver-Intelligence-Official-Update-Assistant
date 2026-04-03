@@ -9,35 +9,138 @@ namespace DriverGuardian.Tests.Unit.Application;
 public sealed class ScanOrchestratorTests
 {
     [Fact]
-    public async Task RunAsync_ShouldReturnScannedDrivers()
+    public async Task RunAsync_ShouldBeCompleted_WhenDiscoveryAndInspectionCompleted()
     {
         var inspector = new FakeDriverMetadataInspector();
         var orchestrator = new ScanOrchestrator(
-            new FakeDeviceDiscoveryService("TEST\\DEV\\001"),
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, [], "TEST\\DEV\\001"),
             new DriverInspectionOrchestrator(inspector),
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
 
+        Assert.Equal(ScanExecutionStatus.Completed, result.ExecutionStatus);
         Assert.Single(result.Drivers);
-        Assert.Equal(1, result.DiscoveredDeviceCount);
-        Assert.NotNull(result.Session.CompletedAtUtc);
         Assert.Equal(1, inspector.CallCount);
     }
 
     [Fact]
-    public async Task RunAsync_ShouldSkipDriverInspection_WhenNoDevicesWereDiscovered()
+    public async Task RunAsync_ShouldBePartial_WhenDiscoveryIsPartial()
+    {
+        var discoveryIssues = new[] { new ScanIssue("discovery", "partial", "partial discovery") };
+        var inspector = new FakeDriverMetadataInspector();
+        var orchestrator = new ScanOrchestrator(
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Partial, discoveryIssues, "TEST\\DEV\\001"),
+            new DriverInspectionOrchestrator(inspector),
+            new FakeClock());
+
+        var result = await orchestrator.RunAsync(CancellationToken.None);
+
+        Assert.Equal(ScanExecutionStatus.Partial, result.ExecutionStatus);
+        Assert.Single(result.Issues);
+        Assert.Equal("discovery", result.Issues.Single().Stage);
+    }
+
+    [Fact]
+    public async Task RunAsync_ShouldBePartial_WhenInspectionIsPartial()
+    {
+        var inspectionIssues = new[] { new ScanIssue("inspection", "partial", "partial inspection") };
+        var inspector = new FakeDriverMetadataInspector(DriverInspectionStatus.Partial, inspectionIssues);
+        var orchestrator = new ScanOrchestrator(
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, [], "TEST\\DEV\\001"),
+            new DriverInspectionOrchestrator(inspector),
+            new FakeClock());
+
+        var result = await orchestrator.RunAsync(CancellationToken.None);
+
+        Assert.Equal(ScanExecutionStatus.Partial, result.ExecutionStatus);
+        Assert.Single(result.Issues);
+        Assert.Equal("inspection", result.Issues.Single().Stage);
+    }
+
+    [Fact]
+    public async Task RunAsync_ShouldBeFailedAndSkipInspection_WhenDiscoveryFailed()
+    {
+        var inspector = new FakeDriverMetadataInspector();
+        var discoveryIssues = new[] { new ScanIssue("discovery", "failed", "wmi failed") };
+        var orchestrator = new ScanOrchestrator(
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Failed, discoveryIssues),
+            new DriverInspectionOrchestrator(inspector),
+            new FakeClock());
+
+        var result = await orchestrator.RunAsync(CancellationToken.None);
+
+        Assert.Equal(ScanExecutionStatus.Failed, result.ExecutionStatus);
+        Assert.Equal(0, inspector.CallCount);
+        Assert.Single(result.Issues);
+        Assert.Equal("discovery", result.Issues.Single().Stage);
+    }
+
+    [Fact]
+    public async Task RunAsync_ShouldBeFailed_WhenInspectionFailed()
+    {
+        var inspector = new FakeDriverMetadataInspector(
+            DriverInspectionStatus.Failed,
+            [new ScanIssue("inspection", "failed", "wmi failed")]);
+        var orchestrator = new ScanOrchestrator(
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, [], "TEST\\DEV\\001"),
+            new DriverInspectionOrchestrator(inspector),
+            new FakeClock());
+
+        var result = await orchestrator.RunAsync(CancellationToken.None);
+
+        Assert.Equal(ScanExecutionStatus.Failed, result.ExecutionStatus);
+        Assert.Single(result.Issues);
+        Assert.Equal("inspection", result.Issues.Single().Stage);
+    }
+
+    [Fact]
+    public async Task RunAsync_ShouldAggregateIssues_FromDiscoveryAndInspection()
+    {
+        var discoveryIssue = new ScanIssue("discovery", "partial", "partial discovery");
+        var inspectionIssue = new ScanIssue("inspection", "partial", "partial inspection");
+        var inspector = new FakeDriverMetadataInspector(DriverInspectionStatus.Partial, [inspectionIssue]);
+        var orchestrator = new ScanOrchestrator(
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Partial, [discoveryIssue], "TEST\\DEV\\001"),
+            new DriverInspectionOrchestrator(inspector),
+            new FakeClock());
+
+        var result = await orchestrator.RunAsync(CancellationToken.None);
+
+        Assert.Equal(2, result.Issues.Count);
+        Assert.Contains(result.Issues, issue => issue == discoveryIssue);
+        Assert.Contains(result.Issues, issue => issue == inspectionIssue);
+    }
+
+    [Fact]
+    public async Task RunAsync_ShouldKeepCompleted_WhenNoDevicesAndDiscoveryCompleted()
     {
         var inspector = new FakeDriverMetadataInspector();
         var orchestrator = new ScanOrchestrator(
-            new FakeDeviceDiscoveryService(),
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, []),
             new DriverInspectionOrchestrator(inspector),
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
 
         Assert.Empty(result.Drivers);
-        Assert.Equal(0, result.DiscoveredDeviceCount);
+        Assert.Equal(ScanExecutionStatus.Completed, result.ExecutionStatus);
+        Assert.Equal(0, inspector.CallCount);
+    }
+
+    [Fact]
+    public async Task RunAsync_ShouldKeepPartial_WhenNoDevicesAndDiscoveryPartial()
+    {
+        var inspector = new FakeDriverMetadataInspector();
+        var orchestrator = new ScanOrchestrator(
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Partial, [new ScanIssue("discovery", "partial", "partial discovery")]),
+            new DriverInspectionOrchestrator(inspector),
+            new FakeClock());
+
+        var result = await orchestrator.RunAsync(CancellationToken.None);
+
+        Assert.Empty(result.Drivers);
+        Assert.Equal(ScanExecutionStatus.Partial, result.ExecutionStatus);
         Assert.Equal(0, inspector.CallCount);
     }
 
@@ -46,7 +149,7 @@ public sealed class ScanOrchestratorTests
     {
         var inspector = new FakeDriverMetadataInspector();
         var orchestrator = new ScanOrchestrator(
-            new FakeDeviceDiscoveryService("TEST\\DEV\\001", "test\\dev\\001", "TEST\\DEV\\002"),
+            new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, [], "TEST\\DEV\\001", "test\\dev\\001", "TEST\\DEV\\002"),
             new DriverInspectionOrchestrator(inspector),
             new FakeClock());
 
@@ -61,11 +164,14 @@ public sealed class ScanOrchestratorTests
         public DateTimeOffset UtcNow => new(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
     }
 
-    private sealed class FakeDeviceDiscoveryService(params string[] instanceIds) : IDeviceDiscoveryService
+    private sealed class FakeDeviceDiscoveryService(
+        DeviceDiscoveryStatus status,
+        IReadOnlyCollection<ScanIssue> issues,
+        params string[] instanceIds) : IDeviceDiscoveryService
     {
         private readonly string[] _instanceIds = instanceIds;
 
-        public Task<IReadOnlyCollection<DiscoveredDevice>> DiscoverAsync(CancellationToken cancellationToken)
+        public Task<DeviceDiscoveryResult> DiscoverAsync(CancellationToken cancellationToken)
         {
             IReadOnlyCollection<DiscoveredDevice> devices = _instanceIds
                 .Select(id => DiscoveredDevice.Create(
@@ -78,17 +184,21 @@ public sealed class ScanOrchestratorTests
                     rawStatus: "OK"))
                 .ToArray();
 
-            return Task.FromResult(devices);
+            return Task.FromResult(new DeviceDiscoveryResult(status, devices, issues));
         }
     }
 
-    private sealed class FakeDriverMetadataInspector : IDriverMetadataInspector
+    private sealed class FakeDriverMetadataInspector(
+        DriverInspectionStatus status = DriverInspectionStatus.Completed,
+        IReadOnlyCollection<ScanIssue>? issues = null) : IDriverMetadataInspector
     {
         public int CallCount { get; private set; }
 
         public IReadOnlyCollection<DiscoveredDevice> LastRequestedDevices { get; private set; } = [];
 
-        public Task<IReadOnlyCollection<InstalledDriverSnapshot>> InspectAsync(
+        private readonly IReadOnlyCollection<ScanIssue> _issues = issues ?? [];
+
+        public Task<DriverInspectionResult> InspectAsync(
             IReadOnlyCollection<DiscoveredDevice> devices,
             CancellationToken cancellationToken)
         {
@@ -98,7 +208,7 @@ public sealed class ScanOrchestratorTests
             var firstDevice = devices.FirstOrDefault();
             if (firstDevice is null)
             {
-                return Task.FromResult<IReadOnlyCollection<InstalledDriverSnapshot>>([]);
+                return Task.FromResult(new DriverInspectionResult(status, [], _issues));
             }
 
             IReadOnlyCollection<InstalledDriverSnapshot> snapshots =
@@ -111,7 +221,7 @@ public sealed class ScanOrchestratorTests
                     "Fake")
             ];
 
-            return Task.FromResult(snapshots);
+            return Task.FromResult(new DriverInspectionResult(status, snapshots, _issues));
         }
     }
 }
