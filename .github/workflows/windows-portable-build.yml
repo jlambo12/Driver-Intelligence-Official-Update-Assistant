@@ -58,7 +58,7 @@ jobs:
         id: test
         shell: pwsh
         run: |
-          & dotnet test "${{ env.SOLUTION_PATH }}" --configuration Release --runtime win-x64 --no-build `
+          & dotnet test "tests/DriverGuardian.Tests.Unit/DriverGuardian.Tests.Unit.csproj" --configuration Release --no-restore `
             --logger "trx;LogFileName=unit-tests.trx" *>&1 `
             | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/test.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
