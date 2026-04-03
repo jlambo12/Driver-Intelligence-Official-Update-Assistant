@@ -8,7 +8,7 @@ namespace DriverGuardian.Application.Scanning;
 
 public sealed class ScanOrchestrator(
     IDeviceDiscoveryService discoveryService,
-    IDriverInspectionOrchestrator inspectionOrchestrator,
+    IDriverMetadataInspector driverMetadataInspector,
     IClock clock) : IScanOrchestrator
 {
     public async Task<ScanResult> RunAsync(CancellationToken cancellationToken)
@@ -33,7 +33,7 @@ public sealed class ScanOrchestrator(
         }
         else
         {
-            inspectionResult = await inspectionOrchestrator.InspectAsync(distinctDevices, cancellationToken);
+            inspectionResult = await driverMetadataInspector.InspectAsync(distinctDevices, cancellationToken);
             issues.AddRange(inspectionResult.Issues);
         }
 

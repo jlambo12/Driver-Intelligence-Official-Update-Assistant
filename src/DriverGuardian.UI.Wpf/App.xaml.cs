@@ -22,7 +22,6 @@ using DriverGuardian.ProviderAdapters.Abstractions.Registry;
 using DriverGuardian.ProviderAdapters.Official.Registry;
 using DriverGuardian.SystemAdapters.Windows.DeviceDiscovery;
 using DriverGuardian.SystemAdapters.Windows.DriverInspection;
-using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.ViewModels;
 using WpfApplication = System.Windows.Application;
 
@@ -120,12 +119,11 @@ public partial class App : WpfApplication
         ISettingsRepository settingsRepository,
         string defaultLogsDirectory)
     {
-        IDiagnosticLogger runtimeDiagnosticLogger = new RuntimeDiagnosticLogger(settingsRepository, defaultLogsDirectory);
+        IDiagnosticLogger runtimeDiagnosticLogger = new SettingsDiagnosticLogger(settingsRepository, defaultLogsDirectory);
         IClock clock = new SystemClock();
         IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService();
         IDriverMetadataInspector inspector = new WindowsDriverMetadataInspector();
-        IDriverInspectionOrchestrator inspectionOrchestrator = new DriverInspectionOrchestrator(inspector);
-        IScanOrchestrator scanOrchestrator = new ScanOrchestrator(discovery, inspectionOrchestrator, clock);
+        IScanOrchestrator scanOrchestrator = new ScanOrchestrator(discovery, inspector, clock);
         var officialProviders = OfficialProviderRuntimeFactory.CreateRuntimeProviders();
         IRecommendationPipeline recommendationPipeline = new RecommendationPipeline(officialProviders);
         IProviderRegistry providerRegistry = new OfficialProviderRegistry(officialProviders);

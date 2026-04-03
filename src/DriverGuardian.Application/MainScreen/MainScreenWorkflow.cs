@@ -1,5 +1,6 @@
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Contracts.DeviceDiscovery;
+using DriverGuardian.Domain.Recommendations;
 
 namespace DriverGuardian.Application.MainScreen;
 
@@ -22,42 +23,19 @@ public sealed class MainScreenWorkflow(
         {
             await diagnosticLogger.LogInfoAsync("scan.workflow.start", "Запущен workflow анализа.", cancellationToken);
             var scanResult = await scanOrchestrator.RunAsync(cancellationToken);
-            await diagnosticLogger.LogInfoAsync(
-                "scan.discovery.completed",
-                $"Обнаружено записей: {scanResult.DiscoveredDeviceCount}; уникальных устройств: {scanResult.DiscoveredDevices.Count}.",
-                cancellationToken);
-            await diagnosticLogger.LogInfoAsync(
-                "scan.inspection.completed",
-                $"Проинспектировано драйверов: {scanResult.Drivers.Count}.",
-                cancellationToken);
-            if (scanResult.ExecutionStatus is ScanExecutionStatus.Partial or ScanExecutionStatus.Failed)
-            {
-                await diagnosticLogger.LogWarningAsync(
-                    "scan.integrity.warning",
-                    $"Анализ завершён со статусом {scanResult.ExecutionStatus}; проблем: {scanResult.Issues.Count}.",
-                    cancellationToken);
-            }
+            await LogScanCompletedAsync(scanResult, cancellationToken);
 
             var recommendations = await recommendationPipeline.BuildAsync(scanResult.Drivers, cancellationToken);
-            var recommendedCount = recommendations.Count(r => r.HasRecommendation);
-            var notRecommendedCount = recommendations.Count - recommendedCount;
-            await diagnosticLogger.LogInfoAsync(
-                "scan.recommendation.completed",
-                $"Рекомендации: всего {recommendations.Count}; к ручному действию {recommendedCount}; отложено {notRecommendedCount}.",
-                cancellationToken);
+            var recommendationStats = BuildRecommendationStats(recommendations);
+            await LogRecommendationCompletedAsync(recommendations.Count, recommendationStats, cancellationToken);
 
             var providerCount = await providerCatalogSummaryService.GetProviderCountAsync(cancellationToken);
             var settings = await settingsRepository.GetAsync(cancellationToken);
             var recommendationDetails = recommendationDetailAssembler.Assemble(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations);
-            var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
-            var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
+            var detailStats = BuildRecommendationDetailStats(recommendationDetails);
+
             var officialSourceAction = await officialSourceActionService.BuildAsync(scanResult.Drivers, recommendations, cancellationToken);
-            await diagnosticLogger.LogInfoAsync(
-                "scan.official_source.state",
-                officialSourceAction.IsReady
-                    ? "Официальный источник подтверждён и доступен."
-                    : $"Официальный источник заблокирован: {officialSourceAction.BlockReason ?? "причина не указана"}.",
-                cancellationToken);
+            await LogOfficialSourceStateAsync(officialSourceAction, cancellationToken);
 
             var verificationSummary = BuildVerificationSummary(recommendationDetails);
             var reportExportPayload = reportPayloadFactory.Create(scanResult, recommendations);
@@ -65,8 +43,8 @@ public sealed class MainScreenWorkflow(
             await historyWriter.WriteAsync(
                 scanResult,
                 recommendations.Count,
-                manualHandoffUserActionCount,
-                notRecommendedCount,
+                detailStats.ManualActionRequiredCount,
+                recommendationStats.NotRecommendedCount,
                 verificationSummary,
                 settings,
                 cancellationToken);
@@ -77,7 +55,7 @@ public sealed class MainScreenWorkflow(
             await auditWriter.WriteAsync($"scan:{scanResult.Session.Id}", cancellationToken);
             await diagnosticLogger.LogInfoAsync(
                 "scan.workflow.summary",
-                $"Сеанс {scanResult.Session.Id}; устройств {scanResult.DiscoveredDeviceCount}; драйверов {scanResult.Drivers.Count}; рекомендаций {recommendedCount}.",
+                $"Сеанс {scanResult.Session.Id}; устройств {scanResult.DiscoveredDeviceCount}; драйверов {scanResult.Drivers.Count}; рекомендаций {recommendationStats.RecommendedCount}.",
                 cancellationToken);
 
             return new MainScreenWorkflowResult(
@@ -85,11 +63,11 @@ public sealed class MainScreenWorkflow(
                 ScanIssues: scanResult.Issues,
                 DiscoveredDeviceCount: scanResult.DiscoveredDeviceCount,
                 InspectedDriverCount: scanResult.Drivers.Count,
-                RecommendedCount: recommendedCount,
-                NotRecommendedCount: notRecommendedCount,
+                RecommendedCount: recommendationStats.RecommendedCount,
+                NotRecommendedCount: recommendationStats.NotRecommendedCount,
                 ProviderCount: providerCount,
-                ManualHandoffReadyCount: manualHandoffReadyCount,
-                ManualHandoffUserActionCount: manualHandoffUserActionCount,
+                ManualHandoffReadyCount: detailStats.ManualHandoffReadyCount,
+                ManualHandoffUserActionCount: detailStats.ManualActionRequiredCount,
                 VerificationSummary: verificationSummary,
                 UiCulture: settings.UiCulture,
                 ScanSessionId: scanResult.Session.Id,
@@ -105,6 +83,60 @@ public sealed class MainScreenWorkflow(
         }
     }
 
+    private async Task LogScanCompletedAsync(ScanResult scanResult, CancellationToken cancellationToken)
+    {
+        await diagnosticLogger.LogInfoAsync(
+            "scan.discovery.completed",
+            $"Обнаружено записей: {scanResult.DiscoveredDeviceCount}; уникальных устройств: {scanResult.DiscoveredDevices.Count}.",
+            cancellationToken);
+        await diagnosticLogger.LogInfoAsync(
+            "scan.inspection.completed",
+            $"Проинспектировано драйверов: {scanResult.Drivers.Count}.",
+            cancellationToken);
+
+        if (scanResult.ExecutionStatus is ScanExecutionStatus.Partial or ScanExecutionStatus.Failed)
+        {
+            await diagnosticLogger.LogWarningAsync(
+                "scan.integrity.warning",
+                $"Анализ завершён со статусом {scanResult.ExecutionStatus}; проблем: {scanResult.Issues.Count}.",
+                cancellationToken);
+        }
+    }
+
+    private async Task LogRecommendationCompletedAsync(
+        int totalRecommendations,
+        RecommendationStats stats,
+        CancellationToken cancellationToken)
+    {
+        await diagnosticLogger.LogInfoAsync(
+            "scan.recommendation.completed",
+            $"Рекомендации: всего {totalRecommendations}; к ручному действию {stats.RecommendedCount}; отложено {stats.NotRecommendedCount}.",
+            cancellationToken);
+    }
+
+    private async Task LogOfficialSourceStateAsync(OpenOfficialSourceActionResult officialSourceAction, CancellationToken cancellationToken)
+    {
+        await diagnosticLogger.LogInfoAsync(
+            "scan.official_source.state",
+            officialSourceAction.IsReady
+                ? "Официальный источник подтверждён и доступен."
+                : $"Официальный источник заблокирован: {officialSourceAction.BlockReason ?? "причина не указана"}.",
+            cancellationToken);
+    }
+
+    private static RecommendationStats BuildRecommendationStats(IReadOnlyCollection<RecommendationSummary> recommendations)
+    {
+        var recommendedCount = recommendations.Count(r => r.HasRecommendation);
+        return new RecommendationStats(recommendedCount, recommendations.Count - recommendedCount);
+    }
+
+    private static RecommendationDetailStats BuildRecommendationDetailStats(IReadOnlyCollection<RecommendationDetailResult> details)
+    {
+        return new RecommendationDetailStats(
+            details.Count(detail => detail.ManualHandoffReady),
+            details.Count(detail => detail.ManualActionRequired));
+    }
+
     private static string BuildVerificationSummary(IReadOnlyCollection<RecommendationDetailResult> recommendationDetails)
     {
         var waitingForReturnCount = recommendationDetails.Count(detail => detail.VerificationAvailable);
@@ -112,4 +144,8 @@ public sealed class MainScreenWorkflow(
             ? $"Ожидается возврат пользователя по {waitingForReturnCount} устройств(ам). После ручной установки вернитесь и запустите повторный анализ: проверка будет доступна сразу."
             : "Действие не требуется: активных задач на возврат для проверки нет.";
     }
+
+    private sealed record RecommendationStats(int RecommendedCount, int NotRecommendedCount);
+
+    private sealed record RecommendationDetailStats(int ManualHandoffReadyCount, int ManualActionRequiredCount);
 }

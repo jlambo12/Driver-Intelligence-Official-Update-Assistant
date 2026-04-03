@@ -14,7 +14,7 @@ public sealed class ScanOrchestratorTests
         var inspector = new FakeDriverMetadataInspector();
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, [], "TEST\\DEV\\001"),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
@@ -31,7 +31,7 @@ public sealed class ScanOrchestratorTests
         var inspector = new FakeDriverMetadataInspector();
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Partial, discoveryIssues, "TEST\\DEV\\001"),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
@@ -48,7 +48,7 @@ public sealed class ScanOrchestratorTests
         var inspector = new FakeDriverMetadataInspector(DriverInspectionStatus.Partial, inspectionIssues);
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, [], "TEST\\DEV\\001"),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
@@ -65,7 +65,7 @@ public sealed class ScanOrchestratorTests
         var discoveryIssues = new[] { new ScanIssue("discovery", "failed", "wmi failed") };
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Failed, discoveryIssues),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
@@ -84,7 +84,7 @@ public sealed class ScanOrchestratorTests
             [new ScanIssue("inspection", "failed", "wmi failed")]);
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, [], "TEST\\DEV\\001"),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
@@ -102,7 +102,7 @@ public sealed class ScanOrchestratorTests
         var inspector = new FakeDriverMetadataInspector(DriverInspectionStatus.Partial, [inspectionIssue]);
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Partial, [discoveryIssue], "TEST\\DEV\\001"),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
@@ -118,7 +118,7 @@ public sealed class ScanOrchestratorTests
         var inspector = new FakeDriverMetadataInspector();
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, []),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
@@ -134,7 +134,7 @@ public sealed class ScanOrchestratorTests
         var inspector = new FakeDriverMetadataInspector();
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Partial, [new ScanIssue("discovery", "partial", "partial discovery")]),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         var result = await orchestrator.RunAsync(CancellationToken.None);
@@ -150,7 +150,7 @@ public sealed class ScanOrchestratorTests
         var inspector = new FakeDriverMetadataInspector();
         var orchestrator = new ScanOrchestrator(
             new FakeDeviceDiscoveryService(DeviceDiscoveryStatus.Completed, [], "TEST\\DEV\\001", "test\\dev\\001", "TEST\\DEV\\002"),
-            new DriverInspectionOrchestrator(inspector),
+            inspector,
             new FakeClock());
 
         await orchestrator.RunAsync(CancellationToken.None);
