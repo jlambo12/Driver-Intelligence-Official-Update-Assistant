@@ -106,7 +106,7 @@ public partial class App : WpfApplication
         IDriverMetadataInspector inspector = new WindowsDriverMetadataInspector();
         IDriverInspectionOrchestrator inspectionOrchestrator = new DriverInspectionOrchestrator(inspector);
         IScanOrchestrator scanOrchestrator = new ScanOrchestrator(discovery, inspectionOrchestrator, clock);
-        var officialProviders = new[] { new OfficialProviderAdapterStub() };
+        var officialProviders = new[] { new OfficialProviderAdapterBaseline() };
         IRecommendationPipeline recommendationPipeline = new RecommendationPipeline(officialProviders);
         IProviderRegistry providerRegistry = new OfficialProviderRegistryStub(officialProviders);
         IProviderCatalogSummaryService providerSummaryService = new ProviderCatalogSummaryService(providerRegistry);

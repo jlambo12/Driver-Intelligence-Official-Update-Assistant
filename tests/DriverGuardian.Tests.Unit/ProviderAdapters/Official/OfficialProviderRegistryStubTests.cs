@@ -24,6 +24,17 @@ public sealed class OfficialProviderRegistryStubTests
             x => Assert.Equal("b", x.Code));
     }
 
+
+    [Fact]
+    public void DefaultConstructor_RegistersEnabledBaselineProvider()
+    {
+        var registry = new OfficialProviderRegistryStub();
+
+        var provider = Assert.Single(registry.GetOfficialProviders());
+        Assert.Equal("official-baseline", provider.Code);
+        Assert.True(provider.IsEnabled);
+    }
+
     [Fact]
     public void TryGetOfficialProvider_IsCaseInsensitive()
     {

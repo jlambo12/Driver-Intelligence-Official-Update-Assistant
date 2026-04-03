@@ -80,6 +80,28 @@ public sealed class RecommendationPipelineTests
         Assert.Equal("2.2.0", summary.RecommendedVersion);
     }
 
+
+    [Fact]
+    public async Task BuildAsync_ShouldUseEnabledProviders_WhenDisabledProvidersArePresent()
+    {
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(
+                CreateSuccessResponse("disabled", [CreateCandidate("9.9.9", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]),
+                code: "disabled",
+                isEnabled: false),
+            new TestProviderAdapter(
+                CreateSuccessResponse("official", [CreateCandidate("2.1.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]),
+                code: "official",
+                isEnabled: true)
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("DEV-1", "1.0.0")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.True(summary.HasRecommendation);
+        Assert.Equal("2.1.0", summary.RecommendedVersion);
+    }
+
     [Fact]
     public async Task BuildAsync_ShouldProcessMultipleInstalledDriversIndependently()
     {
@@ -147,25 +169,25 @@ public sealed class RecommendationPipelineTests
     {
         private readonly Func<ProviderLookupRequest, ProviderLookupResponse> _lookup;
 
-        public TestProviderAdapter(ProviderLookupResponse response, string code = "official")
-            : this(_ => response, code)
+        public TestProviderAdapter(ProviderLookupResponse response, string code = "official", bool isEnabled = true)
+            : this(_ => response, code, isEnabled)
         {
         }
 
-        public TestProviderAdapter(IReadOnlyDictionary<string, ProviderLookupResponse> responsesByDevice, string code = "official")
+        public TestProviderAdapter(IReadOnlyDictionary<string, ProviderLookupResponse> responsesByDevice, string code = "official", bool isEnabled = true)
             : this(request => responsesByDevice.TryGetValue(request.DeviceInstanceId, out var response)
                 ? response
-                : new ProviderLookupResponse(code, true, [], null), code)
+                : new ProviderLookupResponse(code, true, [], null), code, isEnabled)
         {
         }
 
-        private TestProviderAdapter(Func<ProviderLookupRequest, ProviderLookupResponse> lookup, string code)
+        private TestProviderAdapter(Func<ProviderLookupRequest, ProviderLookupResponse> lookup, string code, bool isEnabled)
         {
             _lookup = lookup;
             Descriptor = new ProviderDescriptor(
                 code,
                 $"{code} provider",
-                true,
+                isEnabled,
                 OfficialSourceOnly: false,
                 Precedence: DriverGuardian.ProviderAdapters.Abstractions.Models.ProviderPrecedence.PlatformVendor);
         }
