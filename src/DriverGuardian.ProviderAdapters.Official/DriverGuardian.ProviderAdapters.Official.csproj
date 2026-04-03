@@ -4,7 +4,6 @@
     <RootNamespace>DriverGuardian.ProviderAdapters.Official</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../DriverGuardian.Application/DriverGuardian.Application.csproj" />
     <ProjectReference Include="../DriverGuardian.ProviderAdapters.Abstractions/DriverGuardian.ProviderAdapters.Abstractions.csproj" />
     <ProjectReference Include="../DriverGuardian.Domain/DriverGuardian.Domain.csproj" />
   </ItemGroup>

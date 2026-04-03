@@ -72,7 +72,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
         ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
         OpenDiagnosticLogsFolderCommand = new AsyncRelayCommand(OpenDiagnosticLogsFolderAsync);
-        _ = InitializeAsync();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -255,7 +254,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         await LoadSettingsAsync();
 
@@ -318,27 +317,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void ApplyWorkflowResult(MainScreenWorkflowResult result, bool isPreview, string? scenarioName = null)
     {
-        var status = result.ScanExecutionStatus switch
-        {
-            ScanExecutionStatus.Failed => "Сканирование завершилось с ошибкой: данные недостоверны.",
-            ScanExecutionStatus.Partial => "Сканирование частично завершено: часть данных может отсутствовать.",
-            _ => result.RecommendedCount > 0
-            ? UiStrings.StatusScanCompletedReady
-            : UiStrings.StatusScanCompletedNoAction
-        };
-
-        if (isPreview)
-        {
-            status = string.Format(UiStrings.PreviewModeStatusFormat, scenarioName ?? string.Empty);
-        }
-
-        State = State with
-        {
-            TitleText = isPreview ? UiStrings.PreviewWindowTitle : UiStrings.MainWindowTitle,
-            ScanButtonText = isPreview ? UiStrings.PreviewApplyScenarioAction : UiStrings.ScanAction,
-            StatusText = status,
-            Results = ScanResultsPresentation.FromResult(result)
-        };
+        State = MainUiStateFactory.CreateFromWorkflowResult(result, isPreview, scenarioName);
         ShowSecondaryRecommendations = false;
         RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);
         _reportFileNameBase = result.ReportExportPayload.FileNameBase;

@@ -82,6 +82,7 @@ public sealed class OpenOfficialSourceActionEvaluator
                 outcome = OfficialSourceResolutionOutcome.ConfirmedDirectOfficialDriverPage;
                 return true;
             case SourceTrustLevel.OemSupportPortal:
+            case SourceTrustLevel.OperatingSystemCatalog:
                 outcome = OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage;
                 return true;
             default:

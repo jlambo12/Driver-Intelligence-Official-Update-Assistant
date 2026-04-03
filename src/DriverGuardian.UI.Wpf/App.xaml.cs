@@ -2,18 +2,17 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using WpfApplication = System.Windows.Application;
 using System.Windows;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.History;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Application.OfficialSources;
+using DriverGuardian.Application.ProviderCatalog;
 using DriverGuardian.Application.Recommendations;
 using DriverGuardian.Application.Reports;
 using DriverGuardian.Application.Scanning;
 using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Contracts.DriverInspection;
-using DriverGuardian.Domain.Settings;
 using DriverGuardian.Infrastructure.Audit;
 using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.History;
@@ -25,52 +24,54 @@ using DriverGuardian.SystemAdapters.Windows.DeviceDiscovery;
 using DriverGuardian.SystemAdapters.Windows.DriverInspection;
 using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.ViewModels;
+using WpfApplication = System.Windows.Application;
 
 namespace DriverGuardian.UI.Wpf;
 
 public partial class App : WpfApplication
 {
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
 
-        var previewModeEnabled = IsPreviewModeEnabled(e.Args);
-        ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
-        var defaultLogsDirectory = GetDefaultLogsDirectory();
-        var diagnosticLogsFolderService = new DiagnosticLogsFolderService(defaultLogsDirectory);
-        var appSettings = settingsRepository.GetAsync(CancellationToken.None).GetAwaiter().GetResult();
-        IDiagnosticLogger diagnosticLogger = previewModeEnabled
-            ? new NoOpDiagnosticLogger()
-            : BuildDiagnosticLogger(appSettings, diagnosticLogsFolderService);
-        IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
-            ? new PreviewScenarioMainScreenWorkflow()
-            : BuildProductionWorkflow(settingsRepository, diagnosticLogger);
-
-        var vm = new MainViewModel(
-            mainScreenWorkflow,
-            settingsRepository,
-            new ReportFileSaveService(),
-            diagnosticLogsFolderService);
-        var window = new MainWindow { DataContext = vm };
-        window.Show();
-    }
-
-
-    private static IDiagnosticLogger BuildDiagnosticLogger(
-        AppSettings appSettings,
-        IDiagnosticLogsFolderService diagnosticLogsFolderService)
-    {
-        if (!appSettings.DiagnosticLogging.Enabled)
+        try
         {
-            return new NoOpDiagnosticLogger();
-        }
+            var previewModeEnabled = IsPreviewModeEnabled(e.Args);
+            ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
+            var defaultLogsDirectory = GetDefaultLogsDirectory();
+            var diagnosticLogsFolderService = new DiagnosticLogsFolderService(defaultLogsDirectory);
+            var diagnosticLogger = previewModeEnabled
+                ? new NoOpDiagnosticLogger()
+                : new FileDiagnosticLogger(defaultLogsDirectory);
+            IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
+                ? new PreviewScenarioMainScreenWorkflow()
+                : BuildProductionWorkflow(settingsRepository, diagnosticLogger);
 
-        var effectiveLogsDirectory = diagnosticLogsFolderService.ResolveEffectiveFolderPath(
-            appSettings.DiagnosticLogging.CustomLogsFolderPath);
-        return new FileDiagnosticLogger(effectiveLogsDirectory);
+            var vm = new MainViewModel(
+                mainScreenWorkflow,
+                settingsRepository,
+                new ReportFileSaveService(),
+                diagnosticLogsFolderService);
+
+            await vm.InitializeAsync();
+
+            var window = new MainWindow { DataContext = vm };
+            window.Show();
+        }
+        catch
+        {
+            var fallbackVm = new MainViewModel(
+                new PreviewScenarioMainScreenWorkflow(),
+                new InMemorySettingsRepository(),
+                new ReportFileSaveService(),
+                new DiagnosticLogsFolderService(GetDefaultLogsDirectory()));
+            await fallbackVm.InitializeAsync();
+            var fallbackWindow = new MainWindow { DataContext = fallbackVm };
+            fallbackWindow.Show();
+        }
     }
 
     private static string GetDefaultLogsDirectory()
@@ -108,7 +109,7 @@ public partial class App : WpfApplication
         IScanOrchestrator scanOrchestrator = new ScanOrchestrator(discovery, inspectionOrchestrator, clock);
         var officialProviders = OfficialProviderRuntimeFactory.CreateRuntimeProviders();
         IRecommendationPipeline recommendationPipeline = new RecommendationPipeline(officialProviders);
-        IProviderRegistry providerRegistry = new OfficialProviderRegistryStub(officialProviders);
+        IProviderRegistry providerRegistry = new OfficialProviderRegistry(officialProviders);
         IProviderCatalogSummaryService providerSummaryService = new ProviderCatalogSummaryService(providerRegistry);
         IAuditWriter auditWriter = new InMemoryAuditWriter();
         var historyFilePath = Path.Combine(
@@ -117,7 +118,12 @@ public partial class App : WpfApplication
             "result-history.json");
         IResultHistoryRepository resultHistoryRepository = new JsonFileResultHistoryRepository(historyFilePath);
         var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
-        IShareableReportBuilder reportBuilder = new ShareableReportBuilder();
+        var recommendationDetailAssembler = new RecommendationDetailAssembler();
+        var officialSourceResolutionService = new OfficialSourceResolutionService(officialProviders);
+        var officialSourceActionService = new OfficialSourceActionService(officialSourceResolutionService, openOfficialSourceActionEvaluator);
+        var reportPayloadFactory = new ReportPayloadFactory(new ShareableReportBuilder());
+        var historyWriter = new HistoryWriter(resultHistoryRepository);
+        var historySummarizer = new HistorySummarizer(resultHistoryRepository);
 
         return new MainScreenWorkflow(
             scanOrchestrator,
@@ -126,8 +132,10 @@ public partial class App : WpfApplication
             settingsRepository,
             diagnosticLogger,
             auditWriter,
-            resultHistoryRepository,
-            openOfficialSourceActionEvaluator,
-            reportBuilder);
+            recommendationDetailAssembler,
+            officialSourceActionService,
+            reportPayloadFactory,
+            historyWriter,
+            historySummarizer);
     }
 }
