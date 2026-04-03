@@ -12,6 +12,11 @@ public sealed class AsyncRelayCommand(Func<Task> execute) : ICommand
 
     public async void Execute(object? parameter)
     {
+        await ExecuteAsync(parameter);
+    }
+
+    public async Task ExecuteAsync(object? parameter = null)
+    {
         if (_isRunning)
         {
             return;
