@@ -9,7 +9,7 @@ public sealed class OfficialProviderRegistryStub : IProviderRegistry
     private readonly IReadOnlyCollection<ProviderDescriptor> _providers;
 
     public OfficialProviderRegistryStub()
-        : this([new OfficialProviderAdapterStub()])
+        : this([new OfficialProviderAdapterBaseline()])
     {
     }
 
