@@ -80,7 +80,7 @@ public sealed class OfficialSourceResolutionService(IEnumerable<IOfficialProvide
         return new OfficialSourceResolutionResult(
             bestCandidate,
             failures,
-            hasRecommendationTarget: true);
+            HasRecommendationTarget: true);
     }
 
     // Safety-first policy:
