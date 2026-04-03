@@ -4,6 +4,7 @@ using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.Settings;
+using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.ViewModels;
 using DriverGuardian.UI.Wpf.Services;
 
@@ -40,7 +41,7 @@ public sealed class MainViewModelCoordinationTests
         await viewModel.InitializeAsync();
 
         Assert.Empty(viewModel.HistorySection.RecentHistory);
-        Assert.Equal("Сохранение отчёта недоступно до первого завершённого анализа.", viewModel.ReportSection.ReportExportStatusText);
+        Assert.Equal(UiStrings.ReportExportStatusNoData, viewModel.ReportSection.ReportExportStatusText);
         Assert.False(viewModel.WorkflowSection.ShowSecondaryRecommendations);
     }
 
@@ -59,7 +60,7 @@ public sealed class MainViewModelCoordinationTests
 
         await ExecuteAsync(viewModel.ScanCommand);
 
-        Assert.Equal("Подготовлено: выберите папку и сохраните отчёт вручную.", viewModel.ReportSection.ReportExportStatusText);
+        Assert.Equal(UiStrings.ReportExportStatusReady, viewModel.ReportSection.ReportExportStatusText);
         Assert.Single(viewModel.HistorySection.RecentHistory);
         Assert.True(viewModel.State.Results.HasScanData);
     }
