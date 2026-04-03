@@ -2,7 +2,7 @@ using System.Windows.Input;
 
 namespace DriverGuardian.UI.Wpf.Commands;
 
-public sealed class AsyncRelayCommand(Func<Task> execute) : ICommand
+public sealed class AsyncRelayCommand(Func<Task> execute, Action<Exception>? onError = null) : ICommand
 {
     private bool _isRunning;
 
@@ -12,7 +12,14 @@ public sealed class AsyncRelayCommand(Func<Task> execute) : ICommand
 
     public async void Execute(object? parameter)
     {
-        await ExecuteAsync(parameter);
+        try
+        {
+            await ExecuteAsync(parameter);
+        }
+        catch (Exception ex)
+        {
+            onError?.Invoke(ex);
+        }
     }
 
     public async Task ExecuteAsync(object? parameter = null)

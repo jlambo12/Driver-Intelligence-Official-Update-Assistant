@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DriverGuardian.Bootstrap</AssemblyName>
+    <RootNamespace>DriverGuardian.Bootstrap</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DriverGuardian.Application/DriverGuardian.Application.csproj" />
+    <ProjectReference Include="../DriverGuardian.Infrastructure/DriverGuardian.Infrastructure.csproj" />
+    <ProjectReference Include="../DriverGuardian.Contracts/DriverGuardian.Contracts.csproj" />
+    <ProjectReference Include="../DriverGuardian.ProviderAdapters.Abstractions/DriverGuardian.ProviderAdapters.Abstractions.csproj" />
+    <ProjectReference Include="../DriverGuardian.ProviderAdapters.Official/DriverGuardian.ProviderAdapters.Official.csproj" />
+    <ProjectReference Include="../DriverGuardian.SystemAdapters.Windows/DriverGuardian.SystemAdapters.Windows.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,29 +1,16 @@
 using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using DriverGuardian.Application.Abstractions;
-using DriverGuardian.Application.History;
 using DriverGuardian.Application.MainScreen;
-using DriverGuardian.Application.OfficialSources;
-using DriverGuardian.Application.ProviderCatalog;
-using DriverGuardian.Application.Recommendations;
-using DriverGuardian.Application.Reports;
-using DriverGuardian.Application.Scanning;
-using DriverGuardian.Contracts.DeviceDiscovery;
-using DriverGuardian.Contracts.DriverInspection;
-using DriverGuardian.Infrastructure.Audit;
 using DriverGuardian.Infrastructure.DiagnosticLogging;
-using DriverGuardian.Infrastructure.History;
+using DriverGuardian.Bootstrap.Runtime;
 using DriverGuardian.Infrastructure.Settings;
-using DriverGuardian.Infrastructure.Time;
-using DriverGuardian.ProviderAdapters.Abstractions.Registry;
-using DriverGuardian.ProviderAdapters.Official.Registry;
-using DriverGuardian.SystemAdapters.Windows.DeviceDiscovery;
-using DriverGuardian.SystemAdapters.Windows.DriverInspection;
+using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.ViewModels;
 using WpfApplication = System.Windows.Application;
+using System.IO;
 
 namespace DriverGuardian.UI.Wpf;
 
@@ -35,23 +22,25 @@ public partial class App : WpfApplication
 
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
-        var defaultLogsDirectory = GetDefaultLogsDirectory();
+
         var previewModeEnabled = IsPreviewModeEnabled(e.Args);
-        var startupLogger = BuildStartupDiagnosticLogger(previewModeEnabled, defaultLogsDirectory);
+        var runtime = previewModeEnabled
+            ? null
+            : ProductionRuntimeFactory.Create(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+        var startupLogger = runtime?.StartupLogger ?? new NoOpDiagnosticLogger();
 
         try
         {
-            ISettingsRepository settingsRepository = BuildSettingsRepository(previewModeEnabled);
-            var diagnosticLogsFolderService = new DiagnosticLogsFolderService(defaultLogsDirectory);
-            IMainScreenWorkflow mainScreenWorkflow = previewModeEnabled
-                ? new PreviewScenarioMainScreenWorkflow()
-                : BuildProductionWorkflow(settingsRepository, defaultLogsDirectory);
+            ISettingsRepository settingsRepository = runtime?.SettingsRepository ?? new InMemorySettingsRepository();
+            IMainScreenWorkflow mainScreenWorkflow = runtime?.MainScreenWorkflow ?? new PreviewScenarioMainScreenWorkflow();
+            IDiagnosticLogsFolderService logsFolderService = runtime?.DiagnosticLogsFolderService
+                ?? new DiagnosticLogsFolderService(GetDefaultLogsDirectory());
 
             var vm = new MainViewModel(
                 mainScreenWorkflow,
                 settingsRepository,
                 new ReportFileSaveService(),
-                diagnosticLogsFolderService);
+                logsFolderService);
 
             await vm.InitializeAsync();
 
@@ -89,70 +78,4 @@ public partial class App : WpfApplication
 
     private static bool IsPreviewModeEnabled(string[] args)
         => args.Any(arg => string.Equals(arg, "--demo", StringComparison.OrdinalIgnoreCase));
-
-    private static ISettingsRepository BuildSettingsRepository(bool previewModeEnabled)
-    {
-        if (previewModeEnabled)
-        {
-            return new InMemorySettingsRepository();
-        }
-
-        var settingsDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "DriverGuardian");
-        var settingsFilePath = Path.Combine(settingsDirectory, "settings.json");
-
-        return new JsonFileSettingsRepository(settingsFilePath);
-    }
-
-    private static IDiagnosticLogger BuildStartupDiagnosticLogger(bool previewModeEnabled, string defaultLogsDirectory)
-    {
-        if (previewModeEnabled)
-        {
-            return new NoOpDiagnosticLogger();
-        }
-
-        return new FileDiagnosticLogger(defaultLogsDirectory);
-    }
-
-    private static IMainScreenWorkflow BuildProductionWorkflow(
-        ISettingsRepository settingsRepository,
-        string defaultLogsDirectory)
-    {
-        IDiagnosticLogger runtimeDiagnosticLogger = new SettingsDiagnosticLogger(settingsRepository, defaultLogsDirectory);
-        IClock clock = new SystemClock();
-        IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService();
-        IDriverMetadataInspector inspector = new WindowsDriverMetadataInspector();
-        IScanOrchestrator scanOrchestrator = new ScanOrchestrator(discovery, inspector, clock);
-        var officialProviders = OfficialProviderRuntimeFactory.CreateRuntimeProviders();
-        IRecommendationPipeline recommendationPipeline = new RecommendationPipeline(officialProviders);
-        IProviderRegistry providerRegistry = new OfficialProviderRegistry(officialProviders);
-        IProviderCatalogSummaryService providerSummaryService = new ProviderCatalogSummaryService(providerRegistry);
-        IAuditWriter auditWriter = new InMemoryAuditWriter();
-        var historyFilePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "DriverGuardian",
-            "result-history.json");
-        IResultHistoryRepository resultHistoryRepository = new JsonFileResultHistoryRepository(historyFilePath);
-        var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
-        var recommendationDetailAssembler = new RecommendationDetailAssembler();
-        var officialSourceResolutionService = new OfficialSourceResolutionService(officialProviders);
-        var officialSourceActionService = new OfficialSourceActionService(officialSourceResolutionService, openOfficialSourceActionEvaluator, runtimeDiagnosticLogger);
-        var reportPayloadFactory = new ReportPayloadFactory(new ShareableReportBuilder());
-        var historyWriter = new HistoryWriter(resultHistoryRepository);
-        var historySummarizer = new HistorySummarizer(resultHistoryRepository);
-
-        return new MainScreenWorkflow(
-            scanOrchestrator,
-            recommendationPipeline,
-            providerSummaryService,
-            settingsRepository,
-            runtimeDiagnosticLogger,
-            auditWriter,
-            recommendationDetailAssembler,
-            officialSourceActionService,
-            reportPayloadFactory,
-            historyWriter,
-            historySummarizer);
-    }
 }
