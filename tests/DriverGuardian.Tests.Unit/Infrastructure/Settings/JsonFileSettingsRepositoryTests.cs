@@ -51,4 +51,25 @@ public sealed class JsonFileSettingsRepositoryTests
             }
         }
     }
+
+    [Fact]
+    public async Task GetAsync_WhenJsonIsInvalid_ShouldReturnDefault()
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"driver-guardian-settings-{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(filePath, "{ invalid json");
+        var repository = new JsonFileSettingsRepository(filePath);
+
+        try
+        {
+            var settings = await repository.GetAsync(CancellationToken.None);
+            Assert.Equal(AppSettings.Default, settings);
+        }
+        finally
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+    }
 }

@@ -30,9 +30,28 @@ public sealed class JsonFileSettingsRepository : ISettingsRepository
             return AppSettings.Default;
         }
 
-        await using var stream = File.OpenRead(_filePath);
-        var settings = await JsonSerializer.DeserializeAsync<AppSettings>(stream, SerializerOptions, cancellationToken);
-        return (settings ?? AppSettings.Default).Normalize();
+        try
+        {
+            await using var stream = File.OpenRead(_filePath);
+            var settings = await JsonSerializer.DeserializeAsync<AppSettings>(stream, SerializerOptions, cancellationToken);
+            return (settings ?? AppSettings.Default).Normalize();
+        }
+        catch (JsonException)
+        {
+            return AppSettings.Default;
+        }
+        catch (NotSupportedException)
+        {
+            return AppSettings.Default;
+        }
+        catch (IOException)
+        {
+            return AppSettings.Default;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return AppSettings.Default;
+        }
     }
 
     public async Task SaveAsync(AppSettings settings, CancellationToken cancellationToken)

@@ -4,12 +4,12 @@ using DriverGuardian.ProviderAdapters.Official.Registry;
 
 namespace DriverGuardian.Tests.Unit.ProviderAdapters.Official;
 
-public sealed class OfficialProviderRegistryStubTests
+public sealed class OfficialProviderRegistryTests
 {
     [Fact]
     public void GetOfficialProviders_OrdersByPrecedenceThenCode()
     {
-        var registry = new OfficialProviderRegistryStub(
+        var registry = new OfficialProviderRegistry(
         [
             new TestProviderAdapter("b", ProviderPrecedence.PlatformVendor),
             new TestProviderAdapter("a", ProviderPrecedence.PlatformVendor),
@@ -28,7 +28,7 @@ public sealed class OfficialProviderRegistryStubTests
     [Fact]
     public void DefaultConstructor_RegistersEnabledBaselineProvider()
     {
-        var registry = new OfficialProviderRegistryStub();
+        var registry = new OfficialProviderRegistry();
 
         var provider = Assert.Single(registry.GetOfficialProviders());
         Assert.Equal("official-baseline", provider.Code);
@@ -38,7 +38,7 @@ public sealed class OfficialProviderRegistryStubTests
     [Fact]
     public void TryGetOfficialProvider_IsCaseInsensitive()
     {
-        var registry = new OfficialProviderRegistryStub([
+        var registry = new OfficialProviderRegistry([
             new TestProviderAdapter("OEM-Alpha", ProviderPrecedence.PrimaryOem)
         ]);
 
@@ -52,7 +52,7 @@ public sealed class OfficialProviderRegistryStubTests
     [Fact]
     public void Constructor_ThrowsOnDuplicateCode()
     {
-        Assert.Throws<ArgumentException>(() => new OfficialProviderRegistryStub([
+        Assert.Throws<ArgumentException>(() => new OfficialProviderRegistry([
             new TestProviderAdapter("dup", ProviderPrecedence.PrimaryOem),
             new TestProviderAdapter("DUP", ProviderPrecedence.PlatformVendor)
         ]));

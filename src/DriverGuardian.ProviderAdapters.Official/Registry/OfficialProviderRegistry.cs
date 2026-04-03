@@ -4,16 +4,16 @@ using DriverGuardian.ProviderAdapters.Abstractions.Registry;
 
 namespace DriverGuardian.ProviderAdapters.Official.Registry;
 
-public sealed class OfficialProviderRegistryStub : IProviderRegistry
+public sealed class OfficialProviderRegistry : IProviderRegistry
 {
     private readonly IReadOnlyCollection<ProviderDescriptor> _providers;
 
-    public OfficialProviderRegistryStub()
+    public OfficialProviderRegistry()
         : this([new OfficialProviderAdapterBaseline()])
     {
     }
 
-    public OfficialProviderRegistryStub(IEnumerable<IOfficialProviderAdapter> providers)
+    public OfficialProviderRegistry(IEnumerable<IOfficialProviderAdapter> providers)
     {
         ArgumentNullException.ThrowIfNull(providers);
 

@@ -29,9 +29,11 @@ public sealed class MainScreenWorkflowTests
             new FakeSettingsRepository(),
             logger,
             auditWriter,
-            historyRepository,
-            new OpenOfficialSourceActionEvaluator(),
-            new ShareableReportBuilder());
+            new RecommendationDetailAssembler(),
+            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+            new ReportPayloadFactory(new ShareableReportBuilder()),
+            new HistoryWriter(historyRepository),
+            new HistorySummarizer(historyRepository));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
@@ -78,6 +80,7 @@ public sealed class MainScreenWorkflowTests
     public async Task RunScanAsync_WhenScanFails_ShouldLogErrorAndRethrow()
     {
         var logger = new RecordingDiagnosticLogger();
+        var historyRepository = new FakeHistoryRepository();
         var workflow = new MainScreenWorkflow(
             new ThrowingScanOrchestrator(),
             new FakeRecommendationPipeline(),
@@ -85,9 +88,11 @@ public sealed class MainScreenWorkflowTests
             new FakeSettingsRepository(),
             logger,
             new FakeAuditWriter(),
-            new FakeHistoryRepository(),
-            new OpenOfficialSourceActionEvaluator(),
-            new ShareableReportBuilder());
+            new RecommendationDetailAssembler(),
+            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+            new ReportPayloadFactory(new ShareableReportBuilder()),
+            new HistoryWriter(historyRepository),
+            new HistorySummarizer(historyRepository));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => workflow.RunScanAsync(CancellationToken.None));
         Assert.Single(logger.ErrorEvents);
@@ -97,16 +102,20 @@ public sealed class MainScreenWorkflowTests
     [Fact]
     public async Task RunScanAsync_ShouldFilterLowValueDevicesAndKeepUserRelevantResults()
     {
+        var historyRepository = new FakeHistoryRepository();
+        var logger = new RecordingDiagnosticLogger();
         var workflow = new MainScreenWorkflow(
             new MixedScanOrchestrator(),
             new NoRecommendationPipeline(),
             new FakeProviderCatalogSummaryService(),
             new FakeSettingsRepository(),
-            new RecordingDiagnosticLogger(),
+            logger,
             new FakeAuditWriter(),
-            new FakeHistoryRepository(),
-            new OpenOfficialSourceActionEvaluator(),
-            new ShareableReportBuilder());
+            new RecommendationDetailAssembler(),
+            new OfficialSourceActionService(new OfficialSourceResolutionService([]), new OpenOfficialSourceActionEvaluator(), logger),
+            new ReportPayloadFactory(new ShareableReportBuilder()),
+            new HistoryWriter(historyRepository),
+            new HistorySummarizer(historyRepository));
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
 
