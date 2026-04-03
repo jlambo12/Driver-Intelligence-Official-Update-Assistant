@@ -5,7 +5,6 @@ using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Application.Presentation;
 using DriverGuardian.Application.Reports;
 using DriverGuardian.Contracts.DeviceDiscovery;
-using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 
 namespace DriverGuardian.Application.MainScreen;
 
@@ -17,7 +16,7 @@ public sealed class MainScreenWorkflow(
     IDiagnosticLogger diagnosticLogger,
     IAuditWriter auditWriter,
     IResultHistoryRepository resultHistoryRepository,
-    OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator,
+    IOfficialSourceResolutionService officialSourceResolutionService,
     IShareableReportBuilder reportBuilder) : IMainScreenWorkflow
 {
     public async Task<MainScreenWorkflowResult> RunScanAsync(CancellationToken cancellationToken)
@@ -55,7 +54,11 @@ public sealed class MainScreenWorkflow(
             var recommendationDetails = BuildRecommendationDetails(scanResult.DiscoveredDevices, scanResult.Drivers, recommendations);
             var manualHandoffReadyCount = recommendationDetails.Count(detail => detail.ManualHandoffReady);
             var manualHandoffUserActionCount = recommendationDetails.Count(detail => detail.ManualActionRequired);
-            var officialSourceAction = BuildOfficialSourceAction(recommendationDetails, openOfficialSourceActionEvaluator);
+            var officialSourceAction = await BuildOfficialSourceActionAsync(
+                scanResult.Drivers,
+                recommendations,
+                officialSourceResolutionService,
+                cancellationToken);
             await diagnosticLogger.LogInfoAsync(
                 "scan.official_source.state",
                 officialSourceAction.IsReady
@@ -252,11 +255,13 @@ public sealed class MainScreenWorkflow(
             : "Действие не требуется: активных задач на возврат для проверки нет.";
     }
 
-    private static OpenOfficialSourceActionResult BuildOfficialSourceAction(
-        IReadOnlyCollection<RecommendationDetailResult> recommendationDetails,
-        OpenOfficialSourceActionEvaluator openOfficialSourceActionEvaluator)
+    private static async Task<OpenOfficialSourceActionResult> BuildOfficialSourceActionAsync(
+        IReadOnlyCollection<Domain.Drivers.InstalledDriverSnapshot> drivers,
+        IReadOnlyCollection<Domain.Recommendations.RecommendationSummary> recommendations,
+        IOfficialSourceResolutionService officialSourceResolutionService,
+        CancellationToken cancellationToken)
     {
-        var targetRecommendation = recommendationDetails.FirstOrDefault(item => item.ManualActionRequired);
+        var targetRecommendation = recommendations.FirstOrDefault(item => item.HasRecommendation);
         if (targetRecommendation is null)
         {
             return new OpenOfficialSourceActionResult(
@@ -267,22 +272,35 @@ public sealed class MainScreenWorkflow(
                 BlockReason: null);
         }
 
-        var sourceEvidence = new SourceEvidence(
-            new Uri("https://pending.official-source.local"),
-            "Не определено",
-            SourceTrustLevel.Unknown,
-            false,
-            "Требуется подтверждение официального источника пользователем.");
+        var driver = drivers.FirstOrDefault(item => string.Equals(
+            item.DeviceIdentity.InstanceId,
+            targetRecommendation.DeviceIdentity.InstanceId,
+            StringComparison.OrdinalIgnoreCase));
 
-        var decision = openOfficialSourceActionEvaluator.Evaluate(
-            new OpenOfficialSourceActionRequest("pending-provider", targetRecommendation.DeviceId, sourceEvidence, null));
+        if (driver is null)
+        {
+            return new OpenOfficialSourceActionResult(
+                IsReady: false,
+                ResolutionOutcome: OfficialSourceResolutionOutcome.InsufficientEvidence,
+                Status: "Официальный источник требует ручной проверки.",
+                ApprovedOfficialSourceUrl: null,
+                BlockReason: OpenOfficialSourceBlockedReason.SourceTrustUnverified.ToString());
+        }
+
+        var resolution = await officialSourceResolutionService.ResolveAsync(
+            new OfficialSourceResolutionRequest(
+                driver.DeviceIdentity.InstanceId,
+                driver.HardwareIdentifier.Value,
+                driver.DriverVersion,
+                driver.ProviderName),
+            cancellationToken);
 
         return new OpenOfficialSourceActionResult(
-            IsReady: decision.IsAllowed,
-            ResolutionOutcome: decision.ResolutionOutcome,
-            Status: BuildOfficialSourceStatus(decision),
-            ApprovedOfficialSourceUrl: decision.Link?.OfficialSourceUri.ToString(),
-            BlockReason: decision.Blockers.FirstOrDefault()?.Reason.ToString());
+            IsReady: resolution.Decision.IsAllowed,
+            ResolutionOutcome: resolution.Decision.ResolutionOutcome,
+            Status: BuildOfficialSourceStatus(resolution.Decision),
+            ApprovedOfficialSourceUrl: resolution.Decision.Link?.OfficialSourceUri.ToString(),
+            BlockReason: resolution.Decision.Blockers.FirstOrDefault()?.Reason.ToString());
     }
 
     private static string BuildOfficialSourceStatus(OpenOfficialSourceActionDecision decision)

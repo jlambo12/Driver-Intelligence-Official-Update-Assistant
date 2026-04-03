@@ -117,6 +117,7 @@ public partial class App : WpfApplication
             "result-history.json");
         IResultHistoryRepository resultHistoryRepository = new JsonFileResultHistoryRepository(historyFilePath);
         var openOfficialSourceActionEvaluator = new OpenOfficialSourceActionEvaluator();
+        IOfficialSourceResolutionService officialSourceResolutionService = new OfficialSourceResolutionService(officialProviders, openOfficialSourceActionEvaluator);
         IShareableReportBuilder reportBuilder = new ShareableReportBuilder();
 
         return new MainScreenWorkflow(
@@ -127,7 +128,7 @@ public partial class App : WpfApplication
             diagnosticLogger,
             auditWriter,
             resultHistoryRepository,
-            openOfficialSourceActionEvaluator,
+            officialSourceResolutionService,
             reportBuilder);
     }
 }

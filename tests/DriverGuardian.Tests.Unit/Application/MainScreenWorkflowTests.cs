@@ -30,7 +30,7 @@ public sealed class MainScreenWorkflowTests
             logger,
             auditWriter,
             historyRepository,
-            new OpenOfficialSourceActionEvaluator(),
+            new FakeOfficialSourceResolutionService(),
             new ShareableReportBuilder());
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
@@ -74,6 +74,30 @@ public sealed class MainScreenWorkflowTests
         Assert.Empty(logger.ErrorEvents);
     }
 
+
+    [Fact]
+    public async Task RunScanAsync_ShouldResolveOfficialSourceUsingRecommendedDriver()
+    {
+        var resolver = new RecordingOfficialSourceResolutionService();
+        var workflow = new MainScreenWorkflow(
+            new FakeScanOrchestrator(),
+            new FakeRecommendationPipeline(),
+            new FakeProviderCatalogSummaryService(),
+            new FakeSettingsRepository(),
+            new RecordingDiagnosticLogger(),
+            new FakeAuditWriter(),
+            new FakeHistoryRepository(),
+            resolver,
+            new ShareableReportBuilder());
+
+        await workflow.RunScanAsync(CancellationToken.None);
+
+        Assert.NotNull(resolver.LastRequest);
+        Assert.Equal("TEST\\DEVICE\\1", resolver.LastRequest!.DeviceInstanceId);
+        Assert.Equal("PCI\\VEN_1234&DEV_ABCD", resolver.LastRequest.HardwareId);
+        Assert.Equal("1.0.0", resolver.LastRequest.InstalledDriverVersion);
+    }
+
     [Fact]
     public async Task RunScanAsync_WhenScanFails_ShouldLogErrorAndRethrow()
     {
@@ -86,7 +110,7 @@ public sealed class MainScreenWorkflowTests
             logger,
             new FakeAuditWriter(),
             new FakeHistoryRepository(),
-            new OpenOfficialSourceActionEvaluator(),
+            new FakeOfficialSourceResolutionService(),
             new ShareableReportBuilder());
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => workflow.RunScanAsync(CancellationToken.None));
@@ -105,7 +129,7 @@ public sealed class MainScreenWorkflowTests
             new RecordingDiagnosticLogger(),
             new FakeAuditWriter(),
             new FakeHistoryRepository(),
-            new OpenOfficialSourceActionEvaluator(),
+            new FakeOfficialSourceResolutionService(),
             new ShareableReportBuilder());
 
         var result = await workflow.RunScanAsync(CancellationToken.None);
@@ -155,6 +179,48 @@ public sealed class MainScreenWorkflowTests
             ];
 
             return Task.FromResult(result);
+        }
+    }
+
+
+
+    private sealed class RecordingOfficialSourceResolutionService : IOfficialSourceResolutionService
+    {
+        public OfficialSourceResolutionRequest? LastRequest { get; private set; }
+
+        public Task<OfficialSourceResolutionResult> ResolveAsync(
+            OfficialSourceResolutionRequest request,
+            CancellationToken cancellationToken)
+        {
+            LastRequest = request;
+            var decision = new OpenOfficialSourceActionDecision(
+                OpenOfficialSourceActionOutcome.InsufficientEvidence,
+                OfficialSourceResolutionOutcome.InsufficientEvidence,
+                null,
+                []);
+            return Task.FromResult(new OfficialSourceResolutionResult(decision, null, null));
+        }
+    }
+
+    private sealed class FakeOfficialSourceResolutionService : IOfficialSourceResolutionService
+    {
+        public Task<OfficialSourceResolutionResult> ResolveAsync(
+            OfficialSourceResolutionRequest request,
+            CancellationToken cancellationToken)
+        {
+            var decision = new OpenOfficialSourceActionEvaluator().Evaluate(
+                new OpenOfficialSourceActionRequest(
+                    "test-provider",
+                    request.DeviceInstanceId,
+                    new DriverGuardian.ProviderAdapters.Abstractions.Lookup.SourceEvidence(
+                        new Uri("https://catalog.update.microsoft.com"),
+                        "Microsoft Update Catalog",
+                        DriverGuardian.ProviderAdapters.Abstractions.Lookup.SourceTrustLevel.OperatingSystemCatalog,
+                        true,
+                        "Catalog source requires manual review."),
+                    new Uri("https://catalog.update.microsoft.com")));
+
+            return Task.FromResult(new OfficialSourceResolutionResult(decision, null, null));
         }
     }
 
