@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using DriverGuardian.Application.Abstractions;
-using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
@@ -15,11 +14,9 @@ namespace DriverGuardian.UI.Wpf.ViewModels;
 public sealed partial class MainViewModel : INotifyPropertyChanged
 {
     private readonly IMainScreenWorkflow _mainScreenWorkflow;
-    private readonly PreviewScenarioMainScreenWorkflow? _previewWorkflow;
     private readonly IDiagnosticLogsFolderService _diagnosticLogsFolderService;
     private readonly IOfficialSourceLauncher _officialSourceLauncher;
     private MainUiState _state;
-    private PreviewScenarioOption? _selectedPreviewScenario;
     private string? _lastApprovedOfficialSourceUrl;
 
     public MainViewModel(
@@ -30,7 +27,6 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         IOfficialSourceLauncher officialSourceLauncher)
     {
         _mainScreenWorkflow = mainScreenWorkflow;
-        _previewWorkflow = mainScreenWorkflow as PreviewScenarioMainScreenWorkflow;
         _diagnosticLogsFolderService = diagnosticLogsFolderService;
         _officialSourceLauncher = officialSourceLauncher;
         _state = MainUiState.Initial(UiStrings.MainWindowTitle, UiStrings.StatusInitial, UiStrings.ScanAction);
@@ -44,11 +40,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 
         SettingsSection.PropertyChanged += OnSettingsSectionPropertyChanged;
 
-        AvailablePreviewScenarios = BuildPreviewOptions();
-        _selectedPreviewScenario = AvailablePreviewScenarios.FirstOrDefault();
-
         ScanCommand = new AsyncRelayCommand(ScanAsync);
-        ApplyPreviewScenarioCommand = new AsyncRelayCommand(ApplyPreviewScenarioAsync);
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
         OpenDiagnosticLogsFolderCommand = new AsyncRelayCommand(OpenDiagnosticLogsFolderAsync);
         OpenOfficialSourceCommand = new AsyncRelayCommand(OpenOfficialSourceAsync, () => CanOpenOfficialSource);
@@ -57,7 +49,6 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand ScanCommand { get; }
-    public ICommand ApplyPreviewScenarioCommand { get; }
     public ICommand ExportReportCommand { get; }
     public ICommand OpenDiagnosticLogsFolderCommand { get; }
     public ICommand OpenOfficialSourceCommand { get; }
@@ -70,29 +61,10 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
             ? State.Results.OfficialSourceSummary
             : "Запустите анализ, чтобы получить подтверждённый официальный источник.";
 
-    public bool IsPreviewMode => _previewWorkflow is not null;
-    public string PreviewModeBannerText => UiStrings.PreviewModeBanner;
-    public IReadOnlyList<PreviewScenarioOption> AvailablePreviewScenarios { get; }
-
     public WorkflowSectionViewModel WorkflowSection { get; }
     public HistorySectionViewModel HistorySection { get; }
     public ReportSectionViewModel ReportSection { get; }
     public SettingsSectionViewModel SettingsSection { get; }
-
-    public PreviewScenarioOption? SelectedPreviewScenario
-    {
-        get => _selectedPreviewScenario;
-        set
-        {
-            if (_selectedPreviewScenario == value)
-            {
-                return;
-            }
-
-            _selectedPreviewScenario = value;
-            OnPropertyChanged();
-        }
-    }
 
     public MainUiState State
     {
@@ -109,19 +81,6 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
     {
         await SettingsSection.LoadSettingsAsync(_diagnosticLogsFolderService.ResolveEffectiveFolderPath(null));
         SyncEffectiveDiagnosticFolder();
-
-        if (!IsPreviewMode)
-        {
-            return;
-        }
-
-        State = State with
-        {
-            TitleText = UiStrings.PreviewWindowTitle,
-            ScanButtonText = UiStrings.PreviewApplyScenarioAction
-        };
-
-        await ApplyPreviewScenarioAsync();
     }
 
     public void ApplyStartupRecoveryStatus(string recoveryMessage)
@@ -150,4 +109,3 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 }
 
 public sealed record ReportFormatOption(ShareableReportFormat Value, string DisplayName);
-public sealed record PreviewScenarioOption(PreviewScenarioId Id, string DisplayName);

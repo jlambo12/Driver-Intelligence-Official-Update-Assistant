@@ -1,12 +1,11 @@
 using DriverGuardian.Application.Abstractions;
-using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.UI.Wpf.Localization;
 
 namespace DriverGuardian.UI.Wpf.Models;
 
 public static class MainUiStateFactory
 {
-    public static MainUiState CreateFromWorkflowResult(MainScreenWorkflowResult result, bool isPreview, string? scenarioName)
+    public static MainUiState CreateFromWorkflowResult(MainScreenWorkflowResult result)
     {
         var status = result.ScanExecutionStatus switch
         {
@@ -17,15 +16,10 @@ public static class MainUiStateFactory
                 : UiStrings.StatusScanCompletedNoAction
         };
 
-        if (isPreview)
-        {
-            status = string.Format(UiStrings.PreviewModeStatusFormat, scenarioName ?? string.Empty);
-        }
-
         return MainUiState.Initial(
-            isPreview ? UiStrings.PreviewWindowTitle : UiStrings.MainWindowTitle,
+            UiStrings.MainWindowTitle,
             status,
-            isPreview ? UiStrings.PreviewApplyScenarioAction : UiStrings.ScanAction) with
+            UiStrings.ScanAction) with
         {
             Results = ScanResultsPresentation.FromResult(result)
         };
