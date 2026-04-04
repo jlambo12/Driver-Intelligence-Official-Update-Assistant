@@ -46,6 +46,7 @@ public sealed class MainScreenResultAssembler(
             recommendationDetails,
             detailStats,
             verificationSummary,
+            verifications,
             reportPayload,
             officialSourceAction);
     }
@@ -82,6 +83,7 @@ public sealed record MainScreenAssembledResult(
     IReadOnlyCollection<RecommendationDetailResult> RecommendationDetails,
     RecommendationDetailStats DetailStats,
     string VerificationSummary,
+    IReadOnlyCollection<VerificationReportItem> Verifications,
     ReportExportPayload ReportPayload,
     OpenOfficialSourceActionResult OfficialSourceAction);
 

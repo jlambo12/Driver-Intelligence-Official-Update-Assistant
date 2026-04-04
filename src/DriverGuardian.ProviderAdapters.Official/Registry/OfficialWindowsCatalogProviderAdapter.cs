@@ -45,6 +45,7 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
                 PublisherName: "Microsoft Update Catalog",
                 EvidenceNote: "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage).")
         };
+    private static readonly IReadOnlyDictionary<string, CatalogDriverRecord> CatalogByVendorId = BuildVendorFallbackMap();
 
     public ProviderDescriptor Descriptor => new(
         Code: "windows-update-catalog",
@@ -69,6 +70,7 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
                     FailureReason: "At least one hardware id is required for provider lookup."));
             }
 
+            CatalogMatch? bestMatch = null;
             foreach (var hardwareId in request.HardwareIds)
             {
                 if (string.IsNullOrWhiteSpace(hardwareId))
@@ -76,22 +78,31 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
                     continue;
                 }
 
-                if (!TryResolveCatalogRecord(hardwareId, out var record, out var matchType))
+                if (!TryResolveCatalogRecord(hardwareId, out var record, out var matchType, out var compatibilityConfidence, out var score))
                 {
                     continue;
                 }
 
+                var match = new CatalogMatch(record, matchType, compatibilityConfidence, score, hardwareId);
+                if (bestMatch is null || match.Score > bestMatch.Score)
+                {
+                    bestMatch = match;
+                }
+            }
+
+            if (bestMatch is not null)
+            {
                 var candidate = new ProviderCandidate(
-                    DriverIdentifier: record.DriverIdentifier,
-                    CandidateVersion: record.CandidateVersion,
+                    DriverIdentifier: bestMatch.Record.DriverIdentifier,
+                    CandidateVersion: bestMatch.Record.CandidateVersion,
                     ReleaseDateIso: null,
-                    CompatibilityConfidence: CompatibilityConfidence.Medium,
+                    CompatibilityConfidence: bestMatch.CompatibilityConfidence,
                     SourceEvidence: new SourceEvidence(
-                        record.SourceUri,
-                        record.PublisherName,
+                        bestMatch.Record.SourceUri,
+                        bestMatch.Record.PublisherName,
                         SourceTrustLevel.OperatingSystemCatalog,
                         IsOfficialSource: true,
-                        $"{record.EvidenceNote} Match type: {matchType}."),
+                        $"{bestMatch.Record.EvidenceNote} Match type: {bestMatch.MatchType}; input: {bestMatch.InputHardwareId}."),
                     DownloadUri: null);
 
                 return Task.FromResult(new ProviderLookupResponse(
@@ -124,31 +135,68 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         string PublisherName,
         string EvidenceNote);
 
-    private static bool TryResolveCatalogRecord(string hardwareId, out CatalogDriverRecord record, out string matchType)
+    private static IReadOnlyDictionary<string, CatalogDriverRecord> BuildVendorFallbackMap()
+    {
+        var map = new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in CatalogByHardwareId)
+        {
+            if (!TryExtractToken(entry.Key, "VEN_", out var ven) || string.IsNullOrWhiteSpace(ven))
+            {
+                continue;
+            }
+
+            if (!map.ContainsKey(ven))
+            {
+                map[ven] = entry.Value;
+            }
+        }
+
+        return map;
+    }
+
+    private sealed record CatalogMatch(
+        CatalogDriverRecord Record,
+        string MatchType,
+        CompatibilityConfidence CompatibilityConfidence,
+        int Score,
+        string InputHardwareId);
+
+    private static bool TryResolveCatalogRecord(
+        string hardwareId,
+        out CatalogDriverRecord record,
+        out string matchType,
+        out CompatibilityConfidence compatibilityConfidence,
+        out int score)
     {
         record = default!;
         matchType = "none";
+        compatibilityConfidence = CompatibilityConfidence.Unknown;
+        score = 0;
 
         var trimmed = hardwareId.Trim();
         if (CatalogByHardwareId.TryGetValue(trimmed, out record))
         {
             matchType = "exact";
+            compatibilityConfidence = CompatibilityConfidence.High;
+            score = 300;
             return true;
         }
 
         var normalized = NormalizeHardwareId(trimmed);
         if (normalized is null || string.Equals(normalized, trimmed, StringComparison.OrdinalIgnoreCase))
         {
-            return false;
+            return TryResolveVendorFallback(trimmed, out record, out matchType, out compatibilityConfidence, out score);
         }
 
         if (CatalogByHardwareId.TryGetValue(normalized, out record))
         {
             matchType = "normalized";
+            compatibilityConfidence = CompatibilityConfidence.Medium;
+            score = 200;
             return true;
         }
 
-        return false;
+        return TryResolveVendorFallback(trimmed, out record, out matchType, out compatibilityConfidence, out score);
     }
 
     private static string? NormalizeHardwareId(string hardwareId)
@@ -176,15 +224,53 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         return null;
     }
 
-    private static string? ExtractToken(string value, string key)
+    private static bool TryResolveVendorFallback(
+        string hardwareId,
+        out CatalogDriverRecord record,
+        out string matchType,
+        out CompatibilityConfidence compatibilityConfidence,
+        out int score)
     {
+        record = default!;
+        matchType = "none";
+        compatibilityConfidence = CompatibilityConfidence.Unknown;
+        score = 0;
+
+        if (!TryExtractToken(hardwareId, "VEN_", out var ven) || string.IsNullOrWhiteSpace(ven))
+        {
+            return false;
+        }
+
+        if (!CatalogByVendorId.TryGetValue(ven, out record))
+        {
+            return false;
+        }
+
+        matchType = "compatible-vendor";
+        compatibilityConfidence = CompatibilityConfidence.Low;
+        score = 100;
+        return true;
+    }
+
+    private static string? ExtractToken(string value, string key)
+        => TryExtractToken(value, key, out var token) ? token : null;
+
+    private static bool TryExtractToken(string value, string key, out string? token)
+    {
+        token = null;
         var start = value.IndexOf(key, StringComparison.OrdinalIgnoreCase);
         if (start < 0 || start + key.Length + 4 > value.Length)
         {
-            return null;
+            return false;
         }
 
-        var token = value.Substring(start + key.Length, 4);
-        return token.All(Uri.IsHexDigit) ? token.ToUpperInvariant() : null;
+        var raw = value.Substring(start + key.Length, 4);
+        if (!raw.All(Uri.IsHexDigit))
+        {
+            return false;
+        }
+
+        token = raw.ToUpperInvariant();
+        return true;
     }
 }

@@ -25,10 +25,10 @@ public sealed class MainScreenWorkflow(
 
             var recommendations = await recommendationPipeline.BuildAsync(scanResult.Drivers, cancellationToken);
             var recommendationStats = BuildRecommendationStats(recommendations);
-            await LogRecommendationCompletedAsync(recommendations.Count, recommendationStats, cancellationToken);
+            await LogRecommendationCompletedAsync(scanResult.Session.Id, recommendations.Count, recommendationStats, cancellationToken);
 
             var assembled = await resultAssembler.AssembleAsync(scanResult, recommendations, cancellationToken);
-            await LogOfficialSourceStateAsync(assembled.OfficialSourceAction, cancellationToken);
+            await LogOfficialSourceStateAsync(scanResult.Session.Id, assembled.OfficialSourceAction, cancellationToken);
 
             var providerCount = await providerCatalogSummaryService.GetProviderCountAsync(cancellationToken);
             var settings = await settingsRepository.GetAsync(cancellationToken);
@@ -38,6 +38,7 @@ public sealed class MainScreenWorkflow(
                 recommendations.Count,
                 assembled.DetailStats.ManualActionRequiredCount,
                 recommendationStats.NotRecommendedCount,
+                assembled.Verifications,
                 assembled.VerificationSummary,
                 settings,
                 cancellationToken);
@@ -45,10 +46,27 @@ public sealed class MainScreenWorkflow(
 
             var recentHistory = await historyService.GetRecentAsync(settings.History.MaxEntries, cancellationToken);
 
-            await auditWriter.WriteAsync($"session={scanResult.Session.Id};event=scan.completed;devices={scanResult.DiscoveredDeviceCount};drivers={scanResult.Drivers.Count};recommended={recommendationStats.RecommendedCount}", cancellationToken);
+            await auditWriter.WriteAsync(
+                BuildAuditEntry(
+                    scanResult.Session.Id,
+                    "scan.completed",
+                    $"devices={scanResult.DiscoveredDeviceCount};drivers={scanResult.Drivers.Count};recommended={recommendationStats.RecommendedCount};status={scanResult.ExecutionStatus}"),
+                cancellationToken);
+            await auditWriter.WriteAsync(
+                BuildAuditEntry(
+                    scanResult.Session.Id,
+                    "official_source.state",
+                    $"ready={assembled.OfficialSourceAction.IsReady};resolution={assembled.OfficialSourceAction.ResolutionOutcome};target={assembled.OfficialSourceAction.ActionTarget}"),
+                cancellationToken);
+            await auditWriter.WriteAsync(
+                BuildAuditEntry(
+                    scanResult.Session.Id,
+                    "verification.summary",
+                    $"manual_action_required={assembled.DetailStats.ManualActionRequiredCount};summary={SanitizeForAudit(assembled.VerificationSummary)}"),
+                cancellationToken);
             await diagnosticLogger.LogInfoAsync(
                 "scan.workflow.summary",
-                $"Сеанс {scanResult.Session.Id}; устройств {scanResult.DiscoveredDeviceCount}; драйверов {scanResult.Drivers.Count}; рекомендаций {recommendationStats.RecommendedCount}.",
+                $"session={scanResult.Session.Id}; устройств {scanResult.DiscoveredDeviceCount}; драйверов {scanResult.Drivers.Count}; рекомендаций {recommendationStats.RecommendedCount}.",
                 cancellationToken);
 
             return new MainScreenWorkflowResult(
@@ -80,40 +98,41 @@ public sealed class MainScreenWorkflow(
     {
         await diagnosticLogger.LogInfoAsync(
             "scan.discovery.completed",
-            $"Обнаружено записей: {scanResult.DiscoveredDeviceCount}; уникальных устройств: {scanResult.DiscoveredDevices.Count}.",
+            $"session={scanResult.Session.Id}; обнаружено записей: {scanResult.DiscoveredDeviceCount}; уникальных устройств: {scanResult.DiscoveredDevices.Count}.",
             cancellationToken);
         await diagnosticLogger.LogInfoAsync(
             "scan.inspection.completed",
-            $"Проинспектировано драйверов: {scanResult.Drivers.Count}.",
+            $"session={scanResult.Session.Id}; проинспектировано драйверов: {scanResult.Drivers.Count}.",
             cancellationToken);
 
         if (scanResult.ExecutionStatus is ScanExecutionStatus.Partial or ScanExecutionStatus.Failed)
         {
             await diagnosticLogger.LogWarningAsync(
                 "scan.integrity.warning",
-                $"Анализ завершён со статусом {scanResult.ExecutionStatus}; проблем: {scanResult.Issues.Count}.",
+                $"session={scanResult.Session.Id}; анализ завершён со статусом {scanResult.ExecutionStatus}; проблем: {scanResult.Issues.Count}.",
                 cancellationToken);
         }
     }
 
     private async Task LogRecommendationCompletedAsync(
+        Guid sessionId,
         int totalRecommendations,
         RecommendationStats stats,
         CancellationToken cancellationToken)
     {
         await diagnosticLogger.LogInfoAsync(
             "scan.recommendation.completed",
-            $"Рекомендации: всего {totalRecommendations}; к ручному действию {stats.RecommendedCount}; отложено {stats.NotRecommendedCount}.",
+            $"session={sessionId}; рекомендации: всего {totalRecommendations}; к ручному действию {stats.RecommendedCount}; отложено {stats.NotRecommendedCount}.",
             cancellationToken);
     }
 
-    private async Task LogOfficialSourceStateAsync(OpenOfficialSourceActionResult officialSourceAction, CancellationToken cancellationToken)
+    private async Task LogOfficialSourceStateAsync(Guid sessionId, OpenOfficialSourceActionResult officialSourceAction, CancellationToken cancellationToken)
     {
         await diagnosticLogger.LogInfoAsync(
             "scan.official_source.state",
             officialSourceAction.IsReady
-                ? "Официальный источник подтверждён и доступен."
-                : $"Официальный источник заблокирован: {officialSourceAction.BlockReason ?? "причина не указана"}.",
+                ? $"session={sessionId}; официальный источник подтверждён и доступен."
+                : $"session={sessionId}; официальный источник заблокирован: {officialSourceAction.BlockReason ?? "причина не указана"}.",
             cancellationToken);
     }
 
@@ -122,6 +141,14 @@ public sealed class MainScreenWorkflow(
         var recommendedCount = recommendations.Count(r => r.HasRecommendation);
         return new RecommendationStats(recommendedCount, recommendations.Count - recommendedCount);
     }
+
+    private static string BuildAuditEntry(Guid sessionId, string eventName, string payload)
+        => $"session={sessionId};event={eventName};{payload}";
+
+    private static string SanitizeForAudit(string value)
+        => string.IsNullOrWhiteSpace(value)
+            ? "none"
+            : value.Replace(';', ',').Replace(Environment.NewLine, " ", StringComparison.Ordinal);
 
     private sealed record RecommendationStats(int RecommendedCount, int NotRecommendedCount);
 }

@@ -9,7 +9,9 @@ public sealed class OfficialProviderRuntimeFactoryTests
     {
         var providers = OfficialProviderRuntimeFactory.CreateRuntimeProviders();
 
-        Assert.Contains(providers, x => x is OfficialWindowsCatalogProviderAdapter && x.Descriptor.IsEnabled);
-        Assert.Contains(providers, x => x is OfficialProviderAdapterBaseline && x.Descriptor.IsEnabled);
+        Assert.All(providers, provider => Assert.IsType<ResilientOfficialProviderAdapter>(provider));
+        Assert.Contains(providers, x => x.Descriptor.Code == "oem-support-portal" && x.Descriptor.IsEnabled);
+        Assert.Contains(providers, x => x.Descriptor.Code == "windows-update-catalog" && x.Descriptor.IsEnabled);
+        Assert.Contains(providers, x => x.Descriptor.Code == "official-baseline" && x.Descriptor.IsEnabled);
     }
 }

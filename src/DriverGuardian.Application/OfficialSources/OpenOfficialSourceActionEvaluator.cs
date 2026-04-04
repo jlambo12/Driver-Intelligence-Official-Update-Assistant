@@ -46,6 +46,15 @@ public sealed class OpenOfficialSourceActionEvaluator
             return BuildInsufficientEvidenceDecision(blockers, OpenOfficialSourceActionOutcome.Blocked);
         }
 
+        if (!OfficialSourceHostSafetyPolicy.IsAllowed(request.OfficialSourceUri, out var blockedReason))
+        {
+            blockers.Add(new OpenOfficialSourceBlocker(
+                blockedReason ?? OpenOfficialSourceBlockedReason.UrlHostNotTrusted,
+                "Open official source action is blocked because official source URL host is not trusted."));
+
+            return BuildInsufficientEvidenceDecision(blockers, OpenOfficialSourceActionOutcome.Blocked);
+        }
+
         if (!request.AllowDifferentHostOfficialDownload
             && !string.Equals(request.OfficialSourceUri.Host, request.SourceEvidence.SourceUri.Host, StringComparison.OrdinalIgnoreCase))
         {

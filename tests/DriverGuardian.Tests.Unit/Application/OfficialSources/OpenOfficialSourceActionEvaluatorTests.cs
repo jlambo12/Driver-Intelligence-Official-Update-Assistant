@@ -11,8 +11,8 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     public void Evaluate_ReturnsAllowedAndDirectDriverPage_WhenOfficialPublisherSourceMatchesEvidenceHost()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
-            officialSourceUri: new Uri("https://downloads.vendor.test/catalog/driver"),
-            sourceUri: new Uri("https://downloads.vendor.test/provider"),
+            officialSourceUri: new Uri("https://downloads.dell.com/catalog/driver"),
+            sourceUri: new Uri("https://downloads.dell.com/provider"),
             isOfficial: true,
             trustLevel: SourceTrustLevel.OfficialPublisherSite));
 
@@ -27,8 +27,8 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     public void Evaluate_ReturnsAllowedAndVendorSupportPage_WhenOemSupportSourceMatchesEvidenceHost()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
-            officialSourceUri: new Uri("https://support.vendor.test/drivers"),
-            sourceUri: new Uri("https://support.vendor.test/provider"),
+            officialSourceUri: new Uri("https://support.hp.com/drivers"),
+            sourceUri: new Uri("https://support.hp.com/provider"),
             isOfficial: true,
             trustLevel: SourceTrustLevel.OemSupportPortal));
 
@@ -43,8 +43,8 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     public void Evaluate_ReturnsInsufficientEvidence_WhenTrustLevelIsUnknown()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
-            officialSourceUri: new Uri("https://downloads.vendor.test/catalog/driver"),
-            sourceUri: new Uri("https://downloads.vendor.test/provider"),
+            officialSourceUri: new Uri("https://downloads.dell.com/catalog/driver"),
+            sourceUri: new Uri("https://downloads.dell.com/provider"),
             isOfficial: true,
             trustLevel: SourceTrustLevel.Unknown));
 
@@ -58,8 +58,8 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     public void Evaluate_ReturnsAllowed_WhenOperatingSystemCatalogTrustIsUsed()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
-            officialSourceUri: new Uri("https://catalog.windows.update.test/driver"),
-            sourceUri: new Uri("https://catalog.windows.update.test/provider"),
+            officialSourceUri: new Uri("https://catalog.update.microsoft.com/driver"),
+            sourceUri: new Uri("https://catalog.update.microsoft.com/provider"),
             isOfficial: true,
             trustLevel: SourceTrustLevel.OperatingSystemCatalog));
 
@@ -73,8 +73,8 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     public void Evaluate_ReturnsNonOfficialSource_WhenSourceEvidenceIsNotOfficial()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
-            officialSourceUri: new Uri("https://downloads.vendor.test/catalog/driver"),
-            sourceUri: new Uri("https://downloads.vendor.test/provider"),
+            officialSourceUri: new Uri("https://downloads.dell.com/catalog/driver"),
+            sourceUri: new Uri("https://downloads.dell.com/provider"),
             isOfficial: false));
 
         Assert.Equal(OpenOfficialSourceActionOutcome.NonOfficialSource, decision.Outcome);
@@ -88,7 +88,7 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     {
         var decision = _evaluator.Evaluate(CreateRequest(
             officialSourceUri: null,
-            sourceUri: new Uri("https://downloads.vendor.test/provider"),
+            sourceUri: new Uri("https://downloads.dell.com/provider"),
             isOfficial: true));
 
         Assert.Equal(OpenOfficialSourceActionOutcome.MissingUrl, decision.Outcome);
@@ -101,8 +101,8 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     public void Evaluate_ReturnsBlocked_WhenOfficialSourceUrlIsNotHttps()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
-            officialSourceUri: new Uri("http://downloads.vendor.test/catalog/driver"),
-            sourceUri: new Uri("https://downloads.vendor.test/provider"),
+            officialSourceUri: new Uri("http://downloads.dell.com/catalog/driver"),
+            sourceUri: new Uri("https://downloads.dell.com/provider"),
             isOfficial: true));
 
         Assert.Equal(OpenOfficialSourceActionOutcome.Blocked, decision.Outcome);
@@ -115,8 +115,8 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     public void Evaluate_ReturnsBlocked_WhenOfficialSourceUrlHostDiffersFromEvidenceHost()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
-            officialSourceUri: new Uri("https://cdn.vendor.test/catalog/driver"),
-            sourceUri: new Uri("https://downloads.vendor.test/provider"),
+            officialSourceUri: new Uri("https://cdn.dell.com/catalog/driver"),
+            sourceUri: new Uri("https://downloads.dell.com/provider"),
             isOfficial: true));
 
         Assert.Equal(OpenOfficialSourceActionOutcome.Blocked, decision.Outcome);
@@ -126,11 +126,50 @@ public sealed class OpenOfficialSourceActionEvaluatorTests
     }
 
     [Fact]
+    public void Evaluate_ReturnsBlocked_WhenOfficialSourceHostIsRawIp()
+    {
+        var decision = _evaluator.Evaluate(CreateRequest(
+            officialSourceUri: new Uri("https://192.168.1.10/catalog/driver"),
+            sourceUri: new Uri("https://192.168.1.10/provider"),
+            isOfficial: true));
+
+        Assert.Equal(OpenOfficialSourceActionOutcome.Blocked, decision.Outcome);
+        Assert.False(decision.IsAllowed);
+        Assert.Contains(decision.Blockers, blocker => blocker.Reason == OpenOfficialSourceBlockedReason.UrlHostIsLocalOrIp);
+    }
+
+    [Fact]
+    public void Evaluate_ReturnsBlocked_WhenOfficialSourceHostIsLoopback()
+    {
+        var decision = _evaluator.Evaluate(CreateRequest(
+            officialSourceUri: new Uri("https://localhost/catalog/driver"),
+            sourceUri: new Uri("https://localhost/provider"),
+            isOfficial: true));
+
+        Assert.Equal(OpenOfficialSourceActionOutcome.Blocked, decision.Outcome);
+        Assert.False(decision.IsAllowed);
+        Assert.Contains(decision.Blockers, blocker => blocker.Reason == OpenOfficialSourceBlockedReason.UrlHostIsLocalOrIp);
+    }
+
+    [Fact]
+    public void Evaluate_ReturnsBlocked_WhenOfficialSourceHostIsNotTrusted()
+    {
+        var decision = _evaluator.Evaluate(CreateRequest(
+            officialSourceUri: new Uri("https://example.test/catalog/driver"),
+            sourceUri: new Uri("https://example.test/provider"),
+            isOfficial: true));
+
+        Assert.Equal(OpenOfficialSourceActionOutcome.Blocked, decision.Outcome);
+        Assert.False(decision.IsAllowed);
+        Assert.Contains(decision.Blockers, blocker => blocker.Reason == OpenOfficialSourceBlockedReason.UrlHostNotTrusted);
+    }
+
+    [Fact]
     public void Evaluate_ReturnsAllowed_WhenDifferentHostIsExplicitlyAllowed()
     {
         var decision = _evaluator.Evaluate(CreateRequest(
-            officialSourceUri: new Uri("https://cdn.vendor.test/catalog/driver"),
-            sourceUri: new Uri("https://downloads.vendor.test/provider"),
+            officialSourceUri: new Uri("https://cdn.dell.com/catalog/driver"),
+            sourceUri: new Uri("https://downloads.dell.com/provider"),
             isOfficial: true,
             allowDifferentHostOfficialDownload: true));
 

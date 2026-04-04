@@ -19,8 +19,8 @@ public sealed class OfficialSourceResolutionServiceTests
             BuildCandidate(
                 SourceTrustLevel.OfficialPublisherSite,
                 CompatibilityConfidence.High,
-                sourceUri: new Uri("https://drivers.vendor.test/gpu/123"),
-                downloadUri: new Uri("https://drivers.vendor.test/files/gpu-123.exe"))]);
+                sourceUri: new Uri("https://drivers.dell.com/gpu/123"),
+                downloadUri: new Uri("https://drivers.dell.com/files/gpu-123.exe"))]);
 
         var logger = new RecordingDiagnosticLogger();
         var actionService = BuildActionService([provider], logger);
@@ -29,7 +29,7 @@ public sealed class OfficialSourceResolutionServiceTests
 
         Assert.True(action.IsReady);
         Assert.Equal(OfficialSourceActionTarget.DirectDownloadPage, action.ActionTarget);
-        Assert.Equal("https://drivers.vendor.test/gpu/123", action.ApprovedOfficialSourceUrl);
+        Assert.Equal("https://drivers.dell.com/gpu/123", action.ApprovedOfficialSourceUrl);
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public sealed class OfficialSourceResolutionServiceTests
             BuildCandidate(
                 SourceTrustLevel.OemSupportPortal,
                 CompatibilityConfidence.High,
-                sourceUri: new Uri("https://support.vendor.test/device/abc"),
-                downloadUri: new Uri("https://cdn.vendor.test/file.cab"))]);
+                sourceUri: new Uri("https://support.hp.com/device/abc"),
+                downloadUri: new Uri("https://cdn.dell.com/file.cab"))]);
 
         var logger = new RecordingDiagnosticLogger();
         var actionService = BuildActionService([provider], logger);
@@ -49,7 +49,7 @@ public sealed class OfficialSourceResolutionServiceTests
 
         Assert.True(action.IsReady);
         Assert.Equal(OfficialSourceActionTarget.SourcePage, action.ActionTarget);
-        Assert.Equal("https://support.vendor.test/device/abc", action.ApprovedOfficialSourceUrl);
+        Assert.Equal("https://support.hp.com/device/abc", action.ApprovedOfficialSourceUrl);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public sealed class OfficialSourceResolutionServiceTests
             BuildCandidate(
                 SourceTrustLevel.Unknown,
                 CompatibilityConfidence.High,
-                sourceUri: new Uri("https://vendor.test/unknown"),
+                sourceUri: new Uri("https://dell.com/unknown"),
                 downloadUri: null)]);
 
         var action = await BuildActionService([provider], new RecordingDiagnosticLogger())
@@ -80,7 +80,7 @@ public sealed class OfficialSourceResolutionServiceTests
                 BuildCandidate(
                     SourceTrustLevel.OemSupportPortal,
                     CompatibilityConfidence.Medium,
-                    sourceUri: new Uri("https://support.vendor.test/ok"),
+                    sourceUri: new Uri("https://support.hp.com/ok"),
                     downloadUri: null)])
         };
 
@@ -104,7 +104,7 @@ public sealed class OfficialSourceResolutionServiceTests
                 BuildCandidate(
                     SourceTrustLevel.Unknown,
                     CompatibilityConfidence.High,
-                    sourceUri: new Uri("https://vendor.test/u"),
+                    sourceUri: new Uri("https://dell.com/u"),
                     downloadUri: null)])
         };
 
@@ -130,7 +130,7 @@ public sealed class OfficialSourceResolutionServiceTests
                 BuildCandidate(
                     SourceTrustLevel.OfficialPublisherSite,
                     CompatibilityConfidence.Medium,
-                    sourceUri: new Uri("https://drivers.vendor.test/driver/999"),
+                    sourceUri: new Uri("https://drivers.dell.com/driver/999"),
                     downloadUri: null)])
         };
 
