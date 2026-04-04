@@ -14,6 +14,20 @@
     "expectedEvidenceToken": "exact"
   },
   {
+    "name": "exact-amd-match",
+    "hardwareIds": [ "PCI\\VEN_1022&DEV_15E3" ],
+    "expectedCandidateVersion": "5.12.0.44",
+    "expectedConfidence": "High",
+    "expectedEvidenceToken": "exact"
+  },
+  {
+    "name": "exact-broadcom-match",
+    "hardwareIds": [ "PCI\\VEN_14E4&DEV_43A0" ],
+    "expectedCandidateVersion": "7.35.351.0",
+    "expectedConfidence": "High",
+    "expectedEvidenceToken": "exact"
+  },
+  {
     "name": "normalized-pci-match",
     "hardwareIds": [ "PCI\\VEN_8086&DEV_15F3&SUBSYS_00000000&REV_10" ],
     "expectedCandidateVersion": "31.0.101.2125",
@@ -24,6 +38,13 @@
     "name": "vendor-fallback-match",
     "hardwareIds": [ "PCI\\VEN_8086&DEV_ABCD" ],
     "expectedCandidateVersion": "31.0.101.2125",
+    "expectedConfidence": "Low",
+    "expectedEvidenceToken": "compatible-vendor"
+  },
+  {
+    "name": "vendor-fallback-amd-match",
+    "hardwareIds": [ "PCI\\VEN_1022&DEV_ABCD" ],
+    "expectedCandidateVersion": "5.12.0.44",
     "expectedConfidence": "Low",
     "expectedEvidenceToken": "compatible-vendor"
   },
@@ -45,6 +66,13 @@
     "name": "usb-vendor-fallback-match",
     "hardwareIds": [ "USB\\VID_0BDA&PID_0001" ],
     "expectedCandidateVersion": "10.63.20.1028",
+    "expectedConfidence": "Low",
+    "expectedEvidenceToken": "compatible-vendor"
+  },
+  {
+    "name": "usb-vendor-fallback-intel-match",
+    "hardwareIds": [ "USB\\VID_8087&PID_0001" ],
+    "expectedCandidateVersion": "23.30.0.3",
     "expectedConfidence": "Low",
     "expectedEvidenceToken": "compatible-vendor"
   },

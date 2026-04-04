@@ -7,14 +7,7 @@ public static class MainUiStateFactory
 {
     public static MainUiState CreateFromWorkflowResult(MainScreenWorkflowResult result)
     {
-        var status = result.ScanExecutionStatus switch
-        {
-            ScanExecutionStatus.Failed => UiStrings.StatusScanFailed,
-            ScanExecutionStatus.Partial => UiStrings.StatusScanPartial,
-            _ => result.RecommendedCount > 0
-                ? UiStrings.StatusScanCompletedReady
-                : UiStrings.StatusScanCompletedNoAction
-        };
+        var status = ResolveStatusText(result);
 
         return MainUiState.Initial(
             UiStrings.MainWindowTitle,
@@ -23,5 +16,38 @@ public static class MainUiStateFactory
         {
             Results = ScanResultsPresentation.FromResult(result)
         };
+    }
+
+    private static string ResolveStatusText(MainScreenWorkflowResult result)
+    {
+        if (result.ScanExecutionStatus == ScanExecutionStatus.Failed)
+        {
+            return UiStrings.StatusScanFailed;
+        }
+
+        if (result.ScanExecutionStatus == ScanExecutionStatus.Partial)
+        {
+            return UiStrings.StatusScanPartial;
+        }
+
+        var hasInsufficientEvidence = result.RecommendationDetails.Any(detail =>
+            !detail.HasRecommendation &&
+            !string.IsNullOrWhiteSpace(detail.RecommendationReason) &&
+            (detail.RecommendationReason.Contains("insufficient evidence", StringComparison.OrdinalIgnoreCase) ||
+             detail.RecommendationReason.Contains("недостаточно данных", StringComparison.OrdinalIgnoreCase)));
+
+        if (hasInsufficientEvidence && result.RecommendedCount == 0)
+        {
+            return $"{UiStrings.StatusScanCompletedNoAction} ({UiStrings.RecommendationStateInsufficientEvidence.ToLowerInvariant()}).";
+        }
+
+        if (result.RecommendedCount > 0 && !result.OfficialSourceAction.IsReady)
+        {
+            return $"{UiStrings.StatusScanCompletedReady} ({UiStrings.RecommendationStateBlocked.ToLowerInvariant()}).";
+        }
+
+        return result.RecommendedCount > 0
+            ? UiStrings.StatusScanCompletedReady
+            : UiStrings.StatusScanCompletedNoAction;
     }
 }

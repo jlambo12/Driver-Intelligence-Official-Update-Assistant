@@ -38,5 +38,77 @@
     "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_0BDA%26PID_8153",
     "publisherName": "Microsoft Update Catalog",
     "evidenceNote": "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_A0F0",
+    "driverIdentifier": "windows-update:8086-a0f0:23.40.0.4",
+    "candidateVersion": "23.40.0.4",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_A0F0",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel wireless chipset."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_43A3",
+    "driverIdentifier": "windows-update:8086-43a3:10.1.19899.8597",
+    "candidateVersion": "10.1.19899.8597",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_43A3",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel chipset device."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1022&DEV_15E3",
+    "driverIdentifier": "windows-update:1022-15e3:5.12.0.44",
+    "candidateVersion": "5.12.0.44",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1022%26DEV_15E3",
+    "publisherName": "Advanced Micro Devices, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for AMD SMBus controller."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10DE&DEV_2684",
+    "driverIdentifier": "windows-update:10de-2684:32.0.15.6614",
+    "candidateVersion": "32.0.15.6614",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10DE%26DEV_2684",
+    "publisherName": "NVIDIA",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for NVIDIA display adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_14E4&DEV_43A0",
+    "driverIdentifier": "windows-update:14e4-43a0:7.35.351.0",
+    "candidateVersion": "7.35.351.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_14E4%26DEV_43A0",
+    "publisherName": "Broadcom",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Broadcom wireless device."
+  },
+  {
+    "hardwareId": "USB\\VID_0489&PID_E0E2",
+    "driverIdentifier": "windows-update:0489-e0e2:23.40.0.4",
+    "candidateVersion": "23.40.0.4",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_0489%26PID_E0E2",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Bluetooth controller."
+  },
+  {
+    "hardwareId": "USB\\VID_8087&PID_0029",
+    "driverIdentifier": "windows-update:8087-0029:23.30.0.3",
+    "candidateVersion": "23.30.0.3",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_8087%26PID_0029",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Bluetooth device."
+  },
+  {
+    "hardwareId": "PCI\\VEN_168C&DEV_003E",
+    "driverIdentifier": "windows-update:168c-003e:12.0.0.1118",
+    "candidateVersion": "12.0.0.1118",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_168C%26DEV_003E",
+    "publisherName": "Qualcomm Atheros",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Qualcomm Atheros wireless adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_06F0",
+    "driverIdentifier": "windows-update:8086-06f0:30.0.101.1404",
+    "candidateVersion": "30.0.101.1404",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_06F0",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Arc graphics adapter."
   }
 ]

@@ -50,13 +50,13 @@ public sealed class MainScreenWorkflow(
                 BuildAuditEntry(
                     scanResult.Session.Id,
                     "scan.completed",
-                    $"devices={scanResult.DiscoveredDeviceCount};drivers={scanResult.Drivers.Count};recommended={recommendationStats.RecommendedCount};status={scanResult.ExecutionStatus}"),
+                    $"devices={scanResult.DiscoveredDeviceCount};drivers={scanResult.Drivers.Count};recommended={recommendationStats.RecommendedCount};status={scanResult.ExecutionStatus};status_category={BuildStatusCategory(scanResult.ExecutionStatus)}"),
                 cancellationToken);
             await auditWriter.WriteAsync(
                 BuildAuditEntry(
                     scanResult.Session.Id,
                     "official_source.state",
-                    $"ready={assembled.OfficialSourceAction.IsReady};resolution={assembled.OfficialSourceAction.ResolutionOutcome};target={assembled.OfficialSourceAction.ActionTarget}"),
+                    $"ready={assembled.OfficialSourceAction.IsReady};resolution={assembled.OfficialSourceAction.ResolutionOutcome};target={assembled.OfficialSourceAction.ActionTarget};blocked_reason={SanitizeForAudit(assembled.OfficialSourceAction.BlockReason ?? "none")}"),
                 cancellationToken);
             await auditWriter.WriteAsync(
                 BuildAuditEntry(
@@ -143,7 +143,16 @@ public sealed class MainScreenWorkflow(
     }
 
     private static string BuildAuditEntry(Guid sessionId, string eventName, string payload)
-        => $"session={sessionId};event={eventName};{payload}";
+        => $"correlation_id={sessionId};session={sessionId};event_code={eventName};event={eventName};{payload}";
+
+    private static string BuildStatusCategory(ScanExecutionStatus status)
+        => status switch
+        {
+            ScanExecutionStatus.Completed => "completed",
+            ScanExecutionStatus.Partial => "partial",
+            ScanExecutionStatus.Failed => "failed",
+            _ => "unknown"
+        };
 
     private static string SanitizeForAudit(string value)
         => string.IsNullOrWhiteSpace(value)

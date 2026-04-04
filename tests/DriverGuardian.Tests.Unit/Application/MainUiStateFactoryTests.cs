@@ -53,15 +53,69 @@ public sealed class MainUiStateFactoryTests
         Assert.Equal(UiStrings.RecommendationOfficialSourceBlockedBySafety, detail.OfficialSourceActionHint);
     }
 
+    [Fact]
+    public void CreateFromWorkflowResult_ShouldUseInsufficientEvidenceStatus_WhenNoRecommendations()
+    {
+        var result = CreateResult(
+            ScanExecutionStatus.Completed,
+            [
+                new RecommendationDetailResult(
+                    "Network adapter",
+                    "PCI\\VEN_0002",
+                    0,
+                    false,
+                    "No recommendation: insufficient evidence from providers.",
+                    "1.0.0",
+                    "vendor",
+                    null,
+                    false,
+                    false,
+                    false,
+                    "verification")
+            ]);
+
+        var state = MainUiStateFactory.CreateFromWorkflowResult(result);
+
+        Assert.Contains(UiStrings.RecommendationStateInsufficientEvidence, state.StatusText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void CreateFromWorkflowResult_ShouldUseBlockedStatus_WhenRecommendationExistsButOfficialSourceNotReady()
+    {
+        var result = CreateResult(
+            ScanExecutionStatus.Completed,
+            [
+                new RecommendationDetailResult(
+                    "Video adapter",
+                    "PCI\\VEN_0003",
+                    0,
+                    true,
+                    "Recommendation available",
+                    "1.0.0",
+                    "vendor",
+                    "2.0.0",
+                    true,
+                    true,
+                    true,
+                    "verification")
+            ]);
+
+        var state = MainUiStateFactory.CreateFromWorkflowResult(result);
+
+        Assert.Contains(UiStrings.RecommendationStateBlocked, state.StatusText, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static MainScreenWorkflowResult CreateResult(
         ScanExecutionStatus status,
-        IReadOnlyCollection<RecommendationDetailResult>? recommendationDetails = null)
+        IReadOnlyCollection<RecommendationDetailResult>? recommendationDetails = null,
+        int? recommendedCount = null,
+        OpenOfficialSourceActionResult? officialSourceAction = null)
         => new(
             status,
             [],
             1,
             1,
-            0,
+            recommendedCount ?? recommendationDetails?.Count(detail => detail.HasRecommendation) ?? 0,
             0,
             1,
             0,
@@ -71,6 +125,6 @@ public sealed class MainUiStateFactoryTests
             Guid.NewGuid(),
             new ReportExportPayload("name", "plain", "markdown"),
             recommendationDetails ?? [],
-            new OpenOfficialSourceActionResult(false, OfficialSourceResolutionOutcome.InsufficientEvidence, OfficialSourceActionTarget.SourcePage, "status", null, null),
+            officialSourceAction ?? new OpenOfficialSourceActionResult(false, OfficialSourceResolutionOutcome.InsufficientEvidence, OfficialSourceActionTarget.SourcePage, "status", null, null),
             []);
 }

@@ -71,6 +71,8 @@ public sealed class MainScreenWorkflowTests
         Assert.Contains(auditWriter.Entries, entry => entry.Contains("event=official_source.state;", StringComparison.Ordinal));
         Assert.Contains(auditWriter.Entries, entry => entry.Contains("event=verification.summary;", StringComparison.Ordinal));
         Assert.All(auditWriter.Entries, entry => Assert.Contains("session=", entry, StringComparison.Ordinal));
+        Assert.All(auditWriter.Entries, entry => Assert.Contains("correlation_id=", entry, StringComparison.Ordinal));
+        Assert.All(auditWriter.Entries, entry => Assert.Contains("event_code=", entry, StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.start:", StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.discovery.completed:", StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.inspection.completed:", StringComparison.Ordinal));
