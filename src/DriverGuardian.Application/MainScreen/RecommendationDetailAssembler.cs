@@ -34,6 +34,7 @@ public sealed class RecommendationDetailAssembler
                     InstalledVersion: driver.DriverVersion,
                     InstalledProvider: driver.ProviderName,
                     RecommendedVersion: recommendation?.RecommendedVersion,
+                    OfficialSourceUrl: recommendation?.OfficialSourceUrl,
                     ManualHandoffReady: false,
                     ManualActionRequired: hasRecommendation,
                     VerificationAvailable: hasRecommendation,

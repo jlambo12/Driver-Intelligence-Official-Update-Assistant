@@ -43,7 +43,8 @@ public sealed record RecommendationDetailResult(
     bool ManualHandoffReady,
     bool ManualActionRequired,
     bool VerificationAvailable,
-    string VerificationStatus);
+    string VerificationStatus,
+    string? OfficialSourceUrl = null);
 
 public sealed record OpenOfficialSourceActionResult(
     bool IsReady,

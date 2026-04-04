@@ -1,11 +1,19 @@
 using System.Management;
 using DriverGuardian.Contracts.DeviceDiscovery;
+using DriverGuardian.Domain.Settings;
 
 namespace DriverGuardian.SystemAdapters.Windows.DeviceDiscovery;
 
 public sealed class WindowsDeviceDiscoveryService : IDeviceDiscoveryService
 {
     private const string Query = "SELECT DeviceID, Name, PNPDeviceID, HardwareID, Manufacturer, PNPClass, ConfigManagerErrorCode, Status FROM Win32_PnPEntity";
+
+    private readonly DeviceScanProfile _profile;
+
+    public WindowsDeviceDiscoveryService(DeviceScanProfile profile = DeviceScanProfile.Balanced)
+    {
+        _profile = profile;
+    }
 
     public Task<DeviceDiscoveryResult> DiscoverAsync(CancellationToken cancellationToken)
     {
@@ -25,7 +33,7 @@ public sealed class WindowsDeviceDiscoveryService : IDeviceDiscoveryService
                 try
                 {
                     var snapshot = WindowsPnpEntitySnapshot.From(entity);
-                    if (string.IsNullOrWhiteSpace(snapshot.InstanceId))
+                    if (!WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, _profile))
                     {
                         continue;
                     }

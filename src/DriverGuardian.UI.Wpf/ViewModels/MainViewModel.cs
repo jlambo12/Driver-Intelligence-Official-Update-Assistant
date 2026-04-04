@@ -44,6 +44,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         ExportReportCommand = new AsyncRelayCommand(ExportReportAsync);
         OpenDiagnosticLogsFolderCommand = new AsyncRelayCommand(OpenDiagnosticLogsFolderAsync);
         OpenOfficialSourceCommand = new AsyncRelayCommand(OpenOfficialSourceAsync, () => CanOpenOfficialSource);
+        OpenRecommendationOfficialSourceCommand = new RelayCommand(OpenRecommendationOfficialSource);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -52,6 +53,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
     public ICommand ExportReportCommand { get; }
     public ICommand OpenDiagnosticLogsFolderCommand { get; }
     public ICommand OpenOfficialSourceCommand { get; }
+    public ICommand OpenRecommendationOfficialSourceCommand { get; }
 
     public bool CanOpenOfficialSource => TryGetApprovedOfficialSourceUri(out _);
 
@@ -77,9 +79,11 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        await SettingsSection.LoadSettingsAsync(_diagnosticLogsFolderService.ResolveEffectiveFolderPath(null));
+        await SettingsSection.LoadSettingsAsync(
+            _diagnosticLogsFolderService.ResolveEffectiveFolderPath(null),
+            cancellationToken);
         SyncEffectiveDiagnosticFolder();
     }
 
@@ -109,3 +113,4 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
 }
 
 public sealed record ReportFormatOption(ShareableReportFormat Value, string DisplayName);
+public sealed record ScanProfileOption(DeviceScanProfile Value, string DisplayName);

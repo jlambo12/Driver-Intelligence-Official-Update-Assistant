@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Windows;
-using DriverGuardian.Bootstrap.Runtime;
 using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.ViewModels;
@@ -18,27 +17,31 @@ public partial class App : WpfApplication
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
 
-        var runtime = ProductionRuntimeFactory.Create(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-        var startupLogger = runtime.StartupLogger;
-
-        try
-        {
-            var vm = new MainViewModel(
+        using var startupCts = new CancellationTokenSource();
+        var orchestrator = new AppStartupOrchestrator(
+            new LocalAppDataStartupRuntimeProvider(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)),
+            runtime => new MainViewModel(
                 runtime.MainScreenWorkflow,
                 runtime.SettingsRepository,
                 new ReportFileSaveService(),
                 runtime.DiagnosticLogsFolderService,
-                new OfficialSourceLauncher());
+                new OfficialSourceLauncher()));
 
-            await vm.InitializeAsync();
+        try
+        {
+            var startup = await orchestrator.StartAsync(startupCts.Token);
 
-            var window = new MainWindow { DataContext = vm };
+            var window = new MainWindow { DataContext = startup.ViewModel };
             window.Show();
-            await startupLogger.LogInfoAsync("app.startup.completed", "Primary startup flow completed.", CancellationToken.None);
+            await startup.Runtime.StartupLogger.LogInfoAsync("app.startup.completed", "Primary startup flow completed.", CancellationToken.None);
+        }
+        catch (OperationCanceledException)
+        {
+            Shutdown(-1);
         }
         catch (Exception ex)
         {
-            await startupLogger.LogErrorAsync("app.startup.failed", "Primary startup flow failed.", ex, CancellationToken.None);
+            // startup logger may be unavailable if creation failed before runtime was built
             MessageBox.Show(
                 string.Format(UiStrings.StartupErrorMessageFormat, ex.GetType().Name, ex.Message),
                 UiStrings.StartupErrorTitle,

@@ -58,12 +58,41 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
     {
         var reason = BuildReason(decision, failures);
         var recommendedVersion = decision.IsRecommendation ? decision.RecommendedVersion : null;
+        var officialSourceUrl = ResolveOfficialSourceUrl(decision);
 
         return new RecommendationSummary(
             installedDriver.DeviceIdentity,
             hasRecommendation: decision.IsRecommendation,
             reason,
-            recommendedVersion);
+            recommendedVersion,
+            officialSourceUrl);
+    }
+
+    private static string? ResolveOfficialSourceUrl(RecommendationDecision decision)
+    {
+        if (!decision.IsRecommendation || decision.SourceEvidence is null)
+        {
+            return null;
+        }
+
+        var sourceEvidence = decision.SourceEvidence;
+        var uri = sourceEvidence.SourceUri;
+
+        if (!sourceEvidence.IsOfficialSource || sourceEvidence.TrustLevel == SourceTrustLevel.Unknown)
+        {
+            return null;
+        }
+
+        if (!uri.IsAbsoluteUri ||
+            !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(uri.Host) ||
+            uri.IsLoopback ||
+            !string.IsNullOrEmpty(uri.UserInfo))
+        {
+            return null;
+        }
+
+        return uri.AbsoluteUri;
     }
 
     private static string BuildReason(RecommendationDecision decision, IReadOnlyCollection<ProviderLookupFailure> failures)

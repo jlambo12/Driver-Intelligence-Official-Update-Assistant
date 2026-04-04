@@ -9,7 +9,7 @@ using DriverGuardian.UI.Wpf.ViewModels;
 
 namespace DriverGuardian.UI.Wpf.ViewModels.Sections;
 
-public sealed class SettingsSectionViewModel : INotifyPropertyChanged
+public sealed partial class SettingsSectionViewModel : INotifyPropertyChanged
 {
     private readonly ISettingsRepository _settingsRepository;
     private int _historyMaxEntries;
@@ -20,11 +20,19 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
     private string _settingsStatusText;
     private readonly string _defaultDiagnosticLogFolderPath;
     private ReportFormatOption _selectedReportFormat;
+    private ScanProfileOption _selectedScanProfile;
 
     private static readonly IReadOnlyList<ReportFormatOption> ReportFormatItems =
     [
         new(ShareableReportFormat.Markdown, UiStrings.SettingsReportFormatMarkdown),
         new(ShareableReportFormat.PlainText, UiStrings.SettingsReportFormatPlainText)
+    ];
+
+    private static readonly IReadOnlyList<ScanProfileOption> ScanProfileItems =
+    [
+        new(DeviceScanProfile.Balanced, UiStrings.SettingsScanProfileBalanced),
+        new(DeviceScanProfile.Minimal, UiStrings.SettingsScanProfileMinimal),
+        new(DeviceScanProfile.Comprehensive, UiStrings.SettingsScanProfileComprehensive)
     ];
 
     public SettingsSectionViewModel(
@@ -40,6 +48,7 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
         _effectiveDiagnosticLogFolderPath = defaultDiagnosticLogFolderPath;
         _settingsStatusText = UiStrings.SettingsLoadError;
         _selectedReportFormat = ReportFormatItems[0];
+        _selectedScanProfile = ScanProfileItems[0];
 
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
     }
@@ -49,6 +58,7 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
     public ICommand SaveSettingsCommand { get; }
 
     public IReadOnlyList<ReportFormatOption> AvailableReportFormats => ReportFormatItems;
+    public IReadOnlyList<ScanProfileOption> AvailableScanProfiles => ScanProfileItems;
 
     public int HistoryMaxEntries
     {
@@ -77,6 +87,21 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
             }
 
             _showVerificationHints = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ScanProfileOption SelectedScanProfile
+    {
+        get => _selectedScanProfile;
+        set
+        {
+            if (_selectedScanProfile.Equals(value))
+            {
+                return;
+            }
+
+            _selectedScanProfile = value;
             OnPropertyChanged();
         }
     }
@@ -153,56 +178,6 @@ public sealed class SettingsSectionViewModel : INotifyPropertyChanged
             _settingsStatusText = value;
             OnPropertyChanged();
         }
-    }
-
-    public async Task LoadSettingsAsync(string defaultDiagnosticLogFolderPath)
-    {
-        var settings = await _settingsRepository.GetAsync(CancellationToken.None);
-        HistoryMaxEntries = settings.History.MaxEntries;
-        ShowVerificationHints = settings.WorkflowGuidance.ShowPostInstallVerificationHints;
-        SelectedReportFormat = ReportFormatItems.First(option => option.Value == settings.Reports.DefaultFormat);
-        IsDiagnosticLoggingEnabled = settings.DiagnosticLogging.Enabled;
-        CustomDiagnosticLogFolderPath = settings.DiagnosticLogging.CustomLogsFolderPath ?? string.Empty;
-        EffectiveDiagnosticLogFolderPath = string.IsNullOrWhiteSpace(settings.DiagnosticLogging.CustomLogsFolderPath)
-            ? defaultDiagnosticLogFolderPath
-            : settings.DiagnosticLogging.CustomLogsFolderPath.Trim();
-        SettingsStatusText = UiStrings.SettingsLoaded;
-    }
-
-    public void ApplyStatusMessage(string statusMessage)
-    {
-        if (!string.IsNullOrWhiteSpace(statusMessage))
-        {
-            SettingsStatusText = statusMessage;
-        }
-    }
-
-    public void ApplyEffectiveDiagnosticFolder(string folderPath)
-    {
-        EffectiveDiagnosticLogFolderPath = folderPath;
-    }
-
-    private async Task SaveSettingsAsync()
-    {
-        var current = await _settingsRepository.GetAsync(CancellationToken.None);
-        var updated = current with
-        {
-            History = current.History with { MaxEntries = HistoryMaxEntries },
-            Reports = current.Reports with { DefaultFormat = SelectedReportFormat.Value },
-            WorkflowGuidance = current.WorkflowGuidance with { ShowPostInstallVerificationHints = ShowVerificationHints },
-            DiagnosticLogging = current.DiagnosticLogging with
-            {
-                Enabled = IsDiagnosticLoggingEnabled,
-                CustomLogsFolderPath = string.IsNullOrWhiteSpace(CustomDiagnosticLogFolderPath)
-                    ? null
-                    : CustomDiagnosticLogFolderPath.Trim()
-            }
-        };
-
-        var normalized = updated.Normalize();
-        await _settingsRepository.SaveAsync(normalized, CancellationToken.None);
-        CustomDiagnosticLogFolderPath = normalized.DiagnosticLogging.CustomLogsFolderPath ?? string.Empty;
-        SettingsStatusText = UiStrings.SettingsSaved;
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

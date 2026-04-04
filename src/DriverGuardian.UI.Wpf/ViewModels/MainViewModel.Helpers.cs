@@ -1,3 +1,5 @@
+using DriverGuardian.UI.Wpf.Services;
+
 namespace DriverGuardian.UI.Wpf.ViewModels;
 
 public sealed partial class MainViewModel
@@ -11,22 +13,7 @@ public sealed partial class MainViewModel
             return false;
         }
 
-        if (!Uri.TryCreate(_lastApprovedOfficialSourceUrl, UriKind.Absolute, out var parsed))
-        {
-            return false;
-        }
-
-        if (!parsed.IsAbsoluteUri ||
-            !string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
-            string.IsNullOrWhiteSpace(parsed.Host) ||
-            parsed.IsLoopback ||
-            !string.IsNullOrEmpty(parsed.UserInfo))
-        {
-            return false;
-        }
-
-        uri = parsed;
-        return true;
+        return SafeOfficialSourceUrlValidator.TryGetSafeHttpsUri(_lastApprovedOfficialSourceUrl, out uri);
     }
 
     private void SyncEffectiveDiagnosticFolder()

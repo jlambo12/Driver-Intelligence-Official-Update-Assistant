@@ -1,5 +1,6 @@
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.UI.Wpf.Localization;
+using DriverGuardian.UI.Wpf.Services;
 
 namespace DriverGuardian.UI.Wpf.Models;
 
@@ -36,6 +37,17 @@ public sealed partial record ScanResultsPresentation
             : UiStrings.RecommendationNextStepDeferred;
 
         var state = ResolveDetailState(detail);
+        var officialSourceSummary = detail.HasRecommendation
+            ? string.Format(
+                UiStrings.RecommendationOfficialSourceFormat,
+                string.IsNullOrWhiteSpace(detail.OfficialSourceUrl)
+                    ? UiStrings.OfficialSourceUrlUnavailable
+                    : detail.OfficialSourceUrl)
+            : UiStrings.RecommendationOfficialSourceNotApplicable;
+        var canOpenOfficialSourceUrl = SafeOfficialSourceUrlValidator.IsSafeOfficialSourceUrl(detail.OfficialSourceUrl);
+        var officialSourceActionHint = detail.HasRecommendation && !canOpenOfficialSourceUrl
+            ? UiStrings.RecommendationOfficialSourceBlockedBySafety
+            : string.Empty;
 
         var deviceTitle = BuildDeviceTitle(detail);
         var technicalSummary = BuildTechnicalIdentifierSummary(detail.DeviceId);
@@ -50,6 +62,10 @@ public sealed partial record ScanResultsPresentation
             reasonSummary,
             string.Format(UiStrings.RecommendationInstalledDriverFormat, detail.InstalledVersion, detail.InstalledProvider ?? UiStrings.RecommendationProviderUnknown),
             candidateSummary,
+            officialSourceSummary,
+            detail.OfficialSourceUrl,
+            canOpenOfficialSourceUrl,
+            officialSourceActionHint,
             string.Format(UiStrings.RecommendationManualHandoffFormat, detail.ManualHandoffReady ? UiStrings.ActionStatusAvailable : UiStrings.ActionStatusBlocked),
             string.Format(UiStrings.RecommendationManualActionFormat, detail.ManualActionRequired ? UiStrings.ActionStatusRequired : UiStrings.ActionStatusWait),
             string.Format(UiStrings.RecommendationVerificationFormat, verificationStateLabel),

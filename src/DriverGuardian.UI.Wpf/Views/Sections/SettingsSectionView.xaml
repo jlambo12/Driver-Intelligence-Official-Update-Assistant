@@ -34,6 +34,25 @@
             <CheckBox Content="{x:Static localization:UiStrings.SettingsVerificationHintLabel}"
                       IsChecked="{Binding SettingsSection.ShowVerificationHints}"
                       Margin="0 0 0 6"/>
+            <Grid Margin="0 0 0 6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="230"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{x:Static localization:UiStrings.SettingsScanProfileLabel}" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="1"
+                          Width="220"
+                          HorizontalAlignment="Left"
+                          ItemsSource="{Binding SettingsSection.AvailableScanProfiles}"
+                          SelectedItem="{Binding SettingsSection.SelectedScanProfile}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+            <TextBlock Text="{x:Static localization:UiStrings.SettingsScanProfileHint}" Foreground="#475569" TextWrapping="Wrap" Margin="0 0 0 6"/>
             <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0 0 0 8" Background="#F8FAFC">
                 <StackPanel>
                     <CheckBox Content="{x:Static localization:UiStrings.SettingsDiagnosticLoggingLabel}"
