@@ -1,0 +1,53 @@
+name: Windows Validation Matrix
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  validation-matrix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-latest]
+        configuration: [Release]
+        test_suite: [unit]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore solution
+        shell: pwsh
+        run: dotnet restore DriverGuardian.sln --runtime win-x64
+
+      - name: Build solution
+        shell: pwsh
+        run: dotnet build DriverGuardian.sln --configuration ${{ matrix.configuration }} --runtime win-x64 --no-restore
+
+      - name: Run unit tests
+        if: ${{ matrix.test_suite == 'unit' }}
+        shell: pwsh
+        run: dotnet test tests/DriverGuardian.Tests.Unit/DriverGuardian.Tests.Unit.csproj --configuration ${{ matrix.configuration }} --no-restore --logger "trx;LogFileName=unit-tests-${{ matrix.os }}.trx"
+
+      - name: Publish smoke artifact
+        shell: pwsh
+        run: dotnet publish src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj --configuration ${{ matrix.configuration }} --runtime win-x64 --self-contained false --no-restore --output artifacts/smoke/${{ matrix.os }}
+
+      - name: Upload matrix logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ matrix.os }}
+          path: |
+            artifacts/smoke/${{ matrix.os }}
+            **/*.trx
+          if-no-files-found: warn
