@@ -4,7 +4,6 @@ using System.Windows.Input;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.MainScreen;
 using DriverGuardian.Domain.Settings;
-using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.Models;
@@ -13,7 +12,7 @@ using DriverGuardian.UI.Wpf.ViewModels.Sections;
 
 namespace DriverGuardian.UI.Wpf.ViewModels;
 
-public sealed class MainViewModel : INotifyPropertyChanged
+public sealed partial class MainViewModel : INotifyPropertyChanged
 {
     private readonly IMainScreenWorkflow _mainScreenWorkflow;
     private readonly PreviewScenarioMainScreenWorkflow? _previewWorkflow;
@@ -136,119 +135,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         State = State with { StatusText = recoveryMessage };
     }
 
-    private async Task ScanAsync()
-    {
-        if (IsPreviewMode)
-        {
-            await ApplyPreviewScenarioAsync();
-            return;
-        }
-
-        State = State with { StatusText = UiStrings.StatusScanning };
-        var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
-        ApplyWorkflowResult(result, isPreview: false);
-    }
-
-    private async Task ExportReportAsync()
-    {
-        await ReportSection.ExportAsync(SettingsSection.SelectedReportFormat.Value);
-    }
-
-    private async Task OpenDiagnosticLogsFolderAsync()
-    {
-        await Task.Yield();
-
-        var opened = _diagnosticLogsFolderService.OpenFolder(SettingsSection.EffectiveDiagnosticLogFolderPath);
-        if (!opened)
-        {
-            SettingsSection.ApplyStatusMessage(UiStrings.SettingsLogsFolderOpenFailed);
-        }
-    }
-
-    private async Task OpenOfficialSourceAsync()
-    {
-        await Task.Yield();
-
-        if (!TryGetApprovedOfficialSourceUri(out var approvedUri) || approvedUri is null)
-        {
-            State = State with { StatusText = OpenOfficialSourceBlockReason };
-            return;
-        }
-
-        if (!_officialSourceLauncher.Open(approvedUri))
-        {
-            State = State with { StatusText = "Не удалось открыть официальный источник. Проверьте браузер по умолчанию." };
-            return;
-        }
-
-        State = State with { StatusText = $"Открыт официальный источник: {approvedUri.Host}" };
-    }
-
-    private bool TryGetApprovedOfficialSourceUri(out Uri? uri)
-    {
-        uri = null;
-
-        if (!State.Results.HasScanData || string.IsNullOrWhiteSpace(_lastApprovedOfficialSourceUrl))
-        {
-            return false;
-        }
-
-        if (!Uri.TryCreate(_lastApprovedOfficialSourceUrl, UriKind.Absolute, out var parsed))
-        {
-            return false;
-        }
-
-        if (!string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        uri = parsed;
-        return true;
-    }
-
-    private async Task ApplyPreviewScenarioAsync()
-    {
-        if (_previewWorkflow is null)
-        {
-            return;
-        }
-
-        var scenario = SelectedPreviewScenario ?? AvailablePreviewScenarios.First();
-        _previewWorkflow.SelectScenario(scenario.Id);
-
-        if (scenario.Id == PreviewScenarioId.FirstRunPreScan)
-        {
-            HistorySection.RecentHistory = Array.Empty<RecentHistoryPresentation>();
-            ReportSection.ClearPayload("driverguardian-preview-first-run");
-            WorkflowSection.ShowSecondaryRecommendations = false;
-            State = MainUiState.Initial(
-                UiStrings.PreviewWindowTitle,
-                string.Format(UiStrings.PreviewModeStatusFormat, scenario.DisplayName),
-                UiStrings.PreviewApplyScenarioAction);
-            return;
-        }
-
-        var result = await _previewWorkflow.RunScanAsync(CancellationToken.None);
-        ApplyWorkflowResult(result, isPreview: true, scenarioName: scenario.DisplayName);
-    }
-
-    private void ApplyWorkflowResult(MainScreenWorkflowResult result, bool isPreview, string? scenarioName = null)
-    {
-        State = MainUiStateFactory.CreateFromWorkflowResult(result, isPreview, scenarioName);
-        WorkflowSection.ShowSecondaryRecommendations = false;
-        HistorySection.RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);
-        _lastApprovedOfficialSourceUrl = result.OfficialSourceAction.ApprovedOfficialSourceUrl;
-        ReportSection.ApplyWorkflowPayload(result.ReportExportPayload);
-        OnPropertyChanged(nameof(CanOpenOfficialSource));
-        OnPropertyChanged(nameof(OpenOfficialSourceBlockReason));
-
-        if (OpenOfficialSourceCommand is AsyncRelayCommand command)
-        {
-            command.RaiseCanExecuteChanged();
-        }
-    }
-
     private void OnSettingsSectionPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(SettingsSectionViewModel.CustomDiagnosticLogFolderPath))
@@ -256,36 +142,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
             SyncEffectiveDiagnosticFolder();
         }
     }
-
-    private void SyncEffectiveDiagnosticFolder()
-    {
-        var effective = _diagnosticLogsFolderService.ResolveEffectiveFolderPath(SettingsSection.CustomDiagnosticLogFolderPath);
-        SettingsSection.ApplyEffectiveDiagnosticFolder(effective);
-    }
-
-    private IReadOnlyList<PreviewScenarioOption> BuildPreviewOptions()
-    {
-        if (_previewWorkflow is null)
-        {
-            return Array.Empty<PreviewScenarioOption>();
-        }
-
-        return _previewWorkflow.AvailableScenarios
-            .Select(id => new PreviewScenarioOption(id, GetScenarioName(id)))
-            .ToArray();
-    }
-
-    private static string GetScenarioName(PreviewScenarioId scenarioId)
-        => scenarioId switch
-        {
-            PreviewScenarioId.FirstRunPreScan => UiStrings.PreviewScenarioFirstRun,
-            PreviewScenarioId.NoActionableRecommendation => UiStrings.PreviewScenarioNoAction,
-            PreviewScenarioId.RecommendationWithLimitedEvidence => UiStrings.PreviewScenarioLimitedEvidence,
-            PreviewScenarioId.RecommendationReadyForManualAction => UiStrings.PreviewScenarioManualReady,
-            PreviewScenarioId.VerificationReturnGuidance => UiStrings.PreviewScenarioVerificationReturn,
-            PreviewScenarioId.PopulatedHistoryAndExport => UiStrings.PreviewScenarioHistoryExport,
-            _ => UiStrings.PreviewScenarioFirstRun
-        };
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
