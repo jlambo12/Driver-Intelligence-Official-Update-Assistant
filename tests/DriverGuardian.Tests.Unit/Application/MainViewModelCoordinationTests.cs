@@ -4,7 +4,6 @@ using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.Settings;
-using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.ViewModels;
 using DriverGuardian.UI.Wpf.Services;
 
@@ -30,19 +29,6 @@ public sealed class MainViewModelCoordinationTests
         Assert.Equal(133, viewModel.SettingsSection.HistoryMaxEntries);
         Assert.False(viewModel.SettingsSection.ShowVerificationHints);
         Assert.Equal(ShareableReportFormat.PlainText, viewModel.SettingsSection.SelectedReportFormat.Value);
-    }
-
-    [Fact]
-    public async Task PreviewFirstRunScenario_ResetsHistoryAndReportState()
-    {
-        var previewWorkflow = new PreviewScenarioMainScreenWorkflow();
-        var viewModel = CreateMainViewModel(previewWorkflow, await CreateSettingsRepositoryAsync(AppSettings.Default));
-
-        await viewModel.InitializeAsync();
-
-        Assert.Empty(viewModel.HistorySection.RecentHistory);
-        Assert.Equal(UiStrings.ReportExportStatusNoData, viewModel.ReportSection.ReportExportStatusText);
-        Assert.False(viewModel.WorkflowSection.ShowSecondaryRecommendations);
     }
 
     [Fact]

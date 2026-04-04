@@ -8,15 +8,9 @@ public sealed partial class MainViewModel
 {
     private async Task ScanAsync()
     {
-        if (IsPreviewMode)
-        {
-            await ApplyPreviewScenarioAsync();
-            return;
-        }
-
         State = State with { StatusText = UiStrings.StatusScanning };
         var result = await _mainScreenWorkflow.RunScanAsync(CancellationToken.None);
-        ApplyWorkflowResult(result, isPreview: false);
+        ApplyWorkflowResult(result);
     }
 
     private async Task ExportReportAsync()
@@ -54,9 +48,9 @@ public sealed partial class MainViewModel
         State = State with { StatusText = $"Открыт официальный источник: {approvedUri.Host}" };
     }
 
-    private void ApplyWorkflowResult(MainScreenWorkflowResult result, bool isPreview, string? scenarioName = null)
+    private void ApplyWorkflowResult(MainScreenWorkflowResult result)
     {
-        State = MainUiStateFactory.CreateFromWorkflowResult(result, isPreview, scenarioName);
+        State = MainUiStateFactory.CreateFromWorkflowResult(result);
         WorkflowSection.ShowSecondaryRecommendations = false;
         HistorySection.RecentHistory = RecentHistoryPresentation.FromResults(result.RecentHistory);
         _lastApprovedOfficialSourceUrl = result.OfficialSourceAction.ApprovedOfficialSourceUrl;
