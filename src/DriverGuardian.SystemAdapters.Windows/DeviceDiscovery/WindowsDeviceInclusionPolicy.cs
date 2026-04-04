@@ -82,10 +82,7 @@ public static class WindowsDeviceInclusionPolicy
                 return true;
             }
 
-            if (GetIncludedClasses(profile).Contains(snapshot.DeviceClass))
-            {
-                return true;
-            }
+            return GetIncludedClasses(profile).Contains(snapshot.DeviceClass);
         }
 
         return snapshot.HardwareIds.Any(id => IncludedHardwarePrefixes.Any(prefix => id.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
