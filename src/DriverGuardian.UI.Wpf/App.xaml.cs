@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Windows;
 using DriverGuardian.Bootstrap.Runtime;
 using DriverGuardian.UI.Wpf.Services;
+using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.ViewModels;
 using WpfApplication = System.Windows.Application;
 
@@ -39,8 +40,8 @@ public partial class App : WpfApplication
         {
             await startupLogger.LogErrorAsync("app.startup.failed", "Primary startup flow failed.", ex, CancellationToken.None);
             MessageBox.Show(
-                $"Не удалось запустить приложение.{Environment.NewLine}{Environment.NewLine}{ex.GetType().Name}: {ex.Message}",
-                "DriverGuardian startup error",
+                string.Format(UiStrings.StartupErrorMessageFormat, ex.GetType().Name, ex.Message),
+                UiStrings.StartupErrorTitle,
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             Shutdown(-1);

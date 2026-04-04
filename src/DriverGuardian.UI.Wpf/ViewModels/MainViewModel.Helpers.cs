@@ -16,7 +16,11 @@ public sealed partial class MainViewModel
             return false;
         }
 
-        if (!string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        if (!parsed.IsAbsoluteUri ||
+            !string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(parsed.Host) ||
+            parsed.IsLoopback ||
+            !string.IsNullOrEmpty(parsed.UserInfo))
         {
             return false;
         }

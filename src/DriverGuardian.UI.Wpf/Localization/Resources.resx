@@ -105,6 +105,18 @@
   <data name="Official_Source_Url_Unavailable" xml:space="preserve">
     <value>ссылка недоступна</value>
   </data>
+  <data name="Official_Source_Open_Action_Label" xml:space="preserve">
+    <value>Открыть подтверждённый официальный источник</value>
+  </data>
+  <data name="Official_Source_Open_Blocked_No_Scan" xml:space="preserve">
+    <value>Запустите анализ, чтобы получить подтверждённый официальный источник.</value>
+  </data>
+  <data name="Official_Source_Open_Failed" xml:space="preserve">
+    <value>Не удалось открыть официальный источник. Проверьте браузер по умолчанию.</value>
+  </data>
+  <data name="Official_Source_Open_Success_Format" xml:space="preserve">
+    <value>Открыт официальный источник: {0}</value>
+  </data>
   <data name="Recommendation_Device_Format" xml:space="preserve">
     <value>Устройство: {0}</value>
   </data>
@@ -407,4 +419,18 @@
     <value>Дополнительные записи остаются вспомогательными и не влияют на основной приоритетный список.</value>
   </data>
 
-<data name="Action_Status_No_Action_Needed" xml:space="preserve"><value>действие не требуется</value></data><data name="Action_Status_Waiting_For_Return" xml:space="preserve"><value>ожидается возврат пользователя</value></data><data name="Action_Status_Verification_Expected" xml:space="preserve"><value>проверка доступна после возврата</value></data></root>
+<data name="Action_Status_No_Action_Needed" xml:space="preserve"><value>действие не требуется</value></data><data name="Action_Status_Waiting_For_Return" xml:space="preserve"><value>ожидается возврат пользователя</value></data><data name="Action_Status_Verification_Expected" xml:space="preserve"><value>проверка доступна после возврата</value></data>  <data name="Status_Scan_Failed" xml:space="preserve">
+    <value>Сканирование завершилось с ошибкой: данные недостоверны.</value>
+  </data>
+  <data name="Status_Scan_Partial" xml:space="preserve">
+    <value>Сканирование частично завершено: часть данных может отсутствовать.</value>
+  </data>
+  <data name="Startup_Error_Message_Format" xml:space="preserve">
+    <value>Не удалось запустить приложение.
+
+{0}: {1}</value>
+  </data>
+  <data name="Startup_Error_Title" xml:space="preserve">
+    <value>Ошибка запуска DriverGuardian</value>
+  </data>
+</root>

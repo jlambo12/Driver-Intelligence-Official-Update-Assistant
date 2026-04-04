@@ -41,11 +41,11 @@ public sealed partial class MainViewModel
 
         if (!_officialSourceLauncher.Open(approvedUri))
         {
-            State = State with { StatusText = "Не удалось открыть официальный источник. Проверьте браузер по умолчанию." };
+            State = State with { StatusText = UiStrings.OfficialSourceOpenFailed };
             return;
         }
 
-        State = State with { StatusText = $"Открыт официальный источник: {approvedUri.Host}" };
+        State = State with { StatusText = string.Format(UiStrings.OfficialSourceOpenSuccessFormat, approvedUri.Host) };
     }
 
     private void ApplyWorkflowResult(MainScreenWorkflowResult result)
