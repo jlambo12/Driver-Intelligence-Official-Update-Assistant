@@ -7,6 +7,13 @@
     "expectedEvidenceToken": "exact"
   },
   {
+    "name": "lowercase-exact-pci-match",
+    "hardwareIds": [ "pci\\ven_8086&dev_15f3" ],
+    "expectedCandidateVersion": "31.0.101.2125",
+    "expectedConfidence": "High",
+    "expectedEvidenceToken": "exact"
+  },
+  {
     "name": "normalized-pci-match",
     "hardwareIds": [ "PCI\\VEN_8086&DEV_15F3&SUBSYS_00000000&REV_10" ],
     "expectedCandidateVersion": "31.0.101.2125",
@@ -19,6 +26,48 @@
     "expectedCandidateVersion": "31.0.101.2125",
     "expectedConfidence": "Low",
     "expectedEvidenceToken": "compatible-vendor"
+  },
+  {
+    "name": "normalized-usb-match",
+    "hardwareIds": [ "USB\\VID_0BDA&PID_8153&REV_3000" ],
+    "expectedCandidateVersion": "10.63.20.1028",
+    "expectedConfidence": "Medium",
+    "expectedEvidenceToken": "normalized"
+  },
+  {
+    "name": "whitespace-normalized-usb-match",
+    "hardwareIds": [ "  USB\\VID_0bda&PID_8153&REV_3000  " ],
+    "expectedCandidateVersion": "10.63.20.1028",
+    "expectedConfidence": "Medium",
+    "expectedEvidenceToken": "normalized"
+  },
+  {
+    "name": "usb-vendor-fallback-match",
+    "hardwareIds": [ "USB\\VID_0BDA&PID_0001" ],
+    "expectedCandidateVersion": "10.63.20.1028",
+    "expectedConfidence": "Low",
+    "expectedEvidenceToken": "compatible-vendor"
+  },
+  {
+    "name": "best-score-wins-across-hardware-ids",
+    "hardwareIds": [ "", "USB\\VID_0BDA&PID_0001", "PCI\\VEN_8086&DEV_15F3" ],
+    "expectedCandidateVersion": "31.0.101.2125",
+    "expectedConfidence": "High",
+    "expectedEvidenceToken": "exact"
+  },
+  {
+    "name": "usb-should-not-fallback-to-pci-vendor",
+    "hardwareIds": [ "USB\\VID_8086&PID_0001" ],
+    "expectedCandidateVersion": null,
+    "expectedConfidence": null,
+    "expectedEvidenceToken": null
+  },
+  {
+    "name": "pci-should-not-fallback-to-usb-vendor",
+    "hardwareIds": [ "PCI\\VEN_0BDA&DEV_0001" ],
+    "expectedCandidateVersion": null,
+    "expectedConfidence": null,
+    "expectedEvidenceToken": null
   },
   {
     "name": "no-match",

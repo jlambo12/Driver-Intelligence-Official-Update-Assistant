@@ -13,6 +13,10 @@ namespace DriverGuardian.ProviderAdapters.Official.Registry;
 public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAdapter
 {
     private const string SnapshotFileRelativePath = "Data/windows-catalog-snapshot.json";
+    private const string PciPrefix = "PCI\\";
+    private const string UsbPrefix = "USB\\";
+    private const string PciVendorTokenPrefix = "PCI:";
+    private const string UsbVendorTokenPrefix = "USB:";
     private static readonly IReadOnlyDictionary<string, CatalogDriverRecord> CatalogByHardwareId = LoadSnapshot();
     private static readonly IReadOnlyDictionary<string, CatalogDriverRecord> CatalogByVendorId = BuildVendorFallbackMap();
 
@@ -120,11 +124,23 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
             return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
         }
 
-        using var stream = File.OpenRead(snapshotPath);
-        var snapshot = JsonSerializer.Deserialize<List<SnapshotRecord>>(stream, new JsonSerializerOptions
+        List<SnapshotRecord>? snapshot;
+        try
         {
-            PropertyNameCaseInsensitive = true
-        });
+            using var stream = File.OpenRead(snapshotPath);
+            snapshot = JsonSerializer.Deserialize<List<SnapshotRecord>>(stream, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        }
+        catch (IOException)
+        {
+            return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
+        }
+        catch (JsonException)
+        {
+            return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
+        }
 
         if (snapshot is null || snapshot.Count == 0)
         {
@@ -167,14 +183,14 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         var map = new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in CatalogByHardwareId)
         {
-            if (!TryExtractToken(entry.Key, "VEN_", out var ven) || string.IsNullOrWhiteSpace(ven))
+            if (!TryExtractVendorToken(entry.Key, out var vendorToken) || string.IsNullOrWhiteSpace(vendorToken))
             {
                 continue;
             }
 
-            if (!map.ContainsKey(ven))
+            if (!map.ContainsKey(vendorToken))
             {
-                map[ven] = entry.Value;
+                map[vendorToken] = entry.Value;
             }
         }
 
@@ -263,12 +279,12 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         compatibilityConfidence = CompatibilityConfidence.Unknown;
         score = 0;
 
-        if (!TryExtractToken(hardwareId, "VEN_", out var ven) || string.IsNullOrWhiteSpace(ven))
+        if (!TryExtractVendorToken(hardwareId, out var vendorToken) || string.IsNullOrWhiteSpace(vendorToken))
         {
             return false;
         }
 
-        if (!CatalogByVendorId.TryGetValue(ven, out record))
+        if (!CatalogByVendorId.TryGetValue(vendorToken, out record))
         {
             return false;
         }
@@ -277,6 +293,26 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         compatibilityConfidence = CompatibilityConfidence.Low;
         score = 100;
         return true;
+    }
+
+    private static bool TryExtractVendorToken(string hardwareId, out string? token)
+    {
+        if (hardwareId.StartsWith(PciPrefix, StringComparison.OrdinalIgnoreCase) &&
+            TryExtractToken(hardwareId, "VEN_", out var ven))
+        {
+            token = $"{PciVendorTokenPrefix}{ven}";
+            return true;
+        }
+
+        if (hardwareId.StartsWith(UsbPrefix, StringComparison.OrdinalIgnoreCase) &&
+            TryExtractToken(hardwareId, "VID_", out var vid))
+        {
+            token = $"{UsbVendorTokenPrefix}{vid}";
+            return true;
+        }
+
+        token = null;
+        return false;
     }
 
     private static string? ExtractToken(string value, string key)
