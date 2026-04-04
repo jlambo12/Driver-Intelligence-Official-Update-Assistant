@@ -70,9 +70,15 @@ public static class WindowsDeviceInclusionPolicy
             return false;
         }
 
-        if (!string.IsNullOrWhiteSpace(snapshot.DeviceClass))
+        if (snapshot.DeviceClass is not null)
         {
-            if (ExcludedClasses.Contains(snapshot.DeviceClass))
+            var deviceClass = snapshot.DeviceClass.Trim();
+            if (deviceClass.Length == 0)
+            {
+                return false;
+            }
+
+            if (ExcludedClasses.Contains(deviceClass))
             {
                 return false;
             }
@@ -83,7 +89,7 @@ public static class WindowsDeviceInclusionPolicy
             }
 
             var includedClasses = GetIncludedClasses(profile);
-            if (!includedClasses.Contains(snapshot.DeviceClass))
+            if (!includedClasses.Contains(deviceClass))
             {
                 return false;
             }
