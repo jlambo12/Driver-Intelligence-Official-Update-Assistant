@@ -79,4 +79,19 @@ public sealed class WindowsDeviceInclusionPolicyTests
 
         Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Comprehensive));
     }
+
+    [Fact]
+    public void ShouldInclude_ReturnsFalse_InBalancedProfile_ForClassOutsideAllowList_EvenWithIncludedHardwarePrefix()
+    {
+        var snapshot = new WindowsPnpEntitySnapshot(
+            InstanceId: "USB\\VID_0000&PID_0000\\1",
+            FriendlyName: "USB Camera",
+            HardwareIds: ["USB\\VID_0000&PID_0000"],
+            Manufacturer: "Vendor",
+            DeviceClass: "LegacyUsbCamera",
+            ConfigManagerErrorCode: 0,
+            Status: "OK");
+
+        Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
+    }
 }
