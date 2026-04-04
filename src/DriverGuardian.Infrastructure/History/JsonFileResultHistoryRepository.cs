@@ -1,4 +1,3 @@
-using System.Text.Json;
 using DriverGuardian.Application.History;
 using DriverGuardian.Application.History.Models;
 
@@ -6,13 +5,8 @@ namespace DriverGuardian.Infrastructure.History;
 
 public sealed class JsonFileResultHistoryRepository : IResultHistoryRepository
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        WriteIndented = true
-    };
-
     private readonly object _gate = new();
-    private readonly string _filePath;
+    private readonly JsonFileHistoryStorage _storage;
 
     public JsonFileResultHistoryRepository(string filePath)
     {
@@ -21,7 +15,7 @@ public sealed class JsonFileResultHistoryRepository : IResultHistoryRepository
             throw new ArgumentException("A history file path is required.", nameof(filePath));
         }
 
-        _filePath = filePath;
+        _storage = new JsonFileHistoryStorage(filePath);
     }
 
     public Task SaveAsync(ResultHistoryEntry entry, CancellationToken cancellationToken)
@@ -31,10 +25,10 @@ public sealed class JsonFileResultHistoryRepository : IResultHistoryRepository
 
         lock (_gate)
         {
-            var entries = LoadEntriesUnsafe(cancellationToken);
+            var entries = _storage.Load(cancellationToken);
             entries.RemoveAll(existing => existing.Id == entry.Id);
             entries.Add(entry);
-            SaveEntriesUnsafe(entries, cancellationToken);
+            _storage.Save(entries, cancellationToken);
         }
 
         return Task.CompletedTask;
@@ -51,7 +45,7 @@ public sealed class JsonFileResultHistoryRepository : IResultHistoryRepository
 
         lock (_gate)
         {
-            var ordered = LoadEntriesUnsafe(cancellationToken)
+            var ordered = _storage.Load(cancellationToken)
                 .OrderByDescending(entry => entry.OccurredAtUtc)
                 .ThenByDescending(entry => entry.Id)
                 .Take(take)
@@ -72,7 +66,7 @@ public sealed class JsonFileResultHistoryRepository : IResultHistoryRepository
 
         lock (_gate)
         {
-            var entries = LoadEntriesUnsafe(cancellationToken);
+            var entries = _storage.Load(cancellationToken);
             if (entries.Count <= maxEntries)
             {
                 return Task.CompletedTask;
@@ -84,131 +78,9 @@ public sealed class JsonFileResultHistoryRepository : IResultHistoryRepository
                 .Take(maxEntries)
                 .ToList();
 
-            SaveEntriesUnsafe(trimmed, cancellationToken);
+            _storage.Save(trimmed, cancellationToken);
         }
 
         return Task.CompletedTask;
     }
-
-    private List<ResultHistoryEntry> LoadEntriesUnsafe(CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (!File.Exists(_filePath))
-        {
-            return [];
-        }
-
-        using var stream = File.OpenRead(_filePath);
-        var stored = JsonSerializer.Deserialize<List<StoredHistoryEntry>>(stream, SerializerOptions) ?? [];
-
-        return stored
-            .Select(MapStoredToDomain)
-            .Where(entry => entry is not null)
-            .Cast<ResultHistoryEntry>()
-            .ToList();
-    }
-
-    private void SaveEntriesUnsafe(IReadOnlyCollection<ResultHistoryEntry> entries, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var directory = Path.GetDirectoryName(_filePath);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        var stored = entries
-            .Select(MapDomainToStored)
-            .ToArray();
-
-        using var stream = File.Create(_filePath);
-        JsonSerializer.Serialize(stream, stored, SerializerOptions);
-    }
-
-    private static StoredHistoryEntry MapDomainToStored(ResultHistoryEntry entry)
-        => entry switch
-        {
-            ScanHistoryEntry scan => new StoredHistoryEntry(
-                Id: scan.Id,
-                Kind: "scan",
-                OccurredAtUtc: scan.OccurredAtUtc,
-                ScanSessionId: scan.ScanSessionId,
-                DiscoveredDeviceCount: scan.DiscoveredDeviceCount,
-                InspectedDriverCount: scan.InspectedDriverCount,
-                TotalRecommendations: null,
-                RequiresManualInstallCount: null,
-                DeferredDecisionCount: null,
-                VerificationStatus: null,
-                Note: null),
-            RecommendationSummaryHistoryEntry recommendation => new StoredHistoryEntry(
-                Id: recommendation.Id,
-                Kind: "recommendation",
-                OccurredAtUtc: recommendation.OccurredAtUtc,
-                ScanSessionId: recommendation.ScanSessionId,
-                DiscoveredDeviceCount: null,
-                InspectedDriverCount: null,
-                TotalRecommendations: recommendation.TotalRecommendations,
-                RequiresManualInstallCount: recommendation.RequiresManualInstallCount,
-                DeferredDecisionCount: recommendation.DeferredDecisionCount,
-                VerificationStatus: null,
-                Note: null),
-            VerificationHistoryEntry verification => new StoredHistoryEntry(
-                Id: verification.Id,
-                Kind: "verification",
-                OccurredAtUtc: verification.OccurredAtUtc,
-                ScanSessionId: verification.ScanSessionId,
-                DiscoveredDeviceCount: null,
-                InspectedDriverCount: null,
-                TotalRecommendations: null,
-                RequiresManualInstallCount: null,
-                DeferredDecisionCount: null,
-                VerificationStatus: verification.Status.ToString(),
-                Note: verification.Note),
-            _ => throw new InvalidOperationException($"Unsupported history entry type: {entry.GetType().Name}")
-        };
-
-    private static ResultHistoryEntry? MapStoredToDomain(StoredHistoryEntry entry)
-    {
-        try
-        {
-            return entry.Kind switch
-            {
-                "scan" when entry.DiscoveredDeviceCount.HasValue && entry.InspectedDriverCount.HasValue
-                    => ScanHistoryEntry.Create(entry.Id, entry.OccurredAtUtc, entry.ScanSessionId, entry.DiscoveredDeviceCount.Value, entry.InspectedDriverCount.Value),
-                "recommendation" when entry.TotalRecommendations.HasValue && entry.RequiresManualInstallCount.HasValue && entry.DeferredDecisionCount.HasValue
-                    => RecommendationSummaryHistoryEntry.Create(entry.Id, entry.OccurredAtUtc, entry.ScanSessionId, entry.TotalRecommendations.Value, entry.RequiresManualInstallCount.Value, entry.DeferredDecisionCount.Value),
-                "verification"
-                    => VerificationHistoryEntry.Create(entry.Id, entry.OccurredAtUtc, entry.ScanSessionId, ParseStatus(entry.VerificationStatus), entry.Note),
-                _ => null
-            };
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static VerificationHistoryStatus ParseStatus(string? status)
-        => status?.Trim().ToLowerInvariant() switch
-        {
-            "passed" => VerificationHistoryStatus.Passed,
-            "failed" => VerificationHistoryStatus.Failed,
-            "skipped" => VerificationHistoryStatus.Skipped,
-            _ => VerificationHistoryStatus.Unknown
-        };
-
-    private sealed record StoredHistoryEntry(
-        Guid Id,
-        string Kind,
-        DateTimeOffset OccurredAtUtc,
-        Guid ScanSessionId,
-        int? DiscoveredDeviceCount,
-        int? InspectedDriverCount,
-        int? TotalRecommendations,
-        int? RequiresManualInstallCount,
-        int? DeferredDecisionCount,
-        string? VerificationStatus,
-        string? Note);
 }

@@ -36,6 +36,7 @@ public sealed class RecommendationPipelineTests
         var summary = Assert.Single(result);
         Assert.True(summary.HasRecommendation);
         Assert.Equal("2.0.0", summary.RecommendedVersion);
+        Assert.Equal("https://example.test/driver", summary.OfficialSourceUrl);
     }
 
     [Fact]
@@ -80,6 +81,7 @@ public sealed class RecommendationPipelineTests
         var summary = Assert.Single(result);
         Assert.True(summary.HasRecommendation);
         Assert.Equal("2.2.0", summary.RecommendedVersion);
+        Assert.Null(summary.OfficialSourceUrl);
     }
 
 
@@ -140,6 +142,21 @@ public sealed class RecommendationPipelineTests
         Assert.Equal("31.0.101.2125", summary.RecommendedVersion);
     }
 
+
+    [Fact]
+    public async Task BuildAsync_ShouldNotExposeOfficialSourceUrl_WhenSourceUriIsNotSafeHttps()
+    {
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("2.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite, sourceUri: new Uri("http://example.test/driver"))]))
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("DEV-1", "1.0.0")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.True(summary.HasRecommendation);
+        Assert.Null(summary.OfficialSourceUrl);
+    }
+
     [Fact]
     public async Task BuildAsync_ShouldReturnEmpty_WhenNoInstalledDriversProvided()
     {
@@ -165,14 +182,15 @@ public sealed class RecommendationPipelineTests
         string version,
         CompatibilityConfidence confidence,
         bool isOfficial,
-        SourceTrustLevel trustLevel)
+        SourceTrustLevel trustLevel,
+        Uri? sourceUri = null)
         => new(
             DriverIdentifier: "DRV-1",
             CandidateVersion: version,
             ReleaseDateIso: null,
             CompatibilityConfidence: confidence,
             SourceEvidence: new SourceEvidence(
-                new Uri("https://example.test/driver"),
+                sourceUri ?? new Uri("https://example.test/driver"),
                 "Example Publisher",
                 trustLevel,
                 isOfficial,

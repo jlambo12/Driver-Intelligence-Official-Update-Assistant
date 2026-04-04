@@ -19,17 +19,19 @@ public sealed class MainViewModelCoordinationTests
         {
             History = AppSettings.Default.History with { MaxEntries = 133 },
             Reports = AppSettings.Default.Reports with { DefaultFormat = ShareableReportFormat.PlainText },
-            WorkflowGuidance = AppSettings.Default.WorkflowGuidance with { ShowPostInstallVerificationHints = false }
+            WorkflowGuidance = AppSettings.Default.WorkflowGuidance with { ShowPostInstallVerificationHints = false },
+            ScanCoverage = new ScanCoveragePreferences(DeviceScanProfile.Comprehensive)
         };
 
         var repository = await CreateSettingsRepositoryAsync(settings);
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(CreateResult()), repository);
 
-        await viewModel.InitializeAsync();
+        await viewModel.InitializeAsync(CancellationToken.None);
 
         Assert.Equal(133, viewModel.SettingsSection.HistoryMaxEntries);
         Assert.False(viewModel.SettingsSection.ShowVerificationHints);
         Assert.Equal(ShareableReportFormat.PlainText, viewModel.SettingsSection.SelectedReportFormat.Value);
+        Assert.Equal(DeviceScanProfile.Comprehensive, viewModel.SettingsSection.SelectedScanProfile.Value);
     }
     [Fact]
     public async Task ScanAsync_PropagatesWorkflowResultToSections()
@@ -42,7 +44,7 @@ public sealed class MainViewModelCoordinationTests
             ]);
 
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default));
-        await viewModel.InitializeAsync();
+        await viewModel.InitializeAsync(CancellationToken.None);
 
         await ExecuteAsync(viewModel.ScanCommand);
 
@@ -51,13 +53,16 @@ public sealed class MainViewModelCoordinationTests
         Assert.True(viewModel.State.Results.HasScanData);
     }
 
-    private static MainViewModel CreateMainViewModel(IMainScreenWorkflow workflow, ISettingsRepository settingsRepository)
+    private static MainViewModel CreateMainViewModel(
+        IMainScreenWorkflow workflow,
+        ISettingsRepository settingsRepository,
+        IOfficialSourceLauncher? launcher = null)
         => new(
             workflow,
             settingsRepository,
             new FakeReportFileSaveService(),
             new FakeDiagnosticLogsFolderService(),
-            new FakeOfficialSourceLauncher());
+            launcher ?? new FakeOfficialSourceLauncher());
 
     private static async Task<InMemorySettingsRepository> CreateSettingsRepositoryAsync(AppSettings settings)
     {
@@ -86,7 +91,7 @@ public sealed class MainViewModelCoordinationTests
                 null));
 
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default));
-        await viewModel.InitializeAsync();
+        await viewModel.InitializeAsync(CancellationToken.None);
 
         await ExecuteAsync(viewModel.ScanCommand);
 
@@ -106,17 +111,65 @@ public sealed class MainViewModelCoordinationTests
                 null));
 
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default));
-        await viewModel.InitializeAsync();
+        await viewModel.InitializeAsync(CancellationToken.None);
 
         await ExecuteAsync(viewModel.ScanCommand);
 
         Assert.True(viewModel.CanOpenOfficialSource);
     }
 
+
+    [Fact]
+    public async Task OpenRecommendationOfficialSourceCommand_WithSafeUrl_ShouldLaunchSource()
+    {
+        var launcher = new FakeOfficialSourceLauncher();
+        var result = CreateResult(
+            recommendationDetails:
+            [
+                new RecommendationDetailResult(
+                    "device",
+                    "id",
+                    0,
+                    true,
+                    "reason",
+                    "1.0",
+                    "provider",
+                    "1.1",
+                    true,
+                    true,
+                    true,
+                    "hint",
+                    "https://vendor.example/driver")
+            ]);
+
+        var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default), launcher);
+        await viewModel.InitializeAsync(CancellationToken.None);
+        await ExecuteAsync(viewModel.ScanCommand);
+
+        viewModel.OpenRecommendationOfficialSourceCommand.Execute("https://vendor.example/driver");
+
+        Assert.Equal("https://vendor.example/driver", launcher.LastOpenedUri?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task OpenRecommendationOfficialSourceCommand_WithUnsafeUrl_ShouldNotLaunchSource()
+    {
+        var launcher = new FakeOfficialSourceLauncher();
+        var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(CreateResult()), await CreateSettingsRepositoryAsync(AppSettings.Default), launcher);
+        await viewModel.InitializeAsync(CancellationToken.None);
+        await ExecuteAsync(viewModel.ScanCommand);
+
+        viewModel.OpenRecommendationOfficialSourceCommand.Execute("http://vendor.example/driver");
+
+        Assert.Null(launcher.LastOpenedUri);
+        Assert.Equal(UiStrings.OfficialSourceUrlUnavailable, viewModel.State.StatusText);
+    }
+
     private static MainScreenWorkflowResult CreateResult(
         ReportExportPayload? reportPayload = null,
         IReadOnlyCollection<RecentHistoryEntryResult>? recentHistory = null,
-        OpenOfficialSourceActionResult? officialSourceAction = null)
+        OpenOfficialSourceActionResult? officialSourceAction = null,
+        IReadOnlyCollection<RecommendationDetailResult>? recommendationDetails = null)
         => new(
             ScanExecutionStatus.Completed,
             [],
@@ -131,6 +184,7 @@ public sealed class MainViewModelCoordinationTests
             "ru-RU",
             Guid.NewGuid(),
             reportPayload ?? new ReportExportPayload("name", "", ""),
+            recommendationDetails ??
             [
                 new RecommendationDetailResult(
                     "device",
@@ -171,6 +225,12 @@ public sealed class MainViewModelCoordinationTests
 
     private sealed class FakeOfficialSourceLauncher : IOfficialSourceLauncher
     {
-        public bool Open(Uri uri) => true;
+        public Uri? LastOpenedUri { get; private set; }
+
+        public bool Open(Uri uri)
+        {
+            LastOpenedUri = uri;
+            return true;
+        }
     }
 }

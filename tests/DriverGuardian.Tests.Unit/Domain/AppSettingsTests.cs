@@ -23,12 +23,14 @@ public sealed class AppSettingsTests
             Reports: ReportPreferences.Default,
             WorkflowGuidance: WorkflowGuidancePreferences.Default,
             Safety: SafetyPreferences.Default,
-            DiagnosticLogging: new DiagnosticLoggingPreferences(true, "  C:/Logs  "));
+            DiagnosticLogging: new DiagnosticLoggingPreferences(true, "  C:/Logs  "),
+            ScanCoverage: new ScanCoveragePreferences(DeviceScanProfile.Comprehensive));
 
         var normalized = settings.Normalize();
 
         Assert.Equal("en-US", normalized.UiCulture);
         Assert.Equal(10, normalized.History.MaxEntries);
         Assert.Equal("C:/Logs", normalized.DiagnosticLogging.CustomLogsFolderPath);
+        Assert.Equal(DeviceScanProfile.Comprehensive, normalized.ScanCoverage.DeviceProfile);
     }
 }

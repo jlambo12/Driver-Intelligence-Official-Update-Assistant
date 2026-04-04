@@ -74,6 +74,40 @@
                                     <TextBlock Text="{Binding Summary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding InstalledDriverSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding CandidateSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding OfficialSourceSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                    <Button Content="{Binding DataContext.State.Results.OpenOfficialSourceActionLabel, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            Command="{Binding DataContext.OpenRecommendationOfficialSourceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding OfficialSourceUrl}"
+                                            Margin="0 4 0 0"
+                                            Height="28"
+                                            HorizontalAlignment="Left"
+                                            Padding="10 3">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding CanOpenOfficialSourceUrl}" Value="False">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                    <TextBlock Text="{Binding OfficialSourceActionHint}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#92400E">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding OfficialSourceActionHint}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding OfficialSourceActionHint}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                     <TextBlock Text="{Binding ManualHandoffSummary}" Margin="0 2 0 0" TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding NextStepGuidance}" Margin="0 4 0 0" TextWrapping="Wrap"/>
                                 </StackPanel>
@@ -122,6 +156,25 @@
                                             <TextBlock Text="{Binding WorkflowState}" Margin="0 2 0 0" TextWrapping="Wrap" FontWeight="SemiBold"/>
                                             <TextBlock Text="{Binding DeviceSummary}" Margin="0 3 0 0" TextWrapping="Wrap" Foreground="#334155"/>
                                             <TextBlock Text="{Binding Summary}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#475569"/>
+                                            <TextBlock Text="{Binding OfficialSourceSummary}" Margin="0 2 0 0" TextWrapping="Wrap" Foreground="#475569"/>
+                                            <Button Content="{Binding DataContext.State.Results.OpenOfficialSourceActionLabel, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Command="{Binding DataContext.OpenRecommendationOfficialSourceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding OfficialSourceUrl}"
+                                                    Margin="0 4 0 0"
+                                                    Height="26"
+                                                    HorizontalAlignment="Left"
+                                                    Padding="9 2">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding CanOpenOfficialSourceUrl}" Value="False">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>

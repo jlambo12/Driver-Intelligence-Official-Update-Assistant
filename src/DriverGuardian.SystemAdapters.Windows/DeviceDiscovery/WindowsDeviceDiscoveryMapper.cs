@@ -29,7 +29,7 @@ internal static class WindowsDeviceDiscoveryMapper
     }
 }
 
-internal sealed record WindowsPnpEntitySnapshot(
+public sealed record WindowsPnpEntitySnapshot(
     string? InstanceId,
     string? FriendlyName,
     IReadOnlyCollection<string> HardwareIds,

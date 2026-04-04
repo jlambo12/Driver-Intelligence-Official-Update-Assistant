@@ -1,6 +1,7 @@
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.Models;
+using DriverGuardian.UI.Wpf.Services;
 
 namespace DriverGuardian.UI.Wpf.ViewModels;
 
@@ -46,6 +47,24 @@ public sealed partial class MainViewModel
         }
 
         State = State with { StatusText = string.Format(UiStrings.OfficialSourceOpenSuccessFormat, approvedUri.Host) };
+    }
+
+    private void OpenRecommendationOfficialSource(object? parameter)
+    {
+        var url = parameter as string;
+        if (!SafeOfficialSourceUrlValidator.TryGetSafeHttpsUri(url, out var uri) || uri is null)
+        {
+            State = State with { StatusText = UiStrings.OfficialSourceUrlUnavailable };
+            return;
+        }
+
+        if (!_officialSourceLauncher.Open(uri))
+        {
+            State = State with { StatusText = UiStrings.OfficialSourceOpenFailed };
+            return;
+        }
+
+        State = State with { StatusText = string.Format(UiStrings.OfficialSourceOpenSuccessFormat, uri.Host) };
     }
 
     private void ApplyWorkflowResult(MainScreenWorkflowResult result)

@@ -168,6 +168,15 @@
   <data name="Recommendation_Provider_Unknown" xml:space="preserve">
     <value>не указан</value>
   </data>
+  <data name="Recommendation_Official_Source_Format" xml:space="preserve">
+    <value>Официальный источник: {0}</value>
+  </data>
+  <data name="Recommendation_Official_Source_Blocked_By_Safety" xml:space="preserve">
+    <value>Ссылка источника скрыта: не прошла проверку безопасности (только HTTPS, без loopback и userinfo).</value>
+  </data>
+  <data name="Recommendation_Official_Source_Not_Applicable" xml:space="preserve">
+    <value>Официальный источник: не требуется (обновление не рекомендовано).</value>
+  </data>
   <data name="Settings_Title" xml:space="preserve">
     <value>Настройки</value>
   </data>
@@ -185,6 +194,21 @@
   </data>
   <data name="Settings_Verification_Hint_Label" xml:space="preserve">
     <value>Показывать подсказки по проверке после установки</value>
+  </data>
+  <data name="Settings_Scan_Profile_Label" xml:space="preserve">
+    <value>Профиль сканирования устройств:</value>
+  </data>
+  <data name="Settings_Scan_Profile_Hint" xml:space="preserve">
+    <value>Профиль применяется при следующем запуске приложения: Минимальный — только ключевые устройства, Баланс — рекомендуемый режим, Максимальный — максимально широкий охват.</value>
+  </data>
+  <data name="Settings_Scan_Profile_Minimal" xml:space="preserve">
+    <value>Минимальный</value>
+  </data>
+  <data name="Settings_Scan_Profile_Balanced" xml:space="preserve">
+    <value>Баланс (рекомендуется)</value>
+  </data>
+  <data name="Settings_Scan_Profile_Comprehensive" xml:space="preserve">
+    <value>Максимальный</value>
   </data>
   <data name="Settings_Diagnostic_Logging_Label" xml:space="preserve">
     <value>Включить диагностическое журналирование</value>

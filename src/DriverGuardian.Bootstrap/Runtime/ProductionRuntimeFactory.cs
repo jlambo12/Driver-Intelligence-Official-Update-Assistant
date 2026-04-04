@@ -24,7 +24,9 @@ namespace DriverGuardian.Bootstrap.Runtime;
 
 public static class ProductionRuntimeFactory
 {
-    public static ProductionRuntime Create(string localAppDataRoot)
+    public static async Task<ProductionRuntime> CreateAsync(
+        string localAppDataRoot,
+        CancellationToken cancellationToken = default)
     {
         var appDataDirectory = Path.Combine(localAppDataRoot, "DriverGuardian");
         var defaultLogsDirectory = Path.Combine(appDataDirectory, "Logs");
@@ -36,9 +38,10 @@ public static class ProductionRuntimeFactory
         ISettingsRepository settingsRepository = new JsonFileSettingsRepository(settingsFilePath);
         IDiagnosticLogger runtimeDiagnosticLogger = new SettingsDiagnosticLogger(settingsRepository, defaultLogsDirectory);
         IDiagnosticLogsFolderService logsFolderService = new DiagnosticLogsFolderService(defaultLogsDirectory);
+        var initialSettings = await settingsRepository.GetAsync(cancellationToken);
 
         IClock clock = new SystemClock();
-        IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService();
+        IDeviceDiscoveryService discovery = new WindowsDeviceDiscoveryService(initialSettings.ScanCoverage.DeviceProfile);
         IDriverMetadataInspector inspector = new WindowsDriverMetadataInspector();
         IScanOrchestrator scanOrchestrator = new ScanOrchestrator(discovery, inspector, clock);
 

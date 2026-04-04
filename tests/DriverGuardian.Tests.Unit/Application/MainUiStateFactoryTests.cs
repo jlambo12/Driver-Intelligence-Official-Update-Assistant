@@ -24,7 +24,38 @@ public sealed class MainUiStateFactoryTests
         Assert.Equal(expected, state.StatusText);
     }
 
-    private static MainScreenWorkflowResult CreateResult(ScanExecutionStatus status)
+    [Fact]
+    public void CreateFromWorkflowResult_ShouldNotShowPerRecommendationOpenAction_WhenOfficialSourceUrlIsUnsafe()
+    {
+        var result = CreateResult(
+            ScanExecutionStatus.Completed,
+            [
+                new RecommendationDetailResult(
+                    "Video adapter",
+                    "PCI\\VEN_0001",
+                    0,
+                    true,
+                    "reason",
+                    "1.0.0",
+                    "vendor",
+                    "2.0.0",
+                    true,
+                    true,
+                    true,
+                    "verification",
+                    "http://unsafe.example/driver")
+            ]);
+
+        var state = MainUiStateFactory.CreateFromWorkflowResult(result);
+        var detail = Assert.Single(state.Results.RecommendationDetails);
+
+        Assert.False(detail.CanOpenOfficialSourceUrl);
+        Assert.Equal(UiStrings.RecommendationOfficialSourceBlockedBySafety, detail.OfficialSourceActionHint);
+    }
+
+    private static MainScreenWorkflowResult CreateResult(
+        ScanExecutionStatus status,
+        IReadOnlyCollection<RecommendationDetailResult>? recommendationDetails = null)
         => new(
             status,
             [],
@@ -39,7 +70,7 @@ public sealed class MainUiStateFactoryTests
             "ru-RU",
             Guid.NewGuid(),
             new ReportExportPayload("name", "plain", "markdown"),
-            [],
+            recommendationDetails ?? [],
             new OpenOfficialSourceActionResult(false, OfficialSourceResolutionOutcome.InsufficientEvidence, OfficialSourceActionTarget.SourcePage, "status", null, null),
             []);
 }

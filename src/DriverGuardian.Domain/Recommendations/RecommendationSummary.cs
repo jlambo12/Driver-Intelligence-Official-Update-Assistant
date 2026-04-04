@@ -8,7 +8,8 @@ public sealed record RecommendationSummary
         DeviceIdentity deviceIdentity,
         bool hasRecommendation,
         string reason,
-        string? recommendedVersion)
+        string? recommendedVersion,
+        string? officialSourceUrl = null)
     {
         if (string.IsNullOrWhiteSpace(reason))
         {
@@ -19,10 +20,12 @@ public sealed record RecommendationSummary
         HasRecommendation = hasRecommendation;
         Reason = reason.Trim();
         RecommendedVersion = recommendedVersion;
+        OfficialSourceUrl = string.IsNullOrWhiteSpace(officialSourceUrl) ? null : officialSourceUrl.Trim();
     }
 
     public DeviceIdentity DeviceIdentity { get; }
     public bool HasRecommendation { get; }
     public string Reason { get; }
     public string? RecommendedVersion { get; }
+    public string? OfficialSourceUrl { get; }
 }

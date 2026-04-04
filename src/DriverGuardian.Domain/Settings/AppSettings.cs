@@ -12,6 +12,13 @@ public enum ShareableReportFormat
     PlainText = 1
 }
 
+public enum DeviceScanProfile
+{
+    Minimal = 0,
+    Balanced = 1,
+    Comprehensive = 2
+}
+
 public sealed record LocalizationPreferences(string PreferredCulture)
 {
     public static LocalizationPreferences Default => new("ru-RU");
@@ -87,13 +94,19 @@ public sealed record DiagnosticLoggingPreferences(
     }
 }
 
+public sealed record ScanCoveragePreferences(DeviceScanProfile DeviceProfile)
+{
+    public static ScanCoveragePreferences Default => new(DeviceScanProfile.Balanced);
+}
+
 public sealed record AppSettings(
     LocalizationPreferences Localization,
     HistoryPreferences History,
     ReportPreferences Reports,
     WorkflowGuidancePreferences WorkflowGuidance,
     SafetyPreferences Safety,
-    DiagnosticLoggingPreferences DiagnosticLogging)
+    DiagnosticLoggingPreferences DiagnosticLogging,
+    ScanCoveragePreferences ScanCoverage)
 {
     public static AppSettings Default => new(
         Localization: LocalizationPreferences.Default,
@@ -101,7 +114,8 @@ public sealed record AppSettings(
         Reports: ReportPreferences.Default,
         WorkflowGuidance: WorkflowGuidancePreferences.Default,
         Safety: SafetyPreferences.Default,
-        DiagnosticLogging: DiagnosticLoggingPreferences.Default);
+        DiagnosticLogging: DiagnosticLoggingPreferences.Default,
+        ScanCoverage: ScanCoveragePreferences.Default);
 
     public string UiCulture => Localization.PreferredCulture;
 
@@ -116,7 +130,8 @@ public sealed record AppSettings(
             Reports = Reports ?? ReportPreferences.Default,
             WorkflowGuidance = WorkflowGuidance ?? WorkflowGuidancePreferences.Default,
             Safety = Safety ?? SafetyPreferences.Default,
-            DiagnosticLogging = (DiagnosticLogging ?? DiagnosticLoggingPreferences.Default).Normalize()
+            DiagnosticLogging = (DiagnosticLogging ?? DiagnosticLoggingPreferences.Default).Normalize(),
+            ScanCoverage = ScanCoverage ?? ScanCoveragePreferences.Default
         };
     }
 }

@@ -12,6 +12,7 @@ public sealed class OfficialSourceResolutionService(IEnumerable<IOfficialProvide
     private readonly IReadOnlyCollection<IOfficialProviderAdapter> _providers = providers
         .Where(provider => provider.Descriptor.IsEnabled)
         .ToArray();
+    private readonly OfficialSourceProviderLookupCollector _collector = new();
 
     public async Task<OfficialSourceResolutionResult> ResolveAsync(
         IReadOnlyCollection<InstalledDriverSnapshot> drivers,
@@ -29,121 +30,13 @@ public sealed class OfficialSourceResolutionService(IEnumerable<IOfficialProvide
             return OfficialSourceResolutionResult.NoRecommendationTarget;
         }
 
-        var failures = new List<OfficialSourceProviderFailure>();
-        var policyCandidates = new List<OfficialSourcePolicyCandidate>();
-
-        foreach (var provider in _providers)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            ProviderLookupResponse response;
-            try
-            {
-                response = await provider.LookupAsync(new ProviderLookupRequest(
-                        provider.Descriptor.Code,
-                        targetDriver.DeviceIdentity.InstanceId,
-                        [targetDriver.HardwareIdentifier.Value],
-                        targetDriver.DriverVersion,
-                        OperatingSystemVersion: null,
-                        DeviceManufacturer: targetDriver.ProviderName,
-                        DeviceModel: null),
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                failures.Add(new OfficialSourceProviderFailure(provider.Descriptor.Code, ex.Message, ex.GetType().Name));
-                continue;
-            }
-
-            if (!response.IsSuccess)
-            {
-                failures.Add(new OfficialSourceProviderFailure(provider.Descriptor.Code, response.FailureReason ?? "Unknown provider failure.", null));
-                continue;
-            }
-
-            foreach (var candidate in response.Candidates)
-            {
-                if (!TryBuildPolicyCandidate(provider.Descriptor.Code, candidate, out var policyCandidate))
-                {
-                    continue;
-                }
-
-                policyCandidates.Add(policyCandidate);
-            }
-        }
-
-        var bestCandidate = policyCandidates
-            .OrderByDescending(candidate => candidate.PolicyScore)
-            .ThenBy(candidate => candidate.ProviderCode, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
+        var collection = await _collector.CollectAsync(_providers, targetDriver, cancellationToken);
+        var bestCandidate = OfficialSourcePolicyCandidateSelector.SelectBest(collection.PolicyCandidates);
 
         return new OfficialSourceResolutionResult(
             bestCandidate,
-            failures,
+            collection.Failures,
             HasRecommendationTarget: true);
-    }
-
-    // Safety-first policy:
-    // 1) source evidence page is the trust anchor.
-    // 2) approved navigation target is never replaced by an external CDN download URI.
-    // 3) direct official driver page is approved only for strong official publisher trust.
-    // 4) vendor support / catalog trust resolves to source page navigation.
-    private static bool TryBuildPolicyCandidate(
-        string providerCode,
-        ProviderCandidate candidate,
-        out OfficialSourcePolicyCandidate policyCandidate)
-    {
-        var sourceEvidence = candidate.SourceEvidence;
-        if (!sourceEvidence.IsOfficialSource || sourceEvidence.TrustLevel == SourceTrustLevel.Unknown)
-        {
-            policyCandidate = null!;
-            return false;
-        }
-
-        if (!string.Equals(sourceEvidence.SourceUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            policyCandidate = null!;
-            return false;
-        }
-
-        var actionTarget = sourceEvidence.TrustLevel == SourceTrustLevel.OfficialPublisherSite
-            ? OfficialSourceActionTarget.DirectDownloadPage
-            : OfficialSourceActionTarget.SourcePage;
-
-        var approvedNavigationUri = sourceEvidence.SourceUri;
-
-        policyCandidate = new OfficialSourcePolicyCandidate(
-            providerCode,
-            candidate.DriverIdentifier,
-            sourceEvidence,
-            SourceEvidencePageUri: sourceEvidence.SourceUri,
-            ApprovedNavigationUri: approvedNavigationUri,
-            RawDownloadUri: candidate.DownloadUri,
-            actionTarget,
-            CalculatePolicyScore(sourceEvidence.TrustLevel, candidate.CompatibilityConfidence));
-
-        return true;
-    }
-
-    private static int CalculatePolicyScore(SourceTrustLevel trustLevel, CompatibilityConfidence compatibility)
-    {
-        var trustScore = trustLevel switch
-        {
-            SourceTrustLevel.OfficialPublisherSite => 300,
-            SourceTrustLevel.OemSupportPortal => 200,
-            SourceTrustLevel.OperatingSystemCatalog => 150,
-            _ => 0
-        };
-
-        var compatibilityScore = compatibility switch
-        {
-            CompatibilityConfidence.High => 40,
-            CompatibilityConfidence.Medium => 25,
-            CompatibilityConfidence.Low => 10,
-            _ => 0
-        };
-
-        return trustScore + compatibilityScore;
     }
 }
 
