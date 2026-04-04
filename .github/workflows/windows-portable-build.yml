@@ -60,9 +60,86 @@ jobs:
         run: |
           & dotnet test "tests/DriverGuardian.Tests.Unit/DriverGuardian.Tests.Unit.csproj" --configuration Release `
             --no-restore `
+            --collect "XPlat Code Coverage" `
+            --results-directory "${{ github.workspace }}/${{ env.LOG_PATH }}/TestResults" `
             --logger "trx;LogFileName=unit-tests.trx" *>&1 `
             | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/test.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Enforce coverage gate (>=70%)
+        id: coverage_gate
+        shell: pwsh
+        run: |
+          $coverageFiles = Get-ChildItem -Path "${{ github.workspace }}/${{ env.LOG_PATH }}/TestResults" -Recurse -Filter "coverage.cobertura.xml"
+          if (-not $coverageFiles) {
+            Write-Error "Coverage report not found."
+            exit 1
+          }
+
+          [double]$totalValidLines = 0
+          [double]$totalCoveredLines = 0
+          foreach ($coverageFile in $coverageFiles) {
+            [xml]$coverageXml = Get-Content -Path $coverageFile.FullName
+            [double]$validLines = [double]$coverageXml.coverage.'lines-valid'
+            [double]$coveredLines = [double]$coverageXml.coverage.'lines-covered'
+            $totalValidLines += $validLines
+            $totalCoveredLines += $coveredLines
+          }
+
+          if ($totalValidLines -le 0) {
+            Write-Error "Coverage report has zero valid lines."
+            exit 1
+          }
+
+          $coveragePercent = [Math]::Round(($totalCoveredLines / $totalValidLines) * 100, 2)
+          $threshold = 70
+          "coverage_percent=$coveragePercent" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- unit test line coverage: $coveragePercent% (threshold: $threshold%)"
+
+          if ($coveragePercent -lt $threshold) {
+            Write-Error "Coverage gate failed: $coveragePercent% < $threshold%."
+            exit 1
+          }
+
+      - name: Verify formatting and analyzers
+        id: analyzers
+        shell: pwsh
+        run: |
+          & dotnet format "${{ env.SOLUTION_PATH }}" --verify-no-changes --no-restore --verbosity diagnostic *>&1 `
+            | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/dotnet-format.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Dependency vulnerability scan (fail on critical)
+        id: security_scan
+        shell: pwsh
+        run: |
+          $reportPath = "${{ github.workspace }}/${{ env.LOG_PATH }}/vulnerable-packages.json"
+          & dotnet list "${{ env.SOLUTION_PATH }}" package --vulnerable --include-transitive --format json `
+            | Tee-Object -FilePath $reportPath
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $report = Get-Content -Path $reportPath -Raw | ConvertFrom-Json
+          $criticalFindings = @()
+          foreach ($project in $report.projects) {
+            foreach ($framework in $project.frameworks) {
+              $packages = @()
+              if ($framework.topLevelPackages) { $packages += $framework.topLevelPackages }
+              if ($framework.transitivePackages) { $packages += $framework.transitivePackages }
+              foreach ($package in $packages) {
+                foreach ($vulnerability in $package.vulnerabilities) {
+                  if ($vulnerability.severity -eq "Critical") {
+                    $criticalFindings += "$($project.path) :: $($package.id) $($package.resolvedVersion) :: $($vulnerability.advisoryurl)"
+                  }
+                }
+              }
+            }
+          }
+
+          if ($criticalFindings.Count -gt 0) {
+            $criticalFindings | Set-Content -Path "${{ github.workspace }}/${{ env.LOG_PATH }}/critical-vulnerabilities.txt"
+            Write-Error "Critical vulnerabilities detected. See critical-vulnerabilities.txt."
+            exit 1
+          }
 
       - name: Publish WPF app (win-x64 portable)
         id: publish
@@ -117,6 +194,9 @@ jobs:
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- restore status: ${{ steps.restore.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- build status: ${{ steps.build.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- test status: ${{ steps.test.outcome }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- coverage gate status: ${{ steps.coverage_gate.outcome }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- style/analyzers status: ${{ steps.analyzers.outcome }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- security scan status: ${{ steps.security_scan.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish status: ${{ steps.publish.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish directory exists: ${{ steps.inspect_outputs.outputs.publish_directory_exists }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- publish file count: ${{ steps.inspect_outputs.outputs.publish_file_count }}"

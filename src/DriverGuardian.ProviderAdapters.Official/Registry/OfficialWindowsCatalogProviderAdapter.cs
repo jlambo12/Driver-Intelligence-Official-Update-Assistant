@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 using DriverGuardian.ProviderAdapters.Abstractions.Models;
 using DriverGuardian.ProviderAdapters.Abstractions.Providers;
@@ -11,40 +12,8 @@ namespace DriverGuardian.ProviderAdapters.Official.Registry;
 /// </summary>
 public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAdapter
 {
-    private static readonly IReadOnlyDictionary<string, CatalogDriverRecord> CatalogByHardwareId =
-        new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["PCI\\VEN_8086&DEV_15F3"] = new CatalogDriverRecord(
-                DriverIdentifier: "windows-update:8086-15f3:31.0.101.2125",
-                CandidateVersion: "31.0.101.2125",
-                SourceUri: new Uri("https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_15F3"),
-                PublisherName: "Microsoft Update Catalog",
-                EvidenceNote: "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."),
-            ["PCI\\VEN_10EC&DEV_8168"] = new CatalogDriverRecord(
-                DriverIdentifier: "windows-update:10ec-8168:10.68.615.2022",
-                CandidateVersion: "10.68.615.2022",
-                SourceUri: new Uri("https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10EC%26DEV_8168"),
-                PublisherName: "Microsoft Update Catalog",
-                EvidenceNote: "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."),
-            ["PCI\\VEN_8086&DEV_51F0"] = new CatalogDriverRecord(
-                DriverIdentifier: "windows-update:8086-51f0:31.0.101.5522",
-                CandidateVersion: "31.0.101.5522",
-                SourceUri: new Uri("https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_51F0"),
-                PublisherName: "Microsoft Update Catalog",
-                EvidenceNote: "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."),
-            ["PCI\\VEN_10DE&DEV_1C82"] = new CatalogDriverRecord(
-                DriverIdentifier: "windows-update:10de-1c82:32.0.15.6109",
-                CandidateVersion: "32.0.15.6109",
-                SourceUri: new Uri("https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10DE%26DEV_1C82"),
-                PublisherName: "Microsoft Update Catalog",
-                EvidenceNote: "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."),
-            ["USB\\VID_0BDA&PID_8153"] = new CatalogDriverRecord(
-                DriverIdentifier: "windows-update:0bda-8153:10.63.20.1028",
-                CandidateVersion: "10.63.20.1028",
-                SourceUri: new Uri("https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_0BDA%26PID_8153"),
-                PublisherName: "Microsoft Update Catalog",
-                EvidenceNote: "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage).")
-        };
+    private const string SnapshotFileRelativePath = "Data/windows-catalog-snapshot.json";
+    private static readonly IReadOnlyDictionary<string, CatalogDriverRecord> CatalogByHardwareId = LoadSnapshot();
     private static readonly IReadOnlyDictionary<string, CatalogDriverRecord> CatalogByVendorId = BuildVendorFallbackMap();
 
     public ProviderDescriptor Descriptor => new(
@@ -134,6 +103,64 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         Uri SourceUri,
         string PublisherName,
         string EvidenceNote);
+
+    private sealed record SnapshotRecord(
+        string HardwareId,
+        string DriverIdentifier,
+        string CandidateVersion,
+        string SourceUri,
+        string PublisherName,
+        string EvidenceNote);
+
+    private static IReadOnlyDictionary<string, CatalogDriverRecord> LoadSnapshot()
+    {
+        var snapshotPath = Path.Combine(AppContext.BaseDirectory, SnapshotFileRelativePath);
+        if (!File.Exists(snapshotPath))
+        {
+            return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        using var stream = File.OpenRead(snapshotPath);
+        var snapshot = JsonSerializer.Deserialize<List<SnapshotRecord>>(stream, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        if (snapshot is null || snapshot.Count == 0)
+        {
+            return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var catalog = new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in snapshot)
+        {
+            if (string.IsNullOrWhiteSpace(entry.HardwareId) ||
+                string.IsNullOrWhiteSpace(entry.DriverIdentifier) ||
+                string.IsNullOrWhiteSpace(entry.CandidateVersion) ||
+                string.IsNullOrWhiteSpace(entry.SourceUri))
+            {
+                continue;
+            }
+
+            if (!Uri.TryCreate(entry.SourceUri, UriKind.Absolute, out var sourceUri))
+            {
+                continue;
+            }
+
+            catalog[entry.HardwareId.Trim()] = new CatalogDriverRecord(
+                DriverIdentifier: entry.DriverIdentifier.Trim(),
+                CandidateVersion: entry.CandidateVersion.Trim(),
+                SourceUri: sourceUri,
+                PublisherName: string.IsNullOrWhiteSpace(entry.PublisherName)
+                    ? "Microsoft Update Catalog"
+                    : entry.PublisherName.Trim(),
+                EvidenceNote: string.IsNullOrWhiteSpace(entry.EvidenceNote)
+                    ? "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."
+                    : entry.EvidenceNote.Trim());
+        }
+
+        return catalog;
+    }
 
     private static IReadOnlyDictionary<string, CatalogDriverRecord> BuildVendorFallbackMap()
     {

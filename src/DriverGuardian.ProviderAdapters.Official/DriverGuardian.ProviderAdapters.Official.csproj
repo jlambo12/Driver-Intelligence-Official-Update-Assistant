@@ -7,4 +7,9 @@
     <ProjectReference Include="../DriverGuardian.ProviderAdapters.Abstractions/DriverGuardian.ProviderAdapters.Abstractions.csproj" />
     <ProjectReference Include="../DriverGuardian.Domain/DriverGuardian.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data/windows-catalog-snapshot.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
