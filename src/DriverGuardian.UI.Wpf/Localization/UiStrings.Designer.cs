@@ -8,6 +8,8 @@ public static class UiStrings
     public static string StatusScanning => Resources.Status_Scanning;
     public static string StatusScanCompletedReady => Resources.Status_Scan_Completed_Ready;
     public static string StatusScanCompletedNoAction => Resources.Status_Scan_Completed_No_Action;
+    public static string StatusScanFailed => Resources.Status_Scan_Failed;
+    public static string StatusScanPartial => Resources.Status_Scan_Partial;
     public static string ScanAction => Resources.Scan_Action;
     public static string ScanSummaryFormat => Resources.Scan_Summary_Format;
     public static string DiscoveryInspectionSummaryFormat => Resources.Discovery_Inspection_Summary_Format;
@@ -27,6 +29,8 @@ public static class UiStrings
     public static string ActionStatusNoActionNeeded => Resources.Action_Status_No_Action_Needed;
     public static string ActionStatusWaitingForReturn => Resources.Action_Status_Waiting_For_Return;
     public static string ActionStatusVerificationExpected => Resources.Action_Status_Verification_Expected;
+    public static string StartupErrorMessageFormat => Resources.Startup_Error_Message_Format;
+    public static string StartupErrorTitle => Resources.Startup_Error_Title;
     public static string ActionStepReviewRecommendation => Resources.Action_Step_Review_Recommendation;
     public static string ActionStepReviewRecommendationHint => Resources.Action_Step_Review_Recommendation_Hint;
     public static string ActionStepOpenOfficialSource => Resources.Action_Step_Open_Official_Source;
@@ -77,6 +81,10 @@ public static class UiStrings
     public static string OfficialSourceSummaryBlockedFormat => Resources.Official_Source_Summary_Blocked_Format;
     public static string OfficialSourceBlockedNoReason => Resources.Official_Source_Blocked_No_Reason;
     public static string OfficialSourceUrlUnavailable => Resources.Official_Source_Url_Unavailable;
+    public static string OfficialSourceOpenActionLabel => Resources.Official_Source_Open_Action_Label;
+    public static string OfficialSourceOpenBlockedNoScan => Resources.Official_Source_Open_Blocked_No_Scan;
+    public static string OfficialSourceOpenFailed => Resources.Official_Source_Open_Failed;
+    public static string OfficialSourceOpenSuccessFormat => Resources.Official_Source_Open_Success_Format;
     public static string RecommendationDeviceFormat => Resources.Recommendation_Device_Format;
     public static string RecommendationTechnicalIdFormat => Resources.Recommendation_Technical_Id_Format;
     public static string RecommendationDeviceGeneric => Resources.Recommendation_Device_Generic;

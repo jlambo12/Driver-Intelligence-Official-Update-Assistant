@@ -43,7 +43,7 @@
                 </Border>
                 <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="10" Margin="0 8 0 0">
                     <StackPanel>
-                        <Button Content="Открыть подтверждённый официальный источник"
+                        <Button Content="{Binding State.Results.OpenOfficialSourceActionLabel}"
                                 Command="{Binding OpenOfficialSourceCommand}"
                                 Height="32"
                                 HorizontalAlignment="Left"

@@ -9,8 +9,8 @@ public static class MainUiStateFactory
     {
         var status = result.ScanExecutionStatus switch
         {
-            ScanExecutionStatus.Failed => "Сканирование завершилось с ошибкой: данные недостоверны.",
-            ScanExecutionStatus.Partial => "Сканирование частично завершено: часть данных может отсутствовать.",
+            ScanExecutionStatus.Failed => UiStrings.StatusScanFailed,
+            ScanExecutionStatus.Partial => UiStrings.StatusScanPartial,
             _ => result.RecommendedCount > 0
                 ? UiStrings.StatusScanCompletedReady
                 : UiStrings.StatusScanCompletedNoAction

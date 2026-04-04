@@ -13,6 +13,8 @@ public static class Resources
     public static string Status_Scanning => GetString(nameof(Status_Scanning));
     public static string Status_Scan_Completed_Ready => GetString(nameof(Status_Scan_Completed_Ready));
     public static string Status_Scan_Completed_No_Action => GetString(nameof(Status_Scan_Completed_No_Action));
+    public static string Status_Scan_Failed => GetString(nameof(Status_Scan_Failed));
+    public static string Status_Scan_Partial => GetString(nameof(Status_Scan_Partial));
     public static string Scan_Action => GetString(nameof(Scan_Action));
     public static string Scan_Summary_Format => GetString(nameof(Scan_Summary_Format));
     public static string Discovery_Inspection_Summary_Format => GetString(nameof(Discovery_Inspection_Summary_Format));
@@ -32,6 +34,8 @@ public static class Resources
     public static string Action_Status_No_Action_Needed => GetString(nameof(Action_Status_No_Action_Needed));
     public static string Action_Status_Waiting_For_Return => GetString(nameof(Action_Status_Waiting_For_Return));
     public static string Action_Status_Verification_Expected => GetString(nameof(Action_Status_Verification_Expected));
+    public static string Startup_Error_Message_Format => GetString(nameof(Startup_Error_Message_Format));
+    public static string Startup_Error_Title => GetString(nameof(Startup_Error_Title));
     public static string Action_Step_Review_Recommendation => GetString(nameof(Action_Step_Review_Recommendation));
     public static string Action_Step_Review_Recommendation_Hint => GetString(nameof(Action_Step_Review_Recommendation_Hint));
     public static string Action_Step_Open_Official_Source => GetString(nameof(Action_Step_Open_Official_Source));
@@ -82,6 +86,10 @@ public static class Resources
     public static string Official_Source_Summary_Blocked_Format => GetString(nameof(Official_Source_Summary_Blocked_Format));
     public static string Official_Source_Blocked_No_Reason => GetString(nameof(Official_Source_Blocked_No_Reason));
     public static string Official_Source_Url_Unavailable => GetString(nameof(Official_Source_Url_Unavailable));
+    public static string Official_Source_Open_Action_Label => GetString(nameof(Official_Source_Open_Action_Label));
+    public static string Official_Source_Open_Blocked_No_Scan => GetString(nameof(Official_Source_Open_Blocked_No_Scan));
+    public static string Official_Source_Open_Failed => GetString(nameof(Official_Source_Open_Failed));
+    public static string Official_Source_Open_Success_Format => GetString(nameof(Official_Source_Open_Success_Format));
     public static string Recommendation_Device_Format => GetString(nameof(Recommendation_Device_Format));
     public static string Recommendation_Technical_Id_Format => GetString(nameof(Recommendation_Technical_Id_Format));
     public static string Recommendation_Device_Generic => GetString(nameof(Recommendation_Device_Generic));

@@ -59,7 +59,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
         ? string.Empty
         : State.Results.HasScanData
             ? State.Results.OfficialSourceSummary
-            : "Запустите анализ, чтобы получить подтверждённый официальный источник.";
+            : UiStrings.OfficialSourceOpenBlockedNoScan;
 
     public WorkflowSectionViewModel WorkflowSection { get; }
     public HistorySectionViewModel HistorySection { get; }

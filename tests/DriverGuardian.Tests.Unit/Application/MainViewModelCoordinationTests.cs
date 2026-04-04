@@ -4,6 +4,7 @@ using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.Settings;
+using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.ViewModels;
 using DriverGuardian.UI.Wpf.Services;
 
@@ -30,7 +31,6 @@ public sealed class MainViewModelCoordinationTests
         Assert.False(viewModel.SettingsSection.ShowVerificationHints);
         Assert.Equal(ShareableReportFormat.PlainText, viewModel.SettingsSection.SelectedReportFormat.Value);
     }
-
     [Fact]
     public async Task ScanAsync_PropagatesWorkflowResultToSections()
     {
@@ -72,9 +72,51 @@ public sealed class MainViewModelCoordinationTests
         await task;
     }
 
+
+    [Fact]
+    public async Task ScanAsync_WithLoopbackApprovedUrl_ShouldKeepOpenOfficialSourceDisabled()
+    {
+        var result = CreateResult(
+            officialSourceAction: new OpenOfficialSourceActionResult(
+                true,
+                OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage,
+                OfficialSourceActionTarget.SourcePage,
+                "status",
+                "https://localhost/download",
+                null));
+
+        var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default));
+        await viewModel.InitializeAsync();
+
+        await ExecuteAsync(viewModel.ScanCommand);
+
+        Assert.False(viewModel.CanOpenOfficialSource);
+    }
+
+    [Fact]
+    public async Task ScanAsync_WithHttpsNonLoopbackApprovedUrl_ShouldEnableOpenOfficialSource()
+    {
+        var result = CreateResult(
+            officialSourceAction: new OpenOfficialSourceActionResult(
+                true,
+                OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage,
+                OfficialSourceActionTarget.SourcePage,
+                "status",
+                "https://vendor.example/download",
+                null));
+
+        var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default));
+        await viewModel.InitializeAsync();
+
+        await ExecuteAsync(viewModel.ScanCommand);
+
+        Assert.True(viewModel.CanOpenOfficialSource);
+    }
+
     private static MainScreenWorkflowResult CreateResult(
         ReportExportPayload? reportPayload = null,
-        IReadOnlyCollection<RecentHistoryEntryResult>? recentHistory = null)
+        IReadOnlyCollection<RecentHistoryEntryResult>? recentHistory = null,
+        OpenOfficialSourceActionResult? officialSourceAction = null)
         => new(
             ScanExecutionStatus.Completed,
             [],
@@ -104,7 +146,7 @@ public sealed class MainViewModelCoordinationTests
                     true,
                     "hint")
             ],
-            new OpenOfficialSourceActionResult(true, OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage, OfficialSourceActionTarget.SourcePage, "status", "https://example.com", null),
+            officialSourceAction ?? new OpenOfficialSourceActionResult(true, OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage, OfficialSourceActionTarget.SourcePage, "status", "https://example.com", null),
             recentHistory ?? []);
 
     private sealed class StubMainScreenWorkflow(MainScreenWorkflowResult result) : IMainScreenWorkflow
