@@ -7,6 +7,10 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
@@ -23,5 +27,10 @@
     <ProjectReference Include="../../src/DriverGuardian.ProviderAdapters.Official/DriverGuardian.ProviderAdapters.Official.csproj" />
     <ProjectReference Include="../../src/DriverGuardian.SystemAdapters.Windows/DriverGuardian.SystemAdapters.Windows.csproj" />
     <ProjectReference Include="../../src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ProviderAdapters/Official/Fixtures/windows-catalog-provider-cases.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

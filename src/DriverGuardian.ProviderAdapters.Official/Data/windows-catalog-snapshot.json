@@ -1,0 +1,42 @@
+[
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_15F3",
+    "driverIdentifier": "windows-update:8086-15f3:31.0.101.2125",
+    "candidateVersion": "31.0.101.2125",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_15F3",
+    "publisherName": "Microsoft Update Catalog",
+    "evidenceNote": "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10EC&DEV_8168",
+    "driverIdentifier": "windows-update:10ec-8168:10.68.615.2022",
+    "candidateVersion": "10.68.615.2022",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10EC%26DEV_8168",
+    "publisherName": "Microsoft Update Catalog",
+    "evidenceNote": "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_51F0",
+    "driverIdentifier": "windows-update:8086-51f0:31.0.101.5522",
+    "candidateVersion": "31.0.101.5522",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_51F0",
+    "publisherName": "Microsoft Update Catalog",
+    "evidenceNote": "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10DE&DEV_1C82",
+    "driverIdentifier": "windows-update:10de-1c82:32.0.15.6109",
+    "candidateVersion": "32.0.15.6109",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10DE%26DEV_1C82",
+    "publisherName": "Microsoft Update Catalog",
+    "evidenceNote": "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."
+  },
+  {
+    "hardwareId": "USB\\VID_0BDA&PID_8153",
+    "driverIdentifier": "windows-update:0bda-8153:10.63.20.1028",
+    "candidateVersion": "10.63.20.1028",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_0BDA%26PID_8153",
+    "publisherName": "Microsoft Update Catalog",
+    "evidenceNote": "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."
+  }
+]

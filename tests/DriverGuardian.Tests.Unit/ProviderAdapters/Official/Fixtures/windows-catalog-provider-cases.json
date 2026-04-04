@@ -1,0 +1,30 @@
+[
+  {
+    "name": "exact-pci-match",
+    "hardwareIds": [ "PCI\\VEN_8086&DEV_15F3" ],
+    "expectedCandidateVersion": "31.0.101.2125",
+    "expectedConfidence": "High",
+    "expectedEvidenceToken": "exact"
+  },
+  {
+    "name": "normalized-pci-match",
+    "hardwareIds": [ "PCI\\VEN_8086&DEV_15F3&SUBSYS_00000000&REV_10" ],
+    "expectedCandidateVersion": "31.0.101.2125",
+    "expectedConfidence": "Medium",
+    "expectedEvidenceToken": "normalized"
+  },
+  {
+    "name": "vendor-fallback-match",
+    "hardwareIds": [ "PCI\\VEN_8086&DEV_ABCD" ],
+    "expectedCandidateVersion": "31.0.101.2125",
+    "expectedConfidence": "Low",
+    "expectedEvidenceToken": "compatible-vendor"
+  },
+  {
+    "name": "no-match",
+    "hardwareIds": [ "PCI\\VEN_9999&DEV_0001" ],
+    "expectedCandidateVersion": null,
+    "expectedConfidence": null,
+    "expectedEvidenceToken": null
+  }
+]
