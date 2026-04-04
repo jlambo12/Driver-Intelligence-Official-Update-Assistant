@@ -94,4 +94,19 @@ public sealed class WindowsDeviceInclusionPolicyTests
 
         Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
     }
+
+    [Fact]
+    public void ShouldInclude_ReturnsFalse_WhenDeviceClassIsWhitespace_EvenWithIncludedHardwarePrefix()
+    {
+        var snapshot = new WindowsPnpEntitySnapshot(
+            InstanceId: "USB\\VID_0000&PID_0000\\1",
+            FriendlyName: "Unknown USB Device",
+            HardwareIds: ["USB\\VID_0000&PID_0000"],
+            Manufacturer: "Vendor",
+            DeviceClass: "   ",
+            ConfigManagerErrorCode: 0,
+            Status: "OK");
+
+        Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
+    }
 }
