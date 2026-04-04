@@ -66,7 +66,11 @@ public sealed class MainScreenWorkflowTests
         Assert.Contains(historyRepository.Entries, entry => entry is ScanHistoryEntry);
         Assert.Contains(historyRepository.Entries, entry => entry is RecommendationSummaryHistoryEntry);
         Assert.Contains(historyRepository.Entries, entry => entry is VerificationHistoryEntry);
-        Assert.Single(auditWriter.Entries);
+        Assert.Equal(3, auditWriter.Entries.Count);
+        Assert.Contains(auditWriter.Entries, entry => entry.Contains("event=scan.completed;", StringComparison.Ordinal));
+        Assert.Contains(auditWriter.Entries, entry => entry.Contains("event=official_source.state;", StringComparison.Ordinal));
+        Assert.Contains(auditWriter.Entries, entry => entry.Contains("event=verification.summary;", StringComparison.Ordinal));
+        Assert.All(auditWriter.Entries, entry => Assert.Contains("session=", entry, StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.start:", StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.discovery.completed:", StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.inspection.completed:", StringComparison.Ordinal));
@@ -74,6 +78,11 @@ public sealed class MainScreenWorkflowTests
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.official_source.state:", StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.history_report.completed:", StringComparison.Ordinal));
         Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.summary:", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.discovery.completed:session=", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.inspection.completed:session=", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.recommendation.completed:session=", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.official_source.state:session=", StringComparison.Ordinal));
+        Assert.Contains(logger.InfoEvents, entry => entry.StartsWith("scan.workflow.summary:session=", StringComparison.Ordinal));
         Assert.Empty(logger.WarningEvents);
         Assert.Empty(logger.ErrorEvents);
     }

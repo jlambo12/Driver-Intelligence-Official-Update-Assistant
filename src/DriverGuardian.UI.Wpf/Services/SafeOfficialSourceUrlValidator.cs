@@ -1,3 +1,5 @@
+using DriverGuardian.Application.OfficialSources;
+
 namespace DriverGuardian.UI.Wpf.Services;
 
 public static class SafeOfficialSourceUrlValidator
@@ -17,7 +19,7 @@ public static class SafeOfficialSourceUrlValidator
         if (!parsed.IsAbsoluteUri ||
             !string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
             string.IsNullOrWhiteSpace(parsed.Host) ||
-            parsed.IsLoopback ||
+            !OfficialSourceHostSafetyPolicy.IsAllowed(parsed, out _) ||
             !string.IsNullOrEmpty(parsed.UserInfo))
         {
             return false;

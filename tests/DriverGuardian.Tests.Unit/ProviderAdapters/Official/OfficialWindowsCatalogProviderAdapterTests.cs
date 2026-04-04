@@ -113,4 +113,53 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         Assert.Empty(response.Candidates);
         Assert.Contains("hardware id", response.FailureReason, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task LookupAsync_UsesVendorCompatibleFallback_WhenExactMatchIsMissing()
+    {
+        var adapter = new OfficialWindowsCatalogProviderAdapter();
+
+        var response = await adapter.LookupAsync(
+            new ProviderLookupRequest(
+                ProviderCode: adapter.Descriptor.Code,
+                DeviceInstanceId: "DEV-6",
+                HardwareIds: ["PCI\\VEN_8086&DEV_ABCD"],
+                InstalledDriverVersion: "1.0.0",
+                OperatingSystemVersion: null,
+                DeviceManufacturer: "Intel",
+                DeviceModel: null),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccess);
+        var candidate = Assert.Single(response.Candidates);
+        Assert.Equal(CompatibilityConfidence.Low, candidate.CompatibilityConfidence);
+        Assert.Contains("compatible-vendor", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task LookupAsync_PrefersExactMatchOverCompatibleFallback_WhenBothExist()
+    {
+        var adapter = new OfficialWindowsCatalogProviderAdapter();
+
+        var response = await adapter.LookupAsync(
+            new ProviderLookupRequest(
+                ProviderCode: adapter.Descriptor.Code,
+                DeviceInstanceId: "DEV-7",
+                HardwareIds:
+                [
+                    "PCI\\VEN_8086&DEV_ABCD",
+                    "PCI\\VEN_8086&DEV_15F3"
+                ],
+                InstalledDriverVersion: "1.0.0",
+                OperatingSystemVersion: null,
+                DeviceManufacturer: "Intel",
+                DeviceModel: null),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccess);
+        var candidate = Assert.Single(response.Candidates);
+        Assert.Equal("31.0.101.2125", candidate.CandidateVersion);
+        Assert.Equal(CompatibilityConfidence.High, candidate.CompatibilityConfidence);
+        Assert.Contains("exact", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+    }
 }

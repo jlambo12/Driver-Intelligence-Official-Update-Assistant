@@ -3,6 +3,8 @@ using DriverGuardian.Application.History.Models;
 using DriverGuardian.Domain.Settings;
 using DriverGuardian.Domain.Scanning;
 using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Application.Reports;
+using DriverGuardian.Application.Verification;
 
 namespace DriverGuardian.Application.MainScreen;
 
@@ -13,6 +15,7 @@ public sealed class ScanSessionHistoryService(IResultHistoryRepository resultHis
         int recommendationCount,
         int manualHandoffUserActionCount,
         int notRecommendedCount,
+        IReadOnlyCollection<VerificationReportItem> verifications,
         string verificationSummary,
         AppSettings settings,
         CancellationToken cancellationToken)
@@ -35,7 +38,7 @@ public sealed class ScanSessionHistoryService(IResultHistoryRepository resultHis
                 Guid.NewGuid(),
                 occurredAtUtc,
                 scanResult.Session.Id,
-                manualHandoffUserActionCount > 0 ? VerificationHistoryStatus.Skipped : VerificationHistoryStatus.Passed,
+                ResolveVerificationStatus(verifications, manualHandoffUserActionCount),
                 verificationSummary),
             cancellationToken);
 
@@ -89,4 +92,25 @@ public sealed class ScanSessionHistoryService(IResultHistoryRepository resultHis
             VerificationHistoryStatus.Skipped => "skipped",
             _ => "unknown"
         };
+
+    private static VerificationHistoryStatus ResolveVerificationStatus(
+        IReadOnlyCollection<VerificationReportItem> verifications,
+        int manualHandoffUserActionCount)
+    {
+        if (verifications.Count == 0)
+        {
+            return manualHandoffUserActionCount > 0
+                ? VerificationHistoryStatus.Skipped
+                : VerificationHistoryStatus.Passed;
+        }
+
+        var hasFailureLikeOutcome = verifications.Any(item =>
+            item.Result.Outcome is PostInstallVerificationOutcome.NoChangeDetected
+                or PostInstallVerificationOutcome.DeviceMissing
+                or PostInstallVerificationOutcome.InsufficientEvidence);
+
+        return hasFailureLikeOutcome
+            ? VerificationHistoryStatus.Failed
+            : VerificationHistoryStatus.Passed;
+    }
 }
