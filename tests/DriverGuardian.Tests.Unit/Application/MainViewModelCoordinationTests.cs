@@ -107,7 +107,7 @@ public sealed class MainViewModelCoordinationTests
                 OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage,
                 OfficialSourceActionTarget.SourcePage,
                 "status",
-                "https://www.nvidia.com/drivers",
+                "https://www.microsoft.com/windows",
                 null));
 
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default));
@@ -139,16 +139,16 @@ public sealed class MainViewModelCoordinationTests
                     true,
                     true,
                     "hint",
-                    "https://www.nvidia.com/drivers")
+                    "https://www.microsoft.com/windows")
             ]);
 
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default), launcher);
         await viewModel.InitializeAsync(CancellationToken.None);
         await ExecuteAsync(viewModel.ScanCommand);
 
-        viewModel.OpenRecommendationOfficialSourceCommand.Execute("https://www.nvidia.com/drivers");
+        viewModel.OpenRecommendationOfficialSourceCommand.Execute("https://www.microsoft.com/windows");
 
-        Assert.Equal("https://www.nvidia.com/drivers", launcher.LastOpenedUri?.AbsoluteUri);
+        Assert.Equal("https://www.microsoft.com/windows", launcher.LastOpenedUri?.AbsoluteUri);
     }
 
     [Fact]
