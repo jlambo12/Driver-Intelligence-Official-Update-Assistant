@@ -6,11 +6,11 @@ public static class OfficialProviderRuntimeFactory
 {
     public static IReadOnlyCollection<IOfficialProviderAdapter> CreateRuntimeProviders()
     {
-        var baseProviders = new IOfficialProviderAdapter[]
-        [
+        IOfficialProviderAdapter[] baseProviders =
+        {
             new OfficialOemSupportProviderAdapter(),
             new OfficialWindowsCatalogProviderAdapter()
-        ];
+        };
 
         return baseProviders
             .Select(provider => new ResilientOfficialProviderAdapter(

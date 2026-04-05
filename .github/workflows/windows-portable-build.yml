@@ -37,12 +37,20 @@ jobs:
         shell: pwsh
         run: New-Item -ItemType Directory -Path "${{ github.workspace }}/${{ env.LOG_PATH }}" -Force | Out-Null
 
-      - name: Restore solution (win-x64)
+      - name: Restore solution
         id: restore
         shell: pwsh
         run: |
-          & dotnet restore "${{ env.SOLUTION_PATH }}" --runtime win-x64 *>&1 `
+          & dotnet restore "${{ env.SOLUTION_PATH }}" *>&1 `
             | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/restore.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Restore WPF app project (win-x64)
+        id: restore_wpf_runtime
+        shell: pwsh
+        run: |
+          & dotnet restore "${{ env.PROJECT_PATH }}" --runtime win-x64 *>&1 `
+            | Tee-Object -FilePath "${{ github.workspace }}/${{ env.LOG_PATH }}/restore-wpf-runtime.log"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build WPF app project (Release)
@@ -192,6 +200,7 @@ jobs:
         run: |
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## Windows portable build diagnostics"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- restore status: ${{ steps.restore.outcome }}"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- runtime restore status: ${{ steps.restore_wpf_runtime.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- build status: ${{ steps.build.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- test status: ${{ steps.test.outcome }}"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- coverage gate status: ${{ steps.coverage_gate.outcome }}"
