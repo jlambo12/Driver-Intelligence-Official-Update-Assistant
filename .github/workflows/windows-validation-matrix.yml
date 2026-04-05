@@ -27,11 +27,15 @@ jobs:
 
       - name: Restore solution
         shell: pwsh
-        run: dotnet restore DriverGuardian.sln --runtime win-x64
+        run: dotnet restore DriverGuardian.sln
+
+      - name: Restore WPF publish project (win-x64)
+        shell: pwsh
+        run: dotnet restore src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj --runtime win-x64
 
       - name: Build solution
         shell: pwsh
-        run: dotnet build DriverGuardian.sln --configuration ${{ matrix.configuration }} --runtime win-x64 --no-restore
+        run: dotnet build DriverGuardian.sln --configuration ${{ matrix.configuration }} --no-restore
 
       - name: Run unit tests
         if: ${{ matrix.test_suite == 'unit' }}
