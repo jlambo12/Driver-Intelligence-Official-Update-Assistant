@@ -22,6 +22,7 @@ public sealed class RecommendationPipelineTests
         Assert.False(summary.HasRecommendation);
         Assert.Null(summary.RecommendedVersion);
         Assert.Contains("insufficient evidence", summary.Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(DriverGuardian.Domain.Recommendations.RecommendationSummaryReasonCode.InsufficientEvidence, summary.ReasonCode);
     }
 
     [Fact]
@@ -37,6 +38,7 @@ public sealed class RecommendationPipelineTests
         Assert.True(summary.HasRecommendation);
         Assert.Equal("2.0.0", summary.RecommendedVersion);
         Assert.Equal("https://example.test/driver", summary.OfficialSourceUrl);
+        Assert.Equal(DriverGuardian.Domain.Recommendations.RecommendationSummaryReasonCode.RecommendedUpgradeAvailable, summary.ReasonCode);
     }
 
     [Fact]
@@ -51,6 +53,7 @@ public sealed class RecommendationPipelineTests
         var summary = Assert.Single(result);
         Assert.False(summary.HasRecommendation);
         Assert.Contains("up to date", summary.Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(DriverGuardian.Domain.Recommendations.RecommendationSummaryReasonCode.AlreadyUpToDate, summary.ReasonCode);
     }
 
     [Fact]
@@ -66,6 +69,7 @@ public sealed class RecommendationPipelineTests
         Assert.False(summary.HasRecommendation);
         Assert.Contains("lookup failed", summary.Reason, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("service unavailable", summary.Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(DriverGuardian.Domain.Recommendations.RecommendationSummaryReasonCode.InsufficientEvidenceDueToProviderFailures, summary.ReasonCode);
     }
 
     [Fact]

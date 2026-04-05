@@ -44,7 +44,19 @@ public sealed record RecommendationDetailResult(
     bool ManualActionRequired,
     bool VerificationAvailable,
     string VerificationStatus,
-    string? OfficialSourceUrl = null);
+    string? OfficialSourceUrl = null,
+    RecommendationDetailReasonCode RecommendationReasonCode = RecommendationDetailReasonCode.Unknown);
+
+public enum RecommendationDetailReasonCode
+{
+    Unknown = 0,
+    RecommendedUpgradeAvailable = 1,
+    AlreadyUpToDate = 2,
+    CandidateMarkedIncompatible = 3,
+    CandidateCompatibilityUnknown = 4,
+    InsufficientEvidence = 5,
+    InsufficientEvidenceDueToProviderFailures = 6
+}
 
 public sealed record OpenOfficialSourceActionResult(
     bool IsReady,

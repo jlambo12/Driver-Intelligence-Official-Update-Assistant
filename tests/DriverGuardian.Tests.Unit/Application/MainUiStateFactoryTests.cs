@@ -64,14 +64,15 @@ public sealed class MainUiStateFactoryTests
                     "PCI\\VEN_0002",
                     0,
                     false,
-                    "No recommendation: insufficient evidence from providers.",
+                    "Локализованный текст без английского токена.",
                     "1.0.0",
                     "vendor",
                     null,
                     false,
                     false,
                     false,
-                    "verification")
+                    "verification",
+                    RecommendationReasonCode: RecommendationDetailReasonCode.InsufficientEvidence)
             ]);
 
         var state = MainUiStateFactory.CreateFromWorkflowResult(result);

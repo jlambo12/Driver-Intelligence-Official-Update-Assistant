@@ -40,7 +40,8 @@ public sealed class RecommendationDetailAssembler
                     VerificationAvailable: hasRecommendation,
                     VerificationStatus: hasRecommendation
                         ? "Ожидается ваш возврат: после ручной установки выполните повторный анализ для проверки результата."
-                        : "Действие не требуется: возврат для проверки по этому устройству не ожидается.");
+                        : "Действие не требуется: возврат для проверки по этому устройству не ожидается.",
+                    RecommendationReasonCode: MapRecommendationReasonCode(recommendation));
             })
             .Where(detail =>
             {
@@ -59,5 +60,24 @@ public sealed class RecommendationDetailAssembler
             .OrderBy(detail => detail.PriorityBucket)
             .ThenBy(detail => detail.DeviceDisplayName, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
+    }
+
+    private static RecommendationDetailReasonCode MapRecommendationReasonCode(RecommendationSummary? recommendation)
+    {
+        if (recommendation is null)
+        {
+            return RecommendationDetailReasonCode.Unknown;
+        }
+
+        return recommendation.ReasonCode switch
+        {
+            RecommendationSummaryReasonCode.RecommendedUpgradeAvailable => RecommendationDetailReasonCode.RecommendedUpgradeAvailable,
+            RecommendationSummaryReasonCode.AlreadyUpToDate => RecommendationDetailReasonCode.AlreadyUpToDate,
+            RecommendationSummaryReasonCode.CandidateMarkedIncompatible => RecommendationDetailReasonCode.CandidateMarkedIncompatible,
+            RecommendationSummaryReasonCode.CandidateCompatibilityUnknown => RecommendationDetailReasonCode.CandidateCompatibilityUnknown,
+            RecommendationSummaryReasonCode.InsufficientEvidence => RecommendationDetailReasonCode.InsufficientEvidence,
+            RecommendationSummaryReasonCode.InsufficientEvidenceDueToProviderFailures => RecommendationDetailReasonCode.InsufficientEvidenceDueToProviderFailures,
+            _ => RecommendationDetailReasonCode.Unknown
+        };
     }
 }
