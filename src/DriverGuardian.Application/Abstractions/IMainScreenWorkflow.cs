@@ -55,7 +55,8 @@ public enum RecommendationDetailReasonCode
     CandidateMarkedIncompatible = 3,
     CandidateCompatibilityUnknown = 4,
     InsufficientEvidence = 5,
-    InsufficientEvidenceDueToProviderFailures = 6
+    InsufficientEvidenceDueToProviderFailures = 6,
+    WeakHardwareMatch = 7
 }
 
 public sealed record OpenOfficialSourceActionResult(

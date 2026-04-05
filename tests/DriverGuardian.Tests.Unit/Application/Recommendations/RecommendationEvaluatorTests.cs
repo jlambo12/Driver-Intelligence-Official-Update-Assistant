@@ -46,15 +46,33 @@ public sealed class RecommendationEvaluatorTests
     }
 
     [Fact]
-    public void Evaluate_ShouldReturnIncompatible_WhenCandidateConfidenceIsLow()
+    public void Evaluate_ShouldReturnNotRecommended_WhenCandidateConfidenceIsLow()
     {
         var decision = _evaluator.Evaluate(new RecommendationEvaluationInput(
             CreateInstalled("1.0.0"),
             [CreateCandidate("official", "3.0.0", CompatibilityConfidence.Low, true, SourceTrustLevel.OfficialPublisherSite)],
             ProviderPrecedence.OfficialFirst));
 
-        Assert.Equal(RecommendationOutcome.Incompatible, decision.Outcome);
-        Assert.Contains(decision.Reasons, reason => reason.Code == RecommendationReasonCode.CandidateMarkedIncompatible);
+        Assert.Equal(RecommendationOutcome.NotRecommended, decision.Outcome);
+        Assert.Contains(decision.Reasons, reason => reason.Code == RecommendationReasonCode.CandidateHasLowCompatibilityConfidence);
+    }
+
+    [Fact]
+    public void Evaluate_ShouldReturnNotRecommended_WhenOnlyVendorFallbackMatchExists()
+    {
+        var candidate = CreateCandidate("official", "3.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite);
+        candidate = candidate with
+        {
+            Candidate = candidate.Candidate with { HardwareMatchQuality = HardwareMatchQuality.VendorFamilyFallback }
+        };
+
+        var decision = _evaluator.Evaluate(new RecommendationEvaluationInput(
+            CreateInstalled("1.0.0"),
+            [candidate],
+            ProviderPrecedence.OfficialFirst));
+
+        Assert.Equal(RecommendationOutcome.NotRecommended, decision.Outcome);
+        Assert.Contains(decision.Reasons, reason => reason.Code == RecommendationReasonCode.CandidateWeakHardwareMatch);
     }
 
     [Fact]
@@ -94,6 +112,7 @@ public sealed class RecommendationEvaluatorTests
                 CandidateVersion: version,
                 ReleaseDateIso: null,
                 CompatibilityConfidence: confidence,
+                HardwareMatchQuality: HardwareMatchQuality.ExactHardwareId,
                 SourceEvidence: new SourceEvidence(
                     new Uri("https://example.test/driver"),
                     "Test Publisher",

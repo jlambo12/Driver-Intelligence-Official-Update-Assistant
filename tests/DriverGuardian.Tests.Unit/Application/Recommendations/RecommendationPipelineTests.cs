@@ -57,6 +57,26 @@ public sealed class RecommendationPipelineTests
     }
 
     [Fact]
+    public async Task BuildAsync_ShouldReturnWeakHardwareMatchReason_WhenOnlyVendorFallbackCandidateExists()
+    {
+        var candidate = CreateCandidate("2.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite) with
+        {
+            HardwareMatchQuality = HardwareMatchQuality.VendorFamilyFallback
+        };
+
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(CreateSuccessResponse("official", [candidate]))
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("DEV-1", "1.0.0")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.False(summary.HasRecommendation);
+        Assert.Equal(DriverGuardian.Domain.Recommendations.RecommendationSummaryReasonCode.WeakHardwareMatch, summary.ReasonCode);
+        Assert.Contains("vendor-family fallback", summary.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task BuildAsync_ShouldReturnHonestNonRecommendation_WhenLookupFails()
     {
         var pipeline = new RecommendationPipeline([
@@ -193,6 +213,9 @@ public sealed class RecommendationPipelineTests
             CandidateVersion: version,
             ReleaseDateIso: null,
             CompatibilityConfidence: confidence,
+            HardwareMatchQuality: confidence == CompatibilityConfidence.High
+                ? HardwareMatchQuality.ExactHardwareId
+                : HardwareMatchQuality.Unknown,
             SourceEvidence: new SourceEvidence(
                 sourceUri ?? new Uri("https://example.test/driver"),
                 "Example Publisher",

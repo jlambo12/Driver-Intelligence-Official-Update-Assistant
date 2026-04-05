@@ -77,6 +77,7 @@ public sealed class RecommendationDetailAssembler
             RecommendationSummaryReasonCode.CandidateCompatibilityUnknown => RecommendationDetailReasonCode.CandidateCompatibilityUnknown,
             RecommendationSummaryReasonCode.InsufficientEvidence => RecommendationDetailReasonCode.InsufficientEvidence,
             RecommendationSummaryReasonCode.InsufficientEvidenceDueToProviderFailures => RecommendationDetailReasonCode.InsufficientEvidenceDueToProviderFailures,
+            RecommendationSummaryReasonCode.WeakHardwareMatch => RecommendationDetailReasonCode.WeakHardwareMatch,
             _ => RecommendationDetailReasonCode.Unknown
         };
     }

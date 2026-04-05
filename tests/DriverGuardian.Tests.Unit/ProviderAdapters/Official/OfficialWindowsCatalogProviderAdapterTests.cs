@@ -26,6 +26,7 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         Assert.Equal("31.0.101.2125", candidate.CandidateVersion);
         Assert.Equal(SourceTrustLevel.OperatingSystemCatalog, candidate.SourceEvidence.TrustLevel);
         Assert.True(candidate.SourceEvidence.IsOfficialSource);
+        Assert.Equal(HardwareMatchQuality.ExactHardwareId, candidate.HardwareMatchQuality);
     }
 
     [Fact]
@@ -69,6 +70,7 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         var candidate = Assert.Single(response.Candidates);
         Assert.Equal("31.0.101.2125", candidate.CandidateVersion);
         Assert.Contains("normalized", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HardwareMatchQuality.NormalizedHardwareId, candidate.HardwareMatchQuality);
     }
 
     [Fact]
@@ -91,6 +93,7 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         var candidate = Assert.Single(response.Candidates);
         Assert.Equal("10.63.20.1028", candidate.CandidateVersion);
         Assert.Contains("normalized", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HardwareMatchQuality.NormalizedHardwareId, candidate.HardwareMatchQuality);
     }
 
     [Fact]
@@ -132,8 +135,9 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
 
         Assert.True(response.IsSuccess);
         var candidate = Assert.Single(response.Candidates);
-        Assert.Equal(CompatibilityConfidence.Low, candidate.CompatibilityConfidence);
-        Assert.Contains("compatible-vendor", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(CompatibilityConfidence.Unknown, candidate.CompatibilityConfidence);
+        Assert.Equal(HardwareMatchQuality.VendorFamilyFallback, candidate.HardwareMatchQuality);
+        Assert.Contains("vendor-family-fallback", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

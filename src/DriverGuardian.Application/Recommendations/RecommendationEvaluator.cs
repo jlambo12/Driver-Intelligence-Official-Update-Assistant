@@ -62,24 +62,6 @@ public sealed class RecommendationEvaluator
         var bestVersion = ParseVersion(best.Candidate.CandidateVersion!);
         var versionComparison = bestVersion.CompareTo(installedVersion);
 
-        if (best.Candidate.CompatibilityConfidence == CompatibilityConfidence.Low)
-        {
-            reasons.Add(new RecommendationReason(
-                RecommendationReasonCode.CandidateMarkedIncompatible,
-                "Top candidate reports low compatibility confidence.",
-                best.ProviderCode,
-                best.Candidate.CandidateVersion));
-
-            return new RecommendationDecision(
-                RecommendationOutcome.Incompatible,
-                input.InstalledDriver.DriverVersion,
-                null,
-                best.ProviderCode,
-                best.Candidate.CompatibilityConfidence,
-                best.Candidate.SourceEvidence,
-                reasons);
-        }
-
         if (versionComparison <= 0)
         {
             reasons.Add(new RecommendationReason(
@@ -98,11 +80,30 @@ public sealed class RecommendationEvaluator
                 reasons);
         }
 
-        if (best.Candidate.CompatibilityConfidence == CompatibilityConfidence.Unknown)
+        if (best.Candidate.HardwareMatchQuality == HardwareMatchQuality.VendorFamilyFallback ||
+            best.Candidate.HardwareMatchQuality == HardwareMatchQuality.Unknown)
+        {
+            reasons.Add(new RecommendationReason(
+                RecommendationReasonCode.CandidateWeakHardwareMatch,
+                "Candidate is newer but only a vendor-family fallback match is available.",
+                best.ProviderCode,
+                best.Candidate.CandidateVersion));
+
+            return new RecommendationDecision(
+                RecommendationOutcome.NotRecommended,
+                input.InstalledDriver.DriverVersion,
+                null,
+                best.ProviderCode,
+                best.Candidate.CompatibilityConfidence,
+                best.Candidate.SourceEvidence,
+                reasons);
+        }
+
+        if (best.Candidate.CompatibilityConfidence is CompatibilityConfidence.Unknown or CompatibilityConfidence.Low or CompatibilityConfidence.Medium)
         {
             reasons.Add(new RecommendationReason(
                 RecommendationReasonCode.CandidateHasLowCompatibilityConfidence,
-                "Candidate is newer but compatibility confidence is unknown.",
+                "Candidate is newer but compatibility confidence is not high.",
                 best.ProviderCode,
                 best.Candidate.CandidateVersion));
 

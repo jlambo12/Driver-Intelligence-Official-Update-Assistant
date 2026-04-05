@@ -8,11 +8,20 @@ public enum CompatibilityConfidence
     High = 3
 }
 
+public enum HardwareMatchQuality
+{
+    Unknown = 0,
+    ExactHardwareId = 1,
+    NormalizedHardwareId = 2,
+    VendorFamilyFallback = 3
+}
+
 public sealed record ProviderCandidate(
     string DriverIdentifier,
     string? CandidateVersion,
     string? ReleaseDateIso,
     CompatibilityConfidence CompatibilityConfidence,
+    HardwareMatchQuality HardwareMatchQuality,
     SourceEvidence SourceEvidence,
     Uri? DownloadUri);
 

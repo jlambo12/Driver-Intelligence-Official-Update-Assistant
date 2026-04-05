@@ -52,6 +52,7 @@ public sealed class OfficialOemSupportProviderAdapter : IOfficialProviderAdapter
             CandidateVersion: null,
             ReleaseDateIso: null,
             CompatibilityConfidence: string.IsNullOrWhiteSpace(queryHint) ? CompatibilityConfidence.Low : CompatibilityConfidence.Medium,
+            HardwareMatchQuality: HardwareMatchQuality.Unknown,
             SourceEvidence: new SourceEvidence(
                 SourceUri: sourceUri,
                 PublisherName: rule.PublisherName,

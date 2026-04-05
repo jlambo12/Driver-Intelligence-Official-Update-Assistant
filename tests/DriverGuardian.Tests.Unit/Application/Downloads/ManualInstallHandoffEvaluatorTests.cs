@@ -98,6 +98,7 @@ public sealed class ManualInstallHandoffEvaluatorTests
             CandidateVersion: "2.0.0",
             ReleaseDateIso: null,
             CompatibilityConfidence: CompatibilityConfidence.High,
+            HardwareMatchQuality: HardwareMatchQuality.ExactHardwareId,
             SourceEvidence: new SourceEvidence(
                 sourceUri,
                 "Vendor",

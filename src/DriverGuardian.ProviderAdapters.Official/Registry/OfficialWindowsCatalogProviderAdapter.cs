@@ -1,4 +1,3 @@
-using System.Text.Json;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
 using DriverGuardian.ProviderAdapters.Abstractions.Models;
 using DriverGuardian.ProviderAdapters.Abstractions.Providers;
@@ -6,23 +5,27 @@ using DriverGuardian.ProviderAdapters.Abstractions.Providers;
 namespace DriverGuardian.ProviderAdapters.Official.Registry;
 
 /// <summary>
-/// Provider adapter backed by a curated Windows Update Catalog snapshot.
-/// Coverage is intentionally narrow and returns empty results when no catalog match is found
-/// (including normalized PCI/USB hardware-id fallback).
+/// Provider adapter backed by a catalog source (snapshot by default).
+/// Coverage is explicitly best-effort: only exact hardware-id matches are treated as high-confidence.
 /// </summary>
 public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAdapter
 {
-    private const string SnapshotFileRelativePath = "Data/windows-catalog-snapshot.json";
     private const string PciPrefix = "PCI\\";
     private const string UsbPrefix = "USB\\";
     private const string PciVendorTokenPrefix = "PCI:";
     private const string UsbVendorTokenPrefix = "USB:";
-    private static readonly IReadOnlyDictionary<string, CatalogDriverRecord> CatalogByHardwareId = LoadSnapshot();
-    private static readonly IReadOnlyDictionary<string, CatalogDriverRecord> CatalogByVendorId = BuildVendorFallbackMap();
+
+    private readonly WindowsCatalogDataset _dataset;
+
+    public OfficialWindowsCatalogProviderAdapter(IWindowsCatalogDataSource? dataSource = null)
+    {
+        var source = dataSource ?? new SnapshotWindowsCatalogDataSource();
+        _dataset = source.Load();
+    }
 
     public ProviderDescriptor Descriptor => new(
         Code: "windows-update-catalog",
-        DisplayName: "Windows Update Catalog (Curated Snapshot)",
+        DisplayName: "Windows Update Catalog (Data Source Backed)",
         IsEnabled: true,
         OfficialSourceOnly: true,
         Precedence: ProviderPrecedence.PlatformVendor);
@@ -51,12 +54,12 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
                     continue;
                 }
 
-                if (!TryResolveCatalogRecord(hardwareId, out var record, out var matchType, out var compatibilityConfidence, out var score))
+                if (!TryResolveCatalogRecord(hardwareId, out var record, out var matchType, out var compatibilityConfidence, out var score, out var matchQuality))
                 {
                     continue;
                 }
 
-                var match = new CatalogMatch(record, matchType, compatibilityConfidence, score, hardwareId);
+                var match = new CatalogMatch(record, matchType, compatibilityConfidence, score, hardwareId, matchQuality);
                 if (bestMatch is null || match.Score > bestMatch.Score)
                 {
                     bestMatch = match;
@@ -70,12 +73,13 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
                     CandidateVersion: bestMatch.Record.CandidateVersion,
                     ReleaseDateIso: null,
                     CompatibilityConfidence: bestMatch.CompatibilityConfidence,
+                    HardwareMatchQuality: bestMatch.HardwareMatchQuality,
                     SourceEvidence: new SourceEvidence(
                         bestMatch.Record.SourceUri,
                         bestMatch.Record.PublisherName,
                         SourceTrustLevel.OperatingSystemCatalog,
                         IsOfficialSource: true,
-                        $"{bestMatch.Record.EvidenceNote} Match type: {bestMatch.MatchType}; input: {bestMatch.InputHardwareId}."),
+                        $"{bestMatch.Record.EvidenceNote} Match type: {bestMatch.MatchType}; input: {bestMatch.InputHardwareId}; catalog source: {_dataset.SourceName}."),
                     DownloadUri: null);
 
                 return Task.FromResult(new ProviderLookupResponse(
@@ -101,152 +105,91 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         }
     }
 
-    private sealed record CatalogDriverRecord(
-        string DriverIdentifier,
-        string CandidateVersion,
-        Uri SourceUri,
-        string PublisherName,
-        string EvidenceNote);
-
-    private sealed record SnapshotRecord(
-        string HardwareId,
-        string DriverIdentifier,
-        string CandidateVersion,
-        string SourceUri,
-        string PublisherName,
-        string EvidenceNote);
-
-    private static IReadOnlyDictionary<string, CatalogDriverRecord> LoadSnapshot()
-    {
-        var snapshotPath = Path.Combine(AppContext.BaseDirectory, SnapshotFileRelativePath);
-        if (!File.Exists(snapshotPath))
-        {
-            return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        List<SnapshotRecord>? snapshot;
-        try
-        {
-            using var stream = File.OpenRead(snapshotPath);
-            snapshot = JsonSerializer.Deserialize<List<SnapshotRecord>>(stream, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-        }
-        catch (IOException)
-        {
-            return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
-        }
-        catch (JsonException)
-        {
-            return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        if (snapshot is null || snapshot.Count == 0)
-        {
-            return new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var catalog = new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
-        foreach (var entry in snapshot)
-        {
-            if (string.IsNullOrWhiteSpace(entry.HardwareId) ||
-                string.IsNullOrWhiteSpace(entry.DriverIdentifier) ||
-                string.IsNullOrWhiteSpace(entry.CandidateVersion) ||
-                string.IsNullOrWhiteSpace(entry.SourceUri))
-            {
-                continue;
-            }
-
-            if (!Uri.TryCreate(entry.SourceUri, UriKind.Absolute, out var sourceUri))
-            {
-                continue;
-            }
-
-            catalog[entry.HardwareId.Trim()] = new CatalogDriverRecord(
-                DriverIdentifier: entry.DriverIdentifier.Trim(),
-                CandidateVersion: entry.CandidateVersion.Trim(),
-                SourceUri: sourceUri,
-                PublisherName: string.IsNullOrWhiteSpace(entry.PublisherName)
-                    ? "Microsoft Update Catalog"
-                    : entry.PublisherName.Trim(),
-                EvidenceNote: string.IsNullOrWhiteSpace(entry.EvidenceNote)
-                    ? "Matched exact hardware id against bundled Windows Update Catalog snapshot (partial coverage)."
-                    : entry.EvidenceNote.Trim());
-        }
-
-        return catalog;
-    }
-
-    private static IReadOnlyDictionary<string, CatalogDriverRecord> BuildVendorFallbackMap()
-    {
-        var map = new Dictionary<string, CatalogDriverRecord>(StringComparer.OrdinalIgnoreCase);
-        foreach (var entry in CatalogByHardwareId)
-        {
-            if (!TryExtractVendorToken(entry.Key, out var vendorToken) || string.IsNullOrWhiteSpace(vendorToken))
-            {
-                continue;
-            }
-
-            if (!map.ContainsKey(vendorToken))
-            {
-                map[vendorToken] = entry.Value;
-            }
-        }
-
-        return map;
-    }
-
     private sealed record CatalogMatch(
         CatalogDriverRecord Record,
         string MatchType,
         CompatibilityConfidence CompatibilityConfidence,
         int Score,
-        string InputHardwareId);
+        string InputHardwareId,
+        HardwareMatchQuality HardwareMatchQuality);
 
-    private static bool TryResolveCatalogRecord(
+    private bool TryResolveCatalogRecord(
         string hardwareId,
         out CatalogDriverRecord record,
         out string matchType,
         out CompatibilityConfidence compatibilityConfidence,
-        out int score)
+        out int score,
+        out HardwareMatchQuality hardwareMatchQuality)
     {
         record = default!;
         matchType = "none";
         compatibilityConfidence = CompatibilityConfidence.Unknown;
         score = 0;
+        hardwareMatchQuality = HardwareMatchQuality.Unknown;
 
         var trimmed = hardwareId.Trim();
-        if (CatalogByHardwareId.TryGetValue(trimmed, out var exactRecord) && exactRecord is not null)
+        if (_dataset.CatalogByHardwareId.TryGetValue(trimmed, out var exactRecord) && exactRecord is not null)
         {
             record = exactRecord;
             matchType = "exact";
             compatibilityConfidence = CompatibilityConfidence.High;
             score = 300;
+            hardwareMatchQuality = HardwareMatchQuality.ExactHardwareId;
             return true;
         }
 
         var normalized = NormalizeHardwareId(trimmed);
-        if (normalized is null || string.Equals(normalized, trimmed, StringComparison.OrdinalIgnoreCase))
-        {
-            return TryResolveVendorFallback(trimmed, out record, out matchType, out compatibilityConfidence, out score);
-        }
-
-        if (CatalogByHardwareId.TryGetValue(normalized, out var normalizedRecord) && normalizedRecord is not null)
+        if (normalized is not null &&
+            !string.Equals(normalized, trimmed, StringComparison.OrdinalIgnoreCase) &&
+            _dataset.CatalogByHardwareId.TryGetValue(normalized, out var normalizedRecord) &&
+            normalizedRecord is not null)
         {
             record = normalizedRecord;
             matchType = "normalized";
             compatibilityConfidence = CompatibilityConfidence.Medium;
             score = 200;
+            hardwareMatchQuality = HardwareMatchQuality.NormalizedHardwareId;
             return true;
         }
 
-        return TryResolveVendorFallback(trimmed, out record, out matchType, out compatibilityConfidence, out score);
+        return TryResolveVendorFallback(trimmed, out record, out matchType, out compatibilityConfidence, out score, out hardwareMatchQuality);
+    }
+
+    private bool TryResolveVendorFallback(
+        string hardwareId,
+        out CatalogDriverRecord record,
+        out string matchType,
+        out CompatibilityConfidence compatibilityConfidence,
+        out int score,
+        out HardwareMatchQuality hardwareMatchQuality)
+    {
+        record = default!;
+        matchType = "none";
+        compatibilityConfidence = CompatibilityConfidence.Unknown;
+        score = 0;
+        hardwareMatchQuality = HardwareMatchQuality.Unknown;
+
+        if (!TryExtractVendorToken(hardwareId, out var vendorToken) || string.IsNullOrWhiteSpace(vendorToken))
+        {
+            return false;
+        }
+
+        if (!_dataset.CatalogByVendorId.TryGetValue(vendorToken, out var vendorRecord) || vendorRecord is null)
+        {
+            return false;
+        }
+
+        record = vendorRecord;
+        matchType = "vendor-family-fallback";
+        compatibilityConfidence = CompatibilityConfidence.Unknown;
+        score = 100;
+        hardwareMatchQuality = HardwareMatchQuality.VendorFamilyFallback;
+        return true;
     }
 
     private static string? NormalizeHardwareId(string hardwareId)
     {
-        if (hardwareId.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase))
+        if (hardwareId.StartsWith(PciPrefix, StringComparison.OrdinalIgnoreCase))
         {
             var ven = ExtractToken(hardwareId, "VEN_");
             var dev = ExtractToken(hardwareId, "DEV_");
@@ -256,7 +199,7 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
             }
         }
 
-        if (hardwareId.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase))
+        if (hardwareId.StartsWith(UsbPrefix, StringComparison.OrdinalIgnoreCase))
         {
             var vid = ExtractToken(hardwareId, "VID_");
             var pid = ExtractToken(hardwareId, "PID_");
@@ -267,35 +210,6 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         }
 
         return null;
-    }
-
-    private static bool TryResolveVendorFallback(
-        string hardwareId,
-        out CatalogDriverRecord record,
-        out string matchType,
-        out CompatibilityConfidence compatibilityConfidence,
-        out int score)
-    {
-        record = default!;
-        matchType = "none";
-        compatibilityConfidence = CompatibilityConfidence.Unknown;
-        score = 0;
-
-        if (!TryExtractVendorToken(hardwareId, out var vendorToken) || string.IsNullOrWhiteSpace(vendorToken))
-        {
-            return false;
-        }
-
-        if (!CatalogByVendorId.TryGetValue(vendorToken, out var vendorRecord) || vendorRecord is null)
-        {
-            return false;
-        }
-
-        record = vendorRecord;
-        matchType = "compatible-vendor";
-        compatibilityConfidence = CompatibilityConfidence.Low;
-        score = 100;
-        return true;
     }
 
     private static bool TryExtractVendorToken(string hardwareId, out string? token)

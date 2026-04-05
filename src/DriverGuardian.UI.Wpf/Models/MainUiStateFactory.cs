@@ -33,7 +33,8 @@ public static class MainUiStateFactory
         var hasInsufficientEvidence = result.RecommendationDetails.Any(detail =>
             !detail.HasRecommendation &&
             detail.RecommendationReasonCode is RecommendationDetailReasonCode.InsufficientEvidence
-                or RecommendationDetailReasonCode.InsufficientEvidenceDueToProviderFailures);
+                or RecommendationDetailReasonCode.InsufficientEvidenceDueToProviderFailures
+                or RecommendationDetailReasonCode.WeakHardwareMatch);
 
         if (hasInsufficientEvidence && result.RecommendedCount == 0)
         {

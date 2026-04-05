@@ -17,8 +17,8 @@ internal static class OfficialSourcePolicyScorer
         var compatibilityScore = compatibility switch
         {
             CompatibilityConfidence.High => 40,
-            CompatibilityConfidence.Medium => 25,
-            CompatibilityConfidence.Low => 10,
+            CompatibilityConfidence.Medium => 5,
+            CompatibilityConfidence.Low => 0,
             _ => 0
         };
 

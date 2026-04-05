@@ -21,7 +21,8 @@ public enum RecommendationReasonCode
     CandidateFromLowerPrecedenceSource = 5,
     NoCandidates = 6,
     CompatibleUpgradeAvailable = 7,
-    CandidateMarkedIncompatible = 8
+    CandidateMarkedIncompatible = 8,
+    CandidateWeakHardwareMatch = 9
 }
 
 public sealed record RecommendationReason(

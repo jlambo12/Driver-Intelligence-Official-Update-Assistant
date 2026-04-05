@@ -59,6 +59,7 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
         var reason = BuildReason(decision, failures);
         var recommendedVersion = decision.IsRecommendation ? decision.RecommendedVersion : null;
         var officialSourceUrl = ResolveOfficialSourceUrl(decision);
+        var reasonCode = MapReasonCode(decision, failures);
 
         return new RecommendationSummary(
             installedDriver.DeviceIdentity,
@@ -66,7 +67,7 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
             reason,
             recommendedVersion,
             officialSourceUrl,
-            MapReasonCode(decision.Outcome, failures));
+            reasonCode);
     }
 
     private static string? ResolveOfficialSourceUrl(RecommendationDecision decision)
@@ -107,7 +108,9 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
             RecommendationOutcome.Incompatible =>
                 "No recommendation: available candidate is marked as incompatible.",
             RecommendationOutcome.NotRecommended =>
-                "No recommendation: candidate compatibility is unknown.",
+                decision.Reasons.Any(reason => reason.Code == RecommendationReasonCode.CandidateWeakHardwareMatch)
+                    ? "No recommendation: only a vendor-family fallback match is available."
+                    : "No recommendation: candidate compatibility is not high enough.",
             RecommendationOutcome.InsufficientEvidence when failures.Count > 0 =>
                 $"No recommendation: insufficient evidence because provider lookup failed ({failures.First().ProviderCode}: {failures.First().FailureReason}).",
             RecommendationOutcome.InsufficientEvidence =>
@@ -118,10 +121,16 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
     }
 
     private static RecommendationSummaryReasonCode MapReasonCode(
-        RecommendationOutcome outcome,
+        RecommendationDecision decision,
         IReadOnlyCollection<ProviderLookupFailure> failures)
     {
-        return outcome switch
+        if (decision.Outcome == RecommendationOutcome.NotRecommended &&
+            decision.Reasons.Any(reason => reason.Code == RecommendationReasonCode.CandidateWeakHardwareMatch))
+        {
+            return RecommendationSummaryReasonCode.WeakHardwareMatch;
+        }
+
+        return decision.Outcome switch
         {
             RecommendationOutcome.Recommended => RecommendationSummaryReasonCode.RecommendedUpgradeAvailable,
             RecommendationOutcome.AlreadyUpToDate => RecommendationSummaryReasonCode.AlreadyUpToDate,

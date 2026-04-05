@@ -6,10 +6,12 @@ public static class OfficialProviderRuntimeFactory
 {
     public static IReadOnlyCollection<IOfficialProviderAdapter> CreateRuntimeProviders()
     {
+        var catalogSource = new SnapshotWindowsCatalogDataSource();
+
         var baseProviders = new IOfficialProviderAdapter[]
         {
             new OfficialOemSupportProviderAdapter(),
-            new OfficialWindowsCatalogProviderAdapter()
+            new OfficialWindowsCatalogProviderAdapter(catalogSource)
         };
 
         return baseProviders
