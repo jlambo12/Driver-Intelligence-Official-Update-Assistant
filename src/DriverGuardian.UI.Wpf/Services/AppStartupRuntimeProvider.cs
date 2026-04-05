@@ -1,4 +1,6 @@
 using DriverGuardian.Bootstrap.Runtime;
+using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Infrastructure.DiagnosticLogging;
 
 namespace DriverGuardian.UI.Wpf.Services;
 
