@@ -89,6 +89,34 @@ public sealed class ShareableReportBuilderTests
         Assert.Equal("NVIDIA (Display)", onlyDevice.DeviceDisplayName);
     }
 
+
+    [Fact]
+    public void Build_ShouldKeepLowValueDeviceVisible_WhenItHasRecommendation()
+    {
+        var now = DateTimeOffset.Parse("2026-04-01T12:00:00+00:00");
+        var session = ScanSession.Start(Guid.NewGuid(), now.AddMinutes(-5)).Complete(now.AddMinutes(-1));
+
+        var endpointDriver = BuildDriver("SWD\\MMDEVAPI\\{FAKE}", "10.0.1", "Microsoft");
+        var request = new ShareableReportRequest(
+            new ScanResult(
+                session,
+                1,
+                [DiscoveredDevice.Create("SWD\\MMDEVAPI\\{FAKE}", "Endpoint", ["ROOT\\MMDEVAPI"], "Microsoft", "AudioEndpoint", DevicePresenceStatus.Present, null)],
+                [endpointDriver],
+                ScanExecutionStatus.Completed,
+                []),
+            [new RecommendationSummary(endpointDriver.DeviceIdentity, true, "Upgrade available", "10.0.2")],
+            [],
+            [],
+            now);
+
+        var report = _builder.Build(request);
+
+        var device = Assert.Single(report.Devices);
+        Assert.Equal("SWD\\MMDEVAPI\\{FAKE}", device.DeviceInstanceId);
+        Assert.True(device.Recommendation!.HasRecommendation);
+    }
+
     [Fact]
     public void BuildStructuredText_ShouldUseHonestOfficialSourceLanguage_WhenSourceIsNotConfirmed()
     {

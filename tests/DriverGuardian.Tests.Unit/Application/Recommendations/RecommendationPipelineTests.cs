@@ -148,6 +148,22 @@ public sealed class RecommendationPipelineTests
     }
 
 
+
+    [Fact]
+    public async Task BuildAsync_ShouldSkipLowValueTechnicalDriversForDeepLookup()
+    {
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("99.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]))
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("SWD\\MMDEVAPI\\{FAKE}", "1.0.0", "ROOT\\MMDEVAPI")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.False(summary.HasRecommendation);
+        Assert.Contains("skipped for deep provider lookup", summary.Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(DriverGuardian.Domain.Recommendations.RecommendationSummaryReasonCode.InsufficientEvidence, summary.ReasonCode);
+    }
+
     [Fact]
     public async Task BuildAsync_ShouldNotExposeOfficialSourceUrl_WhenSourceUriIsNotSafeHttps()
     {

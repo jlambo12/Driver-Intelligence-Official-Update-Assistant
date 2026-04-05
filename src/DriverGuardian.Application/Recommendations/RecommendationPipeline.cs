@@ -1,4 +1,5 @@
 using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
@@ -39,6 +40,12 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (!ShouldRunLookup(installedDriver))
+            {
+                recommendations.Add(MapSkippedSummary(installedDriver));
+                continue;
+            }
+
             var lookup = await _lookupOrchestrator.LookupAsync(installedDriver, cancellationToken);
             var decision = _evaluator.Evaluate(new RecommendationEvaluationInput(
                 installedDriver,
@@ -50,6 +57,28 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
 
         return recommendations;
     }
+
+
+    private static bool ShouldRunLookup(InstalledDriverSnapshot installedDriver)
+    {
+        var classification = DeviceRelevanceClassifier.Classify(
+            deviceClass: null,
+            instanceId: installedDriver.DeviceIdentity.InstanceId,
+            hardwareIds: [installedDriver.HardwareIdentifier.Value],
+            manufacturer: installedDriver.ProviderName,
+            friendlyName: null);
+
+        return !classification.IsVirtualOrSoftware && !classification.IsLowValueTechnical;
+    }
+
+    private static RecommendationSummary MapSkippedSummary(InstalledDriverSnapshot installedDriver)
+        => new(
+            installedDriver.DeviceIdentity,
+            hasRecommendation: false,
+            "No recommendation: low-value technical device skipped for deep provider lookup.",
+            recommendedVersion: null,
+            officialSourceUrl: null,
+            RecommendationSummaryReasonCode.InsufficientEvidence);
 
     private static RecommendationSummary MapSummary(
         InstalledDriverSnapshot installedDriver,
