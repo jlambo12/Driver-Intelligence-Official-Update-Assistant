@@ -110,5 +110,325 @@
     "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_06F0",
     "publisherName": "Intel Corporation",
     "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Arc graphics adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_7D55",
+    "driverIdentifier": "windows-update:8086-7d55:31.0.101.5590",
+    "candidateVersion": "31.0.101.5590",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_7D55",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel graphics adapter (Raptor Lake)."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_46D1",
+    "driverIdentifier": "windows-update:8086-46d1:31.0.101.5522",
+    "candidateVersion": "31.0.101.5522",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_46D1",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel graphics adapter (Alder Lake)."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_A7A0",
+    "driverIdentifier": "windows-update:8086-a7a0:10.1.19930.8387",
+    "candidateVersion": "10.1.19930.8387",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_A7A0",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel chipset device."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_51A8",
+    "driverIdentifier": "windows-update:8086-51a8:31.0.101.5333",
+    "candidateVersion": "31.0.101.5333",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_51A8",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Iris Xe graphics adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10DE&DEV_2484",
+    "driverIdentifier": "windows-update:10de-2484:32.0.15.7260",
+    "candidateVersion": "32.0.15.7260",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10DE%26DEV_2484",
+    "publisherName": "NVIDIA",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for NVIDIA RTX 30-series display adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10DE&DEV_2704",
+    "driverIdentifier": "windows-update:10de-2704:32.0.15.7347",
+    "candidateVersion": "32.0.15.7347",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10DE%26DEV_2704",
+    "publisherName": "NVIDIA",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for NVIDIA RTX 40-series display adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10DE&DEV_25A2",
+    "driverIdentifier": "windows-update:10de-25a2:32.0.15.7242",
+    "candidateVersion": "32.0.15.7242",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10DE%26DEV_25A2",
+    "publisherName": "NVIDIA",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for NVIDIA mobile display adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1002&DEV_73BF",
+    "driverIdentifier": "windows-update:1002-73bf:32.0.12033.1030",
+    "candidateVersion": "32.0.12033.1030",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1002%26DEV_73BF",
+    "publisherName": "Advanced Micro Devices, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for AMD Radeon display adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1002&DEV_164E",
+    "driverIdentifier": "windows-update:1002-164e:32.0.12033.1030",
+    "candidateVersion": "32.0.12033.1030",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1002%26DEV_164E",
+    "publisherName": "Advanced Micro Devices, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for AMD integrated graphics adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1002&DEV_15BF",
+    "driverIdentifier": "windows-update:1002-15bf:6.0.0.35",
+    "candidateVersion": "6.0.0.35",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1002%26DEV_15BF",
+    "publisherName": "Advanced Micro Devices, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for AMD PSP device."
+  },
+  {
+    "hardwareId": "PCI\\VEN_14E4&DEV_43B1",
+    "driverIdentifier": "windows-update:14e4-43b1:7.35.352.0",
+    "candidateVersion": "7.35.352.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_14E4%26DEV_43B1",
+    "publisherName": "Broadcom",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Broadcom wireless adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_14E4&DEV_16D7",
+    "driverIdentifier": "windows-update:14e4-16d7:20.8.24.0",
+    "candidateVersion": "20.8.24.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_14E4%26DEV_16D7",
+    "publisherName": "Broadcom",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Broadcom network adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1969&DEV_E0A1",
+    "driverIdentifier": "windows-update:1969-e0a1:2.1.0.32",
+    "candidateVersion": "2.1.0.32",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1969%26DEV_E0A1",
+    "publisherName": "Qualcomm Atheros",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Qualcomm Atheros ethernet controller."
+  },
+  {
+    "hardwareId": "PCI\\VEN_168C&DEV_0042",
+    "driverIdentifier": "windows-update:168c-0042:12.0.0.1254",
+    "candidateVersion": "12.0.0.1254",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_168C%26DEV_0042",
+    "publisherName": "Qualcomm Atheros",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Qualcomm Atheros WLAN adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10EC&DEV_522A",
+    "driverIdentifier": "windows-update:10ec-522a:10.0.22621.31244",
+    "candidateVersion": "10.0.22621.31244",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10EC%26DEV_522A",
+    "publisherName": "Realtek",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Realtek card reader controller."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10EC&DEV_5289",
+    "driverIdentifier": "windows-update:10ec-5289:10.0.22621.31244",
+    "candidateVersion": "10.0.22621.31244",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10EC%26DEV_5289",
+    "publisherName": "Realtek",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Realtek card reader controller."
+  },
+  {
+    "hardwareId": "PCI\\VEN_10EC&DEV_8852",
+    "driverIdentifier": "windows-update:10ec-8852:6001.16.166.0",
+    "candidateVersion": "6001.16.166.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_10EC%26DEV_8852",
+    "publisherName": "Realtek",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Realtek 8852 wireless adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_02F0",
+    "driverIdentifier": "windows-update:8086-02f0:23.50.0.6",
+    "candidateVersion": "23.50.0.6",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_02F0",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Wi-Fi 7 adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_7AF0",
+    "driverIdentifier": "windows-update:8086-7af0:23.40.0.4",
+    "candidateVersion": "23.40.0.4",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_7AF0",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel wireless adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_7A70",
+    "driverIdentifier": "windows-update:8086-7a70:10.1.19627.8423",
+    "candidateVersion": "10.1.19627.8423",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_7A70",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Serial IO controller."
+  },
+  {
+    "hardwareId": "PCI\\VEN_8086&DEV_1E3A",
+    "driverIdentifier": "windows-update:8086-1e3a:10.1.1.45",
+    "candidateVersion": "10.1.1.45",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_8086%26DEV_1E3A",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Management Engine interface."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1B21&DEV_2142",
+    "driverIdentifier": "windows-update:1b21-2142:3.1.10.0",
+    "candidateVersion": "3.1.10.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1B21%26DEV_2142",
+    "publisherName": "ASMedia",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for ASMedia USB host controller."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1C5C&DEV_174A",
+    "driverIdentifier": "windows-update:1c5c-174a:1.0.0.104",
+    "candidateVersion": "1.0.0.104",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1C5C%26DEV_174A",
+    "publisherName": "Synaptics",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Synaptics audio controller."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1AF4&DEV_1041",
+    "driverIdentifier": "windows-update:1af4-1041:100.92.104.22900",
+    "candidateVersion": "100.92.104.22900",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1AF4%26DEV_1041",
+    "publisherName": "Red Hat, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for VirtIO balloon device."
+  },
+  {
+    "hardwareId": "PCI\\VEN_1AF4&DEV_1001",
+    "driverIdentifier": "windows-update:1af4-1001:100.92.104.22900",
+    "candidateVersion": "100.92.104.22900",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_1AF4%26DEV_1001",
+    "publisherName": "Red Hat, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for VirtIO network adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_15AD&DEV_07B0",
+    "driverIdentifier": "windows-update:15ad-07b0:9.8.21.0",
+    "candidateVersion": "9.8.21.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_15AD%26DEV_07B0",
+    "publisherName": "VMware, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for VMware SVGA 3D adapter."
+  },
+  {
+    "hardwareId": "PCI\\VEN_15AD&DEV_0740",
+    "driverIdentifier": "windows-update:15ad-0740:1.9.18.0",
+    "candidateVersion": "1.9.18.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_15AD%26DEV_0740",
+    "publisherName": "VMware, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for VMware VMXNET3 network adapter."
+  },
+  {
+    "hardwareId": "USB\\VID_0BDA&PID_B85C",
+    "driverIdentifier": "windows-update:0bda-b85c:6001.16.154.1000",
+    "candidateVersion": "6001.16.154.1000",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_0BDA%26PID_B85C",
+    "publisherName": "Realtek",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Realtek Bluetooth adapter."
+  },
+  {
+    "hardwareId": "USB\\VID_0BDA&PID_C811",
+    "driverIdentifier": "windows-update:0bda-c811:10.0.22621.31244",
+    "candidateVersion": "10.0.22621.31244",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_0BDA%26PID_C811",
+    "publisherName": "Realtek",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Realtek USB ethernet adapter."
+  },
+  {
+    "hardwareId": "USB\\VID_8087&PID_0033",
+    "driverIdentifier": "windows-update:8087-0033:23.40.0.4",
+    "candidateVersion": "23.40.0.4",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_8087%26PID_0033",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Bluetooth device."
+  },
+  {
+    "hardwareId": "USB\\VID_8087&PID_0A2B",
+    "driverIdentifier": "windows-update:8087-0a2b:23.40.0.4",
+    "candidateVersion": "23.40.0.4",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_8087%26PID_0A2B",
+    "publisherName": "Intel Corporation",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Intel Bluetooth controller."
+  },
+  {
+    "hardwareId": "USB\\VID_05AC&PID_12A8",
+    "driverIdentifier": "windows-update:05ac-12a8:6.0.9999.69",
+    "candidateVersion": "6.0.9999.69",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_05AC%26PID_12A8",
+    "publisherName": "Apple Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Apple mobile device USB driver."
+  },
+  {
+    "hardwareId": "USB\\VID_046D&PID_C52B",
+    "driverIdentifier": "windows-update:046d-c52b:6.0.0.67",
+    "candidateVersion": "6.0.0.67",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_046D%26PID_C52B",
+    "publisherName": "Logitech",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Logitech USB input device."
+  },
+  {
+    "hardwareId": "USB\\VID_17EF&PID_6099",
+    "driverIdentifier": "windows-update:17ef-6099:1.1.38.0",
+    "candidateVersion": "1.1.38.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_17EF%26PID_6099",
+    "publisherName": "Lenovo",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Lenovo USB dock ethernet."
+  },
+  {
+    "hardwareId": "USB\\VID_413C&PID_2113",
+    "driverIdentifier": "windows-update:413c-2113:1.0.9.0",
+    "candidateVersion": "1.0.9.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_413C%26PID_2113",
+    "publisherName": "Dell Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Dell USB ethernet adapter."
+  },
+  {
+    "hardwareId": "USB\\VID_03F0&PID_0A2A",
+    "driverIdentifier": "windows-update:03f0-0a2a:10.0.0.7",
+    "candidateVersion": "10.0.0.7",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_03F0%26PID_0A2A",
+    "publisherName": "HP Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for HP USB docking audio device."
+  },
+  {
+    "hardwareId": "USB\\VID_1532&PID_00A5",
+    "driverIdentifier": "windows-update:1532-00a5:6.2.9200.16545",
+    "candidateVersion": "6.2.9200.16545",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_1532%26PID_00A5",
+    "publisherName": "Razer",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Razer USB input device."
+  },
+  {
+    "hardwareId": "USB\\VID_1BCF&PID_2C99",
+    "driverIdentifier": "windows-update:1bcf-2c99:30.15063.6.3935",
+    "candidateVersion": "30.15063.6.3935",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_1BCF%26PID_2C99",
+    "publisherName": "SunplusIT",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Integrated webcam USB device."
+  },
+  {
+    "hardwareId": "USB\\VID_04F2&PID_B6A8",
+    "driverIdentifier": "windows-update:04f2-b6a8:10.0.19041.3636",
+    "candidateVersion": "10.0.19041.3636",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_04F2%26PID_B6A8",
+    "publisherName": "Chicony",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for Integrated camera device."
+  },
+  {
+    "hardwareId": "USB\\VID_2109&PID_0817",
+    "driverIdentifier": "windows-update:2109-0817:2.1.28.0",
+    "candidateVersion": "2.1.28.0",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=USB%5CVID_2109%26PID_0817",
+    "publisherName": "VIA Labs, Inc.",
+    "evidenceNote": "Matched exact hardware id against bundled snapshot for VIA USB hub controller."
   }
 ]
