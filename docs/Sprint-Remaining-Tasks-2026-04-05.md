@@ -43,6 +43,8 @@
 
 ### Текущий прогресс
 
+- [x] `test:fix-no-hints-null-manufacturer` — Adjusted no-hints test to pass null manufacturer so network is not invoked (2026-04-05 18:00 UTC)
+
 - [x] `provider:ms-support-circuit-stop-extra-hints` — Stop probing additional hints once Microsoft Support circuit opens (2026-04-05 17:49 UTC)
 
 - [x] `docs:sync-sprint-remaining-after-each-merge` — Added workflow and helper script for timestamped progress entries (2026-04-05 17:42 UTC)

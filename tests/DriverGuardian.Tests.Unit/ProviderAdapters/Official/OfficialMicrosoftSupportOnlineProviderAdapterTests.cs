@@ -51,7 +51,7 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapterTests
         var handler = new StubHttpMessageHandler(_ => throw new InvalidOperationException("Network should not be used."));
         var adapter = new OfficialMicrosoftSupportOnlineProviderAdapter(new HttpClient(handler));
 
-        var response = await adapter.LookupAsync(CreateRequest(null, null), CancellationToken.None);
+        var response = await adapter.LookupAsync(CreateRequest(null, null, manufacturer: null), CancellationToken.None);
 
         Assert.True(response.IsSuccess);
         Assert.Empty(response.Candidates);
@@ -94,7 +94,7 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapterTests
         Assert.Equal(3, callCount);
     }
 
-    private static ProviderLookupRequest CreateRequest(string? hardwareId, string? model, string manufacturer = "Microsoft")
+    private static ProviderLookupRequest CreateRequest(string? hardwareId, string? model, string? manufacturer = "Microsoft")
     {
         var hardwareIds = string.IsNullOrWhiteSpace(hardwareId)
             ? Array.Empty<string>()
