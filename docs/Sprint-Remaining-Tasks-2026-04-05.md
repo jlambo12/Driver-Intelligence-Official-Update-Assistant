@@ -34,3 +34,22 @@
 - [x] Live provider подключён в runtime и покрыт unit/интеграционно-подобными тестами.
 - [x] Validation follow-up issues закрыты документально и проверены.
 - [x] Roadmap-документы отражают фактическое состояние кода без устаревших противоречий.
+
+---
+
+## Обновление 2026-04-05 (старт следующей sprint-итерации)
+
+Новый рабочий план: `docs/Sprint-Plan-2026-04-05-Next.md`.
+
+### Текущий прогресс
+
+1. [x] `provider:add-microsoft-support-online-source`
+   - Добавлен online адаптер `OfficialMicrosoftSupportOnlineProviderAdapter`.
+   - Подключён в `OfficialProviderRuntimeFactory`.
+   - Добавлены unit-тесты на success/retry/no-hints.
+
+2. [ ] `provider:resilience-regression-tests`
+   - Расширить матрицу регрессионных сценариев partial outage между online провайдерами.
+
+3. [ ] `docs:sync-sprint-remaining-after-each-merge`
+   - Поддерживать этот документ в актуальном состоянии после каждого завершённого task/PR.
