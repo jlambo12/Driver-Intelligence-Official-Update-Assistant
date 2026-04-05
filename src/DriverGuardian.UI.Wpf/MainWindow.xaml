@@ -168,6 +168,8 @@
                         <TextBlock Text="{x:Static localization:UiStrings.VerificationSectionHint}" TextWrapping="Wrap" Foreground="#334155"/>
                     </StackPanel>
                 </Border>
+            </StackPanel>
+        </Border>
 
 
 
