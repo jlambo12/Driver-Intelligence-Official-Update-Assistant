@@ -68,7 +68,7 @@ public sealed class AppStartupOrchestratorTests
     {
         public IMainScreenWorkflow MainScreenWorkflow { get; } = new StubMainScreenWorkflow();
         public ISettingsRepository SettingsRepository { get; } = settingsRepository;
-        public IDiagnosticLogsFolderService DiagnosticLogsFolderService { get; } = new FakeDiagnosticLogsFolderService();
+        public DriverGuardian.Infrastructure.DiagnosticLogging.IDiagnosticLogsFolderService DiagnosticLogsFolderService { get; } = new FakeDiagnosticLogsFolderService();
         public IDiagnosticLogger StartupLogger { get; } = new NoOpDiagnosticLogger();
     }
 
@@ -100,7 +100,7 @@ public sealed class AppStartupOrchestratorTests
             => ReportFileSaveResult.Saved;
     }
 
-    private sealed class FakeDiagnosticLogsFolderService : IDiagnosticLogsFolderService
+    private sealed class FakeDiagnosticLogsFolderService : DriverGuardian.Infrastructure.DiagnosticLogging.IDiagnosticLogsFolderService
     {
         public string ResolveEffectiveFolderPath(string? customFolderPath)
             => string.IsNullOrWhiteSpace(customFolderPath) ? "C:/logs/default" : customFolderPath.Trim();
