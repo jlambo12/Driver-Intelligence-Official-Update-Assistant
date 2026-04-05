@@ -10,17 +10,17 @@
    - Обязательные требования: timeout/retry/transient-policy/circuit-breaker.
    - Почему не закрыто: в runtime пока нет truly live metadata-rich provider; используется curated/snapshot + OEM handoff.
 
-2. [ ] `docs:sync-roadmap-with-reality`
+2. [x] `docs:sync-roadmap-with-reality`
    - Обновить roadmap-документы так, чтобы они не противоречили фактической реализации.
    - Минимум: синхронизировать `docs/Application-Completion-Plan.md` и stage-артефакты с текущим состоянием Mirage.
-   - Почему не закрыто: в assessment отмечена необходимость синхронизации устаревшей документации.
+   - Закрыто: синхронизирован `docs/Application-Completion-Plan.md` с текущим состоянием (2026-04-05).
 
 ## Что рекомендуется закрыть параллельно (P1 из release assessment)
 
 > Эти пункты не обязательно были изначально в backlog спринта, но мешают качественному завершению ветки и переходу к более широкому rollout.
 
-3. [ ] `validation:runbook-wmi-acl`
-   - Закрыть issue `WIN-VAL-2026-04-05-01` (runbook для restricted WMI ACL).
+3. [x] `validation:runbook-wmi-acl`
+   - Issue `WIN-VAL-2026-04-05-01` закрыт: добавлен runbook `docs/runbooks/Restricted-WMI-ACL-Runbook.md` и ссылка в release checklist.
 
 4. [ ] `validation:offline-ux-copy`
    - Закрыть issue `WIN-VAL-2026-04-05-02` (actionable copy для offline сценариев).
