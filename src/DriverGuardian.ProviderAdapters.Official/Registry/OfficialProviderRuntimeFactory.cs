@@ -9,8 +9,7 @@ public static class OfficialProviderRuntimeFactory
         var baseProviders = new IOfficialProviderAdapter[]
         [
             new OfficialOemSupportProviderAdapter(),
-            new OfficialWindowsCatalogProviderAdapter(),
-            new OfficialProviderAdapterBaseline()
+            new OfficialWindowsCatalogProviderAdapter()
         ];
 
         return baseProviders
