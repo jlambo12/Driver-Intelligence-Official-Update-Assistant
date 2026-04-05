@@ -3,6 +3,7 @@
     <TargetFramework>net8.0-windows10.0.19041</TargetFramework>
     <AssemblyName>DriverGuardian.Bootstrap</AssemblyName>
     <RootNamespace>DriverGuardian.Bootstrap</RootNamespace>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../DriverGuardian.Application/DriverGuardian.Application.csproj" />
