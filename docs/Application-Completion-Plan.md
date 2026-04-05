@@ -37,25 +37,24 @@
 
 ### 1.3 Validation follow-ups
 
-Открытые хвосты:
-1. `WIN-VAL-2026-04-05-01` — runbook для restricted WMI ACL.
-2. `WIN-VAL-2026-04-05-02` — actionable UX copy для offline сценариев.
+Статус:
+1. `WIN-VAL-2026-04-05-01` — ✅ Closed (runbook для restricted WMI ACL добавлен).
+2. `WIN-VAL-2026-04-05-02` — ✅ Closed (offline UX copy + report phrasing синхронизированы).
 
 ## 2) План закрытия долгов по приоритетам
 
 ## P0 (текущий спринт)
-1. Закрыть provider-depth минимум (усиление live provider + ещё 1 официальный источник).
-2. Закрыть два validation follow-up issue.
-3. Финально синхронизировать release-facing документы и DoD-артефакты.
+1. Завершить provider-depth минимум (усиление live provider + ещё 1 production-grade официальный источник).
+2. Финально синхронизировать release-facing документы и DoD-артефакты под текущее состояние ветки.
 
 ## P1 (следом)
-4. Закрепить formal go/no-go checklist и owners.
-5. Добавить повторяемый pre-release smoke protocol (15–20 минут) в обязательный ритуал перед публикацией.
+3. Закрепить formal go/no-go checklist и owners.
+4. Добавить повторяемый pre-release smoke protocol (15–20 минут) в обязательный ритуал перед публикацией.
 
 ## 3) Definition of Done для перехода из dev-pilot к public-ready
 
 1. Provider coverage демонстрирует устойчивый прирост на согласованном benchmark-наборе.
-2. Все validation follow-up issue закрыты и подтверждены evidence.
+2. Все validation follow-up issue закрыты и подтверждены evidence. (на 2026-04-05 — выполнено)
 3. Go/no-go checklist формализован, заполнен и подтверждён ответственными.
 4. Документация не противоречит фактическому поведению runtime/UI/CI.
 
