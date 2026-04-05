@@ -102,6 +102,12 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapter : IOfficialProvi
 
         foreach (var hint in queryHints)
         {
+            if (IsCircuitOpen(out var circuitOpenedAgoDuringLookup))
+            {
+                failures.Add($"[temporary-unavailable] Catalog online circuit is open after repeated transient failures ({circuitOpenedAgoDuringLookup.TotalSeconds:N0}s elapsed). Try again later.");
+                break;
+            }
+
             var searchUri = BuildSearchUri(hint.Query);
             var probeResult = await ProbeWithRetryAsync(searchUri, hint, cancellationToken);
 
