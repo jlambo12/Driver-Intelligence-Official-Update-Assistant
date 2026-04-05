@@ -101,7 +101,7 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
 
         foreach (var hint in queryHints)
         {
-            var searchUri = BuildSearchUri(hint);
+            var searchUri = BuildSearchUri(hint.Query);
             var probe = await ProbeWithRetryAsync(searchUri, cancellationToken);
 
             if (!probe.IsSuccess)
@@ -120,15 +120,15 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
                 DriverIdentifier: $"{Descriptor.Code}:{request.DeviceInstanceId}",
                 CandidateVersion: null,
                 ReleaseDateIso: null,
-                CompatibilityConfidence: CompatibilityConfidence.Medium,
-                MatchStrength: HardwareIdMatchStrength.ManufacturerPortalHint,
-                ConfidenceRationale: "Microsoft Support search provides an official handoff path but requires manual driver package validation.",
+                CompatibilityConfidence: ResolveConfidence(hint.Kind),
+                MatchStrength: ResolveMatchStrength(hint.Kind),
+                ConfidenceRationale: BuildConfidenceRationale(hint.Kind),
                 SourceEvidence: new SourceEvidence(
                     SourceUri: searchUri,
                     PublisherName: "Microsoft Support",
                     TrustLevel: SourceTrustLevel.OfficialPublisherSite,
                     IsOfficialSource: true,
-                    EvidenceNote: $"Live Microsoft Support search endpoint validated for query hint '{TrimForEvidence(hint)}'."),
+                    EvidenceNote: $"Live Microsoft Support search endpoint validated for {hint.Kind} query hint '{TrimForEvidence(hint.Query)}'."),
                 DownloadUri: null);
 
             return new ProviderLookupResponse(
@@ -276,30 +276,30 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
         => statusCode is HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests
             or HttpStatusCode.BadGateway or HttpStatusCode.ServiceUnavailable or HttpStatusCode.GatewayTimeout;
 
-    private static List<string> BuildQueryHints(ProviderLookupRequest request)
+    private static List<QueryHint> BuildQueryHints(ProviderLookupRequest request)
     {
-        var hints = new List<string>();
+        var hints = new List<QueryHint>();
 
         foreach (var hardwareId in request.HardwareIds)
         {
             if (!string.IsNullOrWhiteSpace(hardwareId))
             {
-                hints.Add(hardwareId.Trim());
+                hints.Add(new QueryHint(hardwareId.Trim(), QueryHintKind.HardwareId));
             }
         }
 
         if (!string.IsNullOrWhiteSpace(request.DeviceModel))
         {
-            hints.Add(request.DeviceModel.Trim());
+            hints.Add(new QueryHint(request.DeviceModel.Trim(), QueryHintKind.DeviceModel));
         }
 
         if (!string.IsNullOrWhiteSpace(request.DeviceManufacturer))
         {
-            hints.Add(request.DeviceManufacturer.Trim());
+            hints.Add(new QueryHint(request.DeviceManufacturer.Trim(), QueryHintKind.Manufacturer));
         }
 
         return hints
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .DistinctBy(x => x.Query, StringComparer.OrdinalIgnoreCase)
             .Take(4)
             .ToList();
     }
@@ -313,5 +313,36 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
     private static string TrimForEvidence(string queryHint)
         => queryHint.Length <= 80 ? queryHint : $"{queryHint[..80]}…";
 
+    private static CompatibilityConfidence ResolveConfidence(QueryHintKind kind)
+        => kind switch
+        {
+            QueryHintKind.HardwareId => CompatibilityConfidence.Medium,
+            QueryHintKind.DeviceModel => CompatibilityConfidence.Low,
+            _ => CompatibilityConfidence.Unknown
+        };
+
+    private static HardwareIdMatchStrength ResolveMatchStrength(QueryHintKind kind)
+        => kind switch
+        {
+            QueryHintKind.HardwareId => HardwareIdMatchStrength.NormalizedHardwareId,
+            _ => HardwareIdMatchStrength.ManufacturerPortalHint
+        };
+
+    private static string BuildConfidenceRationale(QueryHintKind kind)
+        => kind switch
+        {
+            QueryHintKind.HardwareId => "Microsoft Support search validated with hardware-id hint; manual package compatibility confirmation is still required.",
+            QueryHintKind.DeviceModel => "Microsoft Support search validated with device-model hint; result is an official discovery path, not a guaranteed package match.",
+            _ => "Microsoft Support search validated with manufacturer hint; this is an official handoff path requiring manual driver validation."
+        };
+
     private sealed record ProbeResult(bool IsSuccess, string? FailureReason);
+    private sealed record QueryHint(string Query, QueryHintKind Kind);
+
+    private enum QueryHintKind
+    {
+        HardwareId,
+        DeviceModel,
+        Manufacturer
+    }
 }

@@ -54,3 +54,7 @@
 
 3. [ ] `docs:sync-sprint-remaining-after-each-merge`
    - Поддерживать этот документ в актуальном состоянии после каждого завершённого task/PR.
+
+4. [x] `provider:quality-signals-for-microsoft-support`
+   - Для `OfficialMicrosoftSupportOnlineProviderAdapter` добавлена дифференциация confidence/match-strength по типу query hint (hardware-id/model/manufacturer).
+   - Добавлены unit-тесты на quality-сигналы для hardware-id и manufacturer-only сценариев.

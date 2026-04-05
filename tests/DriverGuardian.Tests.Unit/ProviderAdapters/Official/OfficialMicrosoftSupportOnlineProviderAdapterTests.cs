@@ -19,6 +19,8 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapterTests
         var candidate = Assert.Single(response.Candidates);
         Assert.Equal(SourceTrustLevel.OfficialPublisherSite, candidate.SourceEvidence.TrustLevel);
         Assert.Equal("support.microsoft.com", candidate.SourceEvidence.SourceUri.Host);
+        Assert.Equal(HardwareIdMatchStrength.NormalizedHardwareId, candidate.MatchStrength);
+        Assert.Equal(CompatibilityConfidence.Medium, candidate.CompatibilityConfidence);
         Assert.Contains("PCI%5CVEN_10EC%26DEV_8168", candidate.SourceEvidence.SourceUri.Query, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -56,6 +58,21 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapterTests
     }
 
     [Fact]
+    public async Task LookupAsync_ManufacturerOnlyHint_ReturnsUnknownConfidenceManufacturerMatch()
+    {
+        var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        var adapter = new OfficialMicrosoftSupportOnlineProviderAdapter(new HttpClient(handler));
+
+        var response = await adapter.LookupAsync(CreateRequest(null, null, manufacturer: "Contoso"), CancellationToken.None);
+
+        Assert.True(response.IsSuccess);
+        var candidate = Assert.Single(response.Candidates);
+        Assert.Equal(HardwareIdMatchStrength.ManufacturerPortalHint, candidate.MatchStrength);
+        Assert.Equal(CompatibilityConfidence.Unknown, candidate.CompatibilityConfidence);
+        Assert.Contains("manufacturer", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task LookupAsync_OpensCircuitBreaker_AfterRepeatedTransientFailures()
     {
         var callCount = 0;
@@ -77,7 +94,7 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapterTests
         Assert.Equal(3, callCount);
     }
 
-    private static ProviderLookupRequest CreateRequest(string? hardwareId, string? model)
+    private static ProviderLookupRequest CreateRequest(string? hardwareId, string? model, string manufacturer = "Microsoft")
     {
         var hardwareIds = string.IsNullOrWhiteSpace(hardwareId)
             ? Array.Empty<string>()
@@ -89,7 +106,7 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapterTests
             HardwareIds: hardwareIds,
             InstalledDriverVersion: "1.0.0",
             OperatingSystemVersion: "Windows 11 24H2",
-            DeviceManufacturer: "Microsoft",
+            DeviceManufacturer: manufacturer,
             DeviceModel: model);
     }
 
