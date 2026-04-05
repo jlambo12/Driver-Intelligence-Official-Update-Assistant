@@ -107,7 +107,7 @@ public sealed class MainViewModelCoordinationTests
                 OfficialSourceResolutionOutcome.ConfirmedVendorSupportPage,
                 OfficialSourceActionTarget.SourcePage,
                 "status",
-                "https://vendor.example/download",
+                "https://www.nvidia.com/drivers",
                 null));
 
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default));
@@ -139,16 +139,16 @@ public sealed class MainViewModelCoordinationTests
                     true,
                     true,
                     "hint",
-                    "https://vendor.example/driver")
+                    "https://www.nvidia.com/drivers")
             ]);
 
         var viewModel = CreateMainViewModel(new StubMainScreenWorkflow(result), await CreateSettingsRepositoryAsync(AppSettings.Default), launcher);
         await viewModel.InitializeAsync(CancellationToken.None);
         await ExecuteAsync(viewModel.ScanCommand);
 
-        viewModel.OpenRecommendationOfficialSourceCommand.Execute("https://vendor.example/driver");
+        viewModel.OpenRecommendationOfficialSourceCommand.Execute("https://www.nvidia.com/drivers");
 
-        Assert.Equal("https://vendor.example/driver", launcher.LastOpenedUri?.AbsoluteUri);
+        Assert.Equal("https://www.nvidia.com/drivers", launcher.LastOpenedUri?.AbsoluteUri);
     }
 
     [Fact]

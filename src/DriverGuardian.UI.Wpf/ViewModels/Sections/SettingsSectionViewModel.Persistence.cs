@@ -3,10 +3,11 @@ using DriverGuardian.UI.Wpf.Localization;
 
 namespace DriverGuardian.UI.Wpf.ViewModels.Sections;
 
-public sealed partial class SettingsSectionViewModel
+    public sealed partial class SettingsSectionViewModel
 {
     public async Task LoadSettingsAsync(string defaultDiagnosticLogFolderPath, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var settings = await _settingsRepository.GetAsync(cancellationToken);
         HistoryMaxEntries = settings.History.MaxEntries;
         ShowVerificationHints = settings.WorkflowGuidance.ShowPostInstallVerificationHints;

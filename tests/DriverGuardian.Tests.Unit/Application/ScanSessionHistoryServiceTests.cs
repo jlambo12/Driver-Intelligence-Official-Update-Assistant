@@ -44,7 +44,7 @@ public sealed class ScanSessionHistoryServiceTests
 
         await service.RecordAndTrimAsync(
             CreateScanResult(),
-            recommendationCount: 1,
+            recommendationCount: 2,
             manualHandoffUserActionCount: 2,
             notRecommendedCount: 0,
             verifications: [],

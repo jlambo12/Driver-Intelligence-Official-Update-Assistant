@@ -22,7 +22,7 @@ public sealed class JsonFileAuditWriterTests
             Assert.Single(lines);
             Assert.Contains("entry-3", lines[0]);
 
-            var archives = Directory.GetFiles(folderPath, "audit.jsonl.*");
+            var archives = GetArchiveFiles(folderPath);
             Assert.Single(archives);
 
             var archiveLines = await File.ReadAllLinesAsync(archives[0], CancellationToken.None);
@@ -54,7 +54,7 @@ public sealed class JsonFileAuditWriterTests
             await writer.WriteAsync("entry-3", CancellationToken.None);
             await writer.WriteAsync("entry-4", CancellationToken.None);
 
-            var archives = Directory.GetFiles(folderPath, "audit.jsonl.*");
+            var archives = GetArchiveFiles(folderPath);
             Assert.Equal(2, archives.Length);
 
             var activeLines = await File.ReadAllLinesAsync(filePath, CancellationToken.None);
@@ -84,7 +84,7 @@ public sealed class JsonFileAuditWriterTests
             await writer.WriteAsync("entry-2", CancellationToken.None);
             await writer.WriteAsync("entry-3", CancellationToken.None);
 
-            var archives = Directory.GetFiles(folderPath, "audit.jsonl.*");
+            var archives = GetArchiveFiles(folderPath);
             Assert.Empty(archives);
         }
         finally
@@ -102,4 +102,10 @@ public sealed class JsonFileAuditWriterTests
         var filePath = Path.Combine(Path.GetTempPath(), $"dg-audit-{Guid.NewGuid():N}.jsonl");
         Assert.Throws<ArgumentOutOfRangeException>(() => _ = new JsonFileAuditWriter(filePath, maxEntries: 1, maxArchiveFiles: -1));
     }
+
+    private static string[] GetArchiveFiles(string folderPath)
+        => Directory
+            .GetFiles(folderPath, "audit.jsonl*")
+            .Where(path => Path.GetFileName(path).StartsWith("audit.jsonl.", StringComparison.Ordinal))
+            .ToArray();
 }
