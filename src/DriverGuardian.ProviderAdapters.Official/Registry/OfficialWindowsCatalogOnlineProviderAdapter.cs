@@ -14,7 +14,18 @@ namespace DriverGuardian.ProviderAdapters.Official.Registry;
 public sealed class OfficialWindowsCatalogOnlineProviderAdapter : IOfficialProviderAdapter
 {
     private static readonly Uri CatalogSearchBaseUri = new("https://www.catalog.update.microsoft.com/Search.aspx", UriKind.Absolute);
+
     private readonly HttpClient _httpClient;
+    private readonly TimeSpan _requestTimeout;
+    private readonly TimeSpan _baseRetryDelay;
+    private readonly TimeSpan _circuitBreakDuration;
+    private readonly int _maxAttempts;
+    private readonly int _circuitBreakFailureThreshold;
+    private readonly Func<DateTimeOffset> _utcNow;
+
+    private readonly object _resilienceStateLock = new();
+    private int _consecutiveTransientFailures;
+    private DateTimeOffset? _circuitOpenedAtUtc;
 
     public OfficialWindowsCatalogOnlineProviderAdapter()
         : this(new HttpClient())
@@ -22,8 +33,37 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapter : IOfficialProvi
     }
 
     public OfficialWindowsCatalogOnlineProviderAdapter(HttpClient httpClient)
+        : this(
+            httpClient,
+            requestTimeout: TimeSpan.FromSeconds(4),
+            maxAttempts: 3,
+            baseRetryDelay: TimeSpan.FromMilliseconds(120),
+            circuitBreakFailureThreshold: 3,
+            circuitBreakDuration: TimeSpan.FromSeconds(30),
+            utcNow: () => DateTimeOffset.UtcNow)
+    {
+    }
+
+    internal OfficialWindowsCatalogOnlineProviderAdapter(
+        HttpClient httpClient,
+        TimeSpan requestTimeout,
+        int maxAttempts,
+        TimeSpan baseRetryDelay,
+        int circuitBreakFailureThreshold,
+        TimeSpan circuitBreakDuration,
+        Func<DateTimeOffset> utcNow)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _requestTimeout = requestTimeout <= TimeSpan.Zero ? throw new ArgumentOutOfRangeException(nameof(requestTimeout)) : requestTimeout;
+        _maxAttempts = maxAttempts <= 0 ? throw new ArgumentOutOfRangeException(nameof(maxAttempts)) : maxAttempts;
+        _baseRetryDelay = baseRetryDelay < TimeSpan.Zero ? throw new ArgumentOutOfRangeException(nameof(baseRetryDelay)) : baseRetryDelay;
+        _circuitBreakFailureThreshold = circuitBreakFailureThreshold <= 0
+            ? throw new ArgumentOutOfRangeException(nameof(circuitBreakFailureThreshold))
+            : circuitBreakFailureThreshold;
+        _circuitBreakDuration = circuitBreakDuration <= TimeSpan.Zero
+            ? throw new ArgumentOutOfRangeException(nameof(circuitBreakDuration))
+            : circuitBreakDuration;
+        _utcNow = utcNow ?? throw new ArgumentNullException(nameof(utcNow));
 
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
@@ -43,6 +83,15 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapter : IOfficialProvi
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (IsCircuitOpen(out var circuitOpenedAgo))
+        {
+            return new ProviderLookupResponse(
+                ProviderCode: Descriptor.Code,
+                IsSuccess: false,
+                Candidates: [],
+                FailureReason: $"[temporary-unavailable] Catalog online circuit is open after repeated transient failures ({circuitOpenedAgo.TotalSeconds:N0}s elapsed). Try again later.");
+        }
+
         var queryHints = BuildQueryHints(request);
         if (queryHints.Count == 0)
         {
@@ -54,23 +103,26 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapter : IOfficialProvi
         foreach (var hint in queryHints)
         {
             var searchUri = BuildSearchUri(hint.Query);
-            using var response = await _httpClient.GetAsync(searchUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            var probeResult = await ProbeWithRetryAsync(searchUri, hint, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
+            if (!probeResult.IsSuccess)
             {
-                failures.Add(BuildHttpFailure(searchUri, response.StatusCode));
+                if (!string.IsNullOrWhiteSpace(probeResult.FailureReason))
+                {
+                    failures.Add(probeResult.FailureReason);
+                }
+
                 continue;
             }
 
-            var htmlBody = await TryReadHtmlBodyAsync(response, cancellationToken);
-            var insights = ExtractInsights(htmlBody);
-            if (insights.IsNoResults)
+            if (probeResult.Insights!.IsNoResults)
             {
                 continue;
             }
 
-            var candidate = BuildCandidate(request, hint, searchUri, response.StatusCode, insights);
+            RegisterSuccess();
 
+            var candidate = BuildCandidate(request, hint, searchUri, probeResult.StatusCode!.Value, probeResult.Insights);
             return new ProviderLookupResponse(
                 ProviderCode: Descriptor.Code,
                 IsSuccess: true,
@@ -92,6 +144,136 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapter : IOfficialProvi
             IsSuccess: true,
             Candidates: [],
             FailureReason: null);
+    }
+
+    private async Task<ProbeResult> ProbeWithRetryAsync(Uri searchUri, QueryHint hint, CancellationToken cancellationToken)
+    {
+        var errors = new List<string>();
+
+        for (var attempt = 1; attempt <= _maxAttempts; attempt++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutCts.CancelAfter(_requestTimeout);
+
+                using var response = await _httpClient.GetAsync(searchUri, HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var failure = BuildHttpFailure(searchUri, response.StatusCode);
+                    errors.Add($"attempt {attempt}/{_maxAttempts}: {failure}");
+
+                    if (IsTransientStatusCode(response.StatusCode))
+                    {
+                        RegisterTransientFailure();
+
+                        if (attempt < _maxAttempts)
+                        {
+                            await DelayForRetryAsync(attempt, cancellationToken);
+                            continue;
+                        }
+                    }
+
+                    return new ProbeResult(false, null, response.StatusCode, string.Join(" ; ", errors));
+                }
+
+                var htmlBody = await TryReadHtmlBodyAsync(response, cancellationToken);
+                var insights = ExtractInsights(htmlBody);
+                return new ProbeResult(true, insights, response.StatusCode, null);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                var failure = $"[temporary-unavailable] Catalog online request timed out for {searchUri}.";
+                errors.Add($"attempt {attempt}/{_maxAttempts}: {failure}");
+                RegisterTransientFailure();
+
+                if (attempt < _maxAttempts)
+                {
+                    await DelayForRetryAsync(attempt, cancellationToken);
+                    continue;
+                }
+
+                return new ProbeResult(false, null, null, string.Join(" ; ", errors));
+            }
+            catch (HttpRequestException ex)
+            {
+                var failure = $"[temporary-unavailable] Catalog online request network failure for {searchUri}: {ex.Message}";
+                errors.Add($"attempt {attempt}/{_maxAttempts}: {failure}");
+                RegisterTransientFailure();
+
+                if (attempt < _maxAttempts)
+                {
+                    await DelayForRetryAsync(attempt, cancellationToken);
+                    continue;
+                }
+
+                return new ProbeResult(false, null, null, string.Join(" ; ", errors));
+            }
+        }
+
+        return new ProbeResult(false, null, null, string.Join(" ; ", errors));
+    }
+
+    private async Task DelayForRetryAsync(int attempt, CancellationToken cancellationToken)
+    {
+        if (_baseRetryDelay <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        var factor = Math.Pow(2, Math.Max(0, attempt - 1));
+        var delay = TimeSpan.FromMilliseconds(_baseRetryDelay.TotalMilliseconds * factor);
+        await Task.Delay(delay, cancellationToken);
+    }
+
+    private bool IsCircuitOpen(out TimeSpan openedAgo)
+    {
+        lock (_resilienceStateLock)
+        {
+            var now = _utcNow();
+
+            if (_circuitOpenedAtUtc is null)
+            {
+                openedAgo = TimeSpan.Zero;
+                return false;
+            }
+
+            openedAgo = now - _circuitOpenedAtUtc.Value;
+
+            if (openedAgo >= _circuitBreakDuration)
+            {
+                _circuitOpenedAtUtc = null;
+                _consecutiveTransientFailures = 0;
+                openedAgo = TimeSpan.Zero;
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    private void RegisterTransientFailure()
+    {
+        lock (_resilienceStateLock)
+        {
+            _consecutiveTransientFailures++;
+            if (_consecutiveTransientFailures >= _circuitBreakFailureThreshold)
+            {
+                _circuitOpenedAtUtc = _utcNow();
+            }
+        }
+    }
+
+    private void RegisterSuccess()
+    {
+        lock (_resilienceStateLock)
+        {
+            _consecutiveTransientFailures = 0;
+            _circuitOpenedAtUtc = null;
+        }
     }
 
     private ProviderCandidate BuildCandidate(
@@ -127,10 +309,13 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapter : IOfficialProvi
 
     private static string BuildHttpFailure(Uri searchUri, HttpStatusCode statusCode)
     {
-        var isTransientStatus = (int)statusCode is 408 or 429 or >= 500;
+        var isTransientStatus = IsTransientStatusCode(statusCode);
         var transientText = isTransientStatus ? "temporary-unavailable" : "non-transient-http";
         return $"[{transientText}] Catalog online request failed for {searchUri} with {(int)statusCode} ({statusCode}).";
     }
+
+    private static bool IsTransientStatusCode(HttpStatusCode statusCode)
+        => (int)statusCode is 408 or 429 or >= 500;
 
     private static IReadOnlyList<QueryHint> BuildQueryHints(ProviderLookupRequest request)
     {
@@ -304,4 +489,10 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapter : IOfficialProvi
         string? PageTitle,
         string? CandidateVersion,
         IReadOnlyList<string> TopResultTitles);
+
+    private sealed record ProbeResult(
+        bool IsSuccess,
+        CatalogInsights? Insights,
+        HttpStatusCode? StatusCode,
+        string? FailureReason);
 }

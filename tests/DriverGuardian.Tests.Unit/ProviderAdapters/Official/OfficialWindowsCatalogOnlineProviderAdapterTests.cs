@@ -67,6 +67,64 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
     }
 
     [Fact]
+    public async Task LookupAsync_RetriesTransientStatus_AndSucceedsWithinRetryWindow()
+    {
+        var callCount = 0;
+        var handler = new StubHttpMessageHandler(_ =>
+        {
+            callCount++;
+
+            if (callCount <= 2)
+            {
+                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+                {
+                    Content = new StringContent("maintenance", Encoding.UTF8, "text/plain")
+                };
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("<html><head><title>Microsoft Update Catalog</title></head><body>Driver Version 11.0.0.1</body></html>", Encoding.UTF8, "text/html")
+            };
+        });
+
+        var adapter = new OfficialWindowsCatalogOnlineProviderAdapter(new HttpClient(handler));
+
+        var response = await adapter.LookupAsync(CreateRequest("PCI\\VEN_10EC&DEV_8168", "FallbackModelX"), CancellationToken.None);
+
+        Assert.True(response.IsSuccess);
+        Assert.Equal(3, callCount);
+        var candidate = Assert.Single(response.Candidates);
+        Assert.Equal("11.0.0.1", candidate.CandidateVersion);
+    }
+
+    [Fact]
+    public async Task LookupAsync_OpensCircuitBreaker_AfterRepeatedTransientFailures()
+    {
+        var callCount = 0;
+        var handler = new StubHttpMessageHandler(_ =>
+        {
+            callCount++;
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent("maintenance", Encoding.UTF8, "text/plain")
+            };
+        });
+
+        var adapter = new OfficialWindowsCatalogOnlineProviderAdapter(new HttpClient(handler));
+
+        var first = await adapter.LookupAsync(CreateRequest("PCI\\VEN_10EC&DEV_8168", "FallbackModelX"), CancellationToken.None);
+        Assert.False(first.IsSuccess);
+        Assert.Equal(3, callCount);
+
+        var second = await adapter.LookupAsync(CreateRequest("PCI\\VEN_8086&DEV_A2AF", "FallbackModelX"), CancellationToken.None);
+
+        Assert.False(second.IsSuccess);
+        Assert.Contains("circuit is open", second.FailureReason, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(3, callCount);
+    }
+
+    [Fact]
     public async Task LookupAsync_ReturnsFailure_WhenCatalogReturnsServerError()
     {
         var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
