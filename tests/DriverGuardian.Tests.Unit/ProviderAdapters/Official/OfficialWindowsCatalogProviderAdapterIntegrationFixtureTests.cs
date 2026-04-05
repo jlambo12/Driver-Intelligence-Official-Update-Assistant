@@ -123,7 +123,7 @@ public sealed class OfficialWindowsCatalogProviderAdapterIntegrationFixtureTests
             return false;
         }
 
-        var candidate = response.Candidates[0];
+        var candidate = response.Candidates.Single();
 
         if (!string.Equals(fixtureCase.ExpectedCandidateVersion, candidate.CandidateVersion, StringComparison.OrdinalIgnoreCase))
         {
