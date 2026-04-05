@@ -217,8 +217,9 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
         score = 0;
 
         var trimmed = hardwareId.Trim();
-        if (CatalogByHardwareId.TryGetValue(trimmed, out record))
+        if (CatalogByHardwareId.TryGetValue(trimmed, out var exactRecord) && exactRecord is not null)
         {
+            record = exactRecord;
             matchType = "exact";
             compatibilityConfidence = CompatibilityConfidence.High;
             score = 300;
@@ -231,8 +232,9 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
             return TryResolveVendorFallback(trimmed, out record, out matchType, out compatibilityConfidence, out score);
         }
 
-        if (CatalogByHardwareId.TryGetValue(normalized, out record))
+        if (CatalogByHardwareId.TryGetValue(normalized, out var normalizedRecord) && normalizedRecord is not null)
         {
+            record = normalizedRecord;
             matchType = "normalized";
             compatibilityConfidence = CompatibilityConfidence.Medium;
             score = 200;
@@ -284,11 +286,12 @@ public sealed class OfficialWindowsCatalogProviderAdapter : IOfficialProviderAda
             return false;
         }
 
-        if (!CatalogByVendorId.TryGetValue(vendorToken, out record))
+        if (!CatalogByVendorId.TryGetValue(vendorToken, out var vendorRecord) || vendorRecord is null)
         {
             return false;
         }
 
+        record = vendorRecord;
         matchType = "compatible-vendor";
         compatibilityConfidence = CompatibilityConfidence.Low;
         score = 100;
