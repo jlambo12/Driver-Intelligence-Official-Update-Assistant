@@ -48,7 +48,7 @@ public sealed class AppStartupOrchestratorTests
                 runtime.DiagnosticLogsFolderService,
                 new FakeOfficialSourceLauncher()));
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => orchestrator.StartAsync(cts.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => orchestrator.StartAsync(cts.Token));
         Assert.False(provider.WasCalled);
     }
 
@@ -103,7 +103,7 @@ public sealed class AppStartupOrchestratorTests
     private sealed class FakeDiagnosticLogsFolderService : IDiagnosticLogsFolderService
     {
         public string ResolveEffectiveFolderPath(string? customFolderPath)
-            => string.IsNullOrWhiteSpace(customFolderPath) ? "C:/logs/default" : customFolderPath;
+            => string.IsNullOrWhiteSpace(customFolderPath) ? "C:/logs/default" : customFolderPath.Trim();
 
         public bool OpenFolder(string folderPath) => true;
     }

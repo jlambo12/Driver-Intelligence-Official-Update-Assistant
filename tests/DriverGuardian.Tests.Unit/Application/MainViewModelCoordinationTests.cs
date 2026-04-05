@@ -218,7 +218,7 @@ public sealed class MainViewModelCoordinationTests
     private sealed class FakeDiagnosticLogsFolderService : IDiagnosticLogsFolderService
     {
         public string ResolveEffectiveFolderPath(string? customFolderPath)
-            => string.IsNullOrWhiteSpace(customFolderPath) ? "C:/logs/default" : customFolderPath;
+            => string.IsNullOrWhiteSpace(customFolderPath) ? "C:/logs/default" : customFolderPath.Trim();
 
         public bool OpenFolder(string folderPath) => true;
     }
