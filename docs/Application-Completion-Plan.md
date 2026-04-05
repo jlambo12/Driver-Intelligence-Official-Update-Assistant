@@ -1,108 +1,65 @@
-# DriverGuardian — повторный аудит и план завершения до production
+# DriverGuardian — синхронизированный план завершения до production
 
-Дата повторной проверки: 2026-04-03
+Дата синхронизации: 2026-04-05
+Источник: фактическая реализация после Mirage + release/readiness assessment.
 
-## 0) Что проверено в коде (после последних изменений)
+## 0) Что уже закрыто в коде
 
-1. UI и тесты нацелены на `net8.0-windows10.0.19041.0`, включён Windows targeting.
-2. Сканирование устройств/драйверов в production-ветке реально ходит в WMI (`Win32_PnPEntity`, `Win32_PnPSignedDriver`) и возвращает partial/failed при ошибках доступа/платформы.
-3. Основной workflow выполняет scan → recommendation → official source resolution → history/report → audit.
-4. Official-source policy проверяет trust level, HTTPS и host-match.
-5. Report builder уже поддерживает verification-блок, но в текущем payload verifications всегда пустые.
+1. Runtime и основной workflow собраны end-to-end: scan → recommendation → official source resolution → history/report → audit.
+2. Аудит персистентный: append-only + rotation/retention + correlation/event-code.
+3. UI поддерживает manual handoff на официальный источник (main action + recommendation-level action).
+4. Safety policy для URL официальных источников включена (доверенные домены, блок local/IP и небезопасных схем).
+5. CI quality gates включены: tests, coverage gate, formatting/analyzers, vulnerability critical gate, publish artifact.
+6. Snapshot-покрытие провайдеров внешне вынесено и усилено тестами на fixture coverage.
 
-## 1) Критические пробелы, которые мешают «работало правильно»
+## 1) Что остаётся до public-release готовности
 
-### 1.1 Нет полноценного production-каталога источников драйверов
-Сейчас runtime-провайдеры ограничены:
-- curated snapshot с очень узким покрытием exact hardware-id;
-- baseline provider, который по дизайну всегда возвращает пустые кандидаты.
+### 1.1 Provider depth (главный незакрытый риск)
 
-Риск:
-- большинство реальных устройств будет получать `insufficient evidence` или «нет рекомендаций» даже при существующих обновлениях.
-
-Что нужно сделать:
-1. Добавить реальные online-интеграции официальных источников (OEM/support, Microsoft Catalog API/скрейпинг через безопасный слой).
-2. Ввести нормализацию hardware-id (включая совместимые ID и ранжирование соответствия).
-3. Добавить provider-уровневые SLA: timeout, retry transient-only, circuit-breaker, кэш.
-
-### 1.2 Нет пользовательского действия «Открыть официальный источник» (UI gap)
-Система вычисляет `ApprovedOfficialSourceUrl`, но в UI нет команды/кнопки, которая реально открывает ссылку.
-
-Риск:
-- ключевой сценарий manual handoff обрывается на «информировании», без завершения действия пользователем.
+Текущее состояние:
+- Есть online-провайдер official catalog + fallback/runtime-обвязка.
+- Базовый runtime всё ещё ограничен по полноте real-world metadata/coverage.
 
 Что нужно сделать:
-1. Добавить ICommand в `MainViewModel` для открытия approved URL.
-2. Добавить UI-кнопку с disabled-state и явной причиной блокировки.
-3. Перед открытием запускать policy-проверку/санитизацию URI (https, allow-list доменов, запрет file:// и т.п.).
+1. Доработать online provider до стабильного уровня (более точная выборка и ранжирование, прозрачные telemetry-сигналы качества).
+2. Добавить минимум ещё один production-grade официальный источник (OEM/API/official feed) с детерминированными тестами.
+3. Зафиксировать baseline/target по покрытию провайдеров на репрезентативной выборке hardware-id.
 
-### 1.3 Verification-пайплайн не встроен в основной workflow
-`PostInstallVerificationEvaluator` реализован, но не включён в `MainScreenWorkflow`.
-В отчёт сейчас передаются пустые коллекции verification/validation.
+### 1.2 Release governance / runbook formalization
 
-Риск:
-- приложение не может автоматически подтвердить результат ручной установки «до/после».
+Текущее состояние:
+- Для dev-pilot готовность высокая, но формальный go/no-go пакет ещё не стандартизован.
 
 Что нужно сделать:
-1. Хранить baseline snapshot для device при выдаче рекомендации.
-2. На повторном scan вычислять outcome (`VerifiedChanged / PartiallyChanged / NoChangeDetected / DeviceMissing / InsufficientEvidence`).
-3. Писать verification в историю, UI и экспортируемый отчёт.
+1. Оформить строгий release checklist (owners, sign-off, rollback, freeze criteria).
+2. Привязать checklist к артефактам валидации и CI outcome.
+3. Синхронизировать release notes/channel naming (dev-preview vs public-ready).
 
-### 1.4 Аудит неперсистентный
-Используется `InMemoryAuditWriter`.
+### 1.3 Validation follow-ups
 
-Риск:
-- после перезапуска невозможно расследовать пользовательский кейс и восстановить цепочку действий.
+Открытые хвосты:
+1. `WIN-VAL-2026-04-05-01` — runbook для restricted WMI ACL.
+2. `WIN-VAL-2026-04-05-02` — actionable UX copy для offline сценариев.
 
-Что нужно сделать:
-1. Перейти на persistent audit store (JSONL или SQLite).
-2. Добавить `correlation-id` на scan-session и пронести через все события.
-3. Добавить ротацию/retention и экспорт диагностического пакета.
+## 2) План закрытия долгов по приоритетам
 
-### 1.5 Недостаточная release-готовность (CI/CD + quality gates)
-В текущем окружении тесты не подтверждены (зависимость от .NET SDK).
+## P0 (текущий спринт)
+1. Закрыть provider-depth минимум (усиление live provider + ещё 1 официальный источник).
+2. Закрыть два validation follow-up issue.
+3. Финально синхронизировать release-facing документы и DoD-артефакты.
 
-Что нужно сделать:
-1. Настроить CI (build/test/publish win-x64).
-2. Добавить quality gates (analyzers, formatting, coverage).
-3. Добавить nightly smoke для preview/prod wiring.
+## P1 (следом)
+4. Закрепить formal go/no-go checklist и owners.
+5. Добавить повторяемый pre-release smoke protocol (15–20 минут) в обязательный ритуал перед публикацией.
 
-## 2) Важные нефункциональные доработки
+## 3) Definition of Done для перехода из dev-pilot к public-ready
 
-1. **Безопасность ссылок**: централизованный allow-list trusted доменов и telemetry по отклонённым URL.
-2. **Наблюдаемость**: структурированные логи с event-code и корреляцией по сессии.
-3. **UX деградаций**: чётко различать «безопасно ничего не делать» и «данных недостаточно из-за ошибки поставщика».
-4. **Локализация**: вынести remaining hardcoded EN-тексты в resources для единообразия RU-first UX.
+1. Provider coverage демонстрирует устойчивый прирост на согласованном benchmark-наборе.
+2. Все validation follow-up issue закрыты и подтверждены evidence.
+3. Go/no-go checklist формализован, заполнен и подтверждён ответственными.
+4. Документация не противоречит фактическому поведению runtime/UI/CI.
 
-## 3) Рекомендуемый план реализации
+## 4) Рабочий трекер на текущую ветку
 
-### Phase A (1–2 спринта): завершить критический пользовательский поток
-- Реальные provider integrations + trust normalization.
-- Кнопка/команда «Открыть официальный источник» с безопасным открытием.
-- Интеграция verification evaluator в основной workflow.
-
-### Phase B: надежность и эксплуатация
-- Persistent audit + diagnostics bundle.
-- Retry/timeout/circuit-breaker.
-- Улучшенный UX статусов ошибок/блокировок.
-
-### Phase C: релиз
-- CI/CD и repeatable publish.
-- Security/privacy review.
-- Release checklist + rollback-процедура.
-
-## 4) Definition of Done (для «приложение завершено»)
-
-1. Для большинства целевых устройств рекомендации объяснимы и воспроизводимы.
-2. Manual handoff замкнут: пользователь может открыть официальный источник прямо из UI безопасным способом.
-3. Post-install verification автоматически фиксирует результат после повторного скана.
-4. Аудит/логи персистентны и пригодны для расследования.
-5. CI стабильно зелёный, win-x64 publish воспроизводим.
-
-## 5) Конкретный backlog на ближайший спринт
-
-1. `IUrlLauncher` + `OpenOfficialSourceCommand` + кнопка в manual action секции.
-2. `VerificationTrackingService`: baseline capture + compare-on-rescan + запись в history.
-3. `JsonFileAuditWriter` (или SQLite) + correlation-id propagation.
-4. Первый production provider (например, OEM support portal) + integration tests с фикстурами.
-5. GitHub Actions: build/test/publish + артефакт `DriverGuardian.UI.Wpf.exe`.
+Актуальный краткий список задач для ветки ведём в:
+- `docs/Sprint-Remaining-Tasks-2026-04-05.md`.
