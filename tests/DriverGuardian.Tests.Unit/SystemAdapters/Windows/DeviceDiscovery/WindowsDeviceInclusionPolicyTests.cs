@@ -84,6 +84,15 @@ public sealed class WindowsDeviceInclusionPolicyTests
     }
 
     [Fact]
+    public void ShouldInclude_ComprehensiveProfile_IncludesSoftwareLikeValidEntries()
+    {
+        var snapshot = BuildSnapshot("SWD\\DRIVERENUM\\{A2}", "Software Device", "SoftwareDevice", ["SWD\\DRIVERENUM"]);
+
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Comprehensive));
+        Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
+    }
+
+    [Fact]
     public void ShouldInclude_UnknownDevice_IsExcludedInMinimalButKeptInBalanced()
     {
         var snapshot = BuildSnapshot("ROOT\\DEVICE\\0010", "Generic Device", "System", ["ROOT\\DEVICE\\0010"]);
