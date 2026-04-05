@@ -25,4 +25,17 @@ public sealed class OfficialSourceHostSafetyPolicyTests
         Assert.False(allowed);
         Assert.Equal(OpenOfficialSourceBlockedReason.UrlHostNotTrusted, blockedReason);
     }
+
+    [Theory]
+    [InlineData("https://support.lenovo.cn/drivers")]
+    [InlineData("https://www.dell.co.jp/support")]
+    [InlineData("https://consumer.huawei.com/support")]
+    [InlineData("https://www.samsung.com/support")]
+    public void IsAllowed_ReturnsTrue_ForRegionalOfficialDomains(string url)
+    {
+        var allowed = OfficialSourceHostSafetyPolicy.IsAllowed(new Uri(url), out var blockedReason);
+
+        Assert.True(allowed);
+        Assert.Null(blockedReason);
+    }
 }

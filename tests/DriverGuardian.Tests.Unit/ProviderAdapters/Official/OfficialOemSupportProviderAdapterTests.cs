@@ -47,4 +47,29 @@ public sealed class OfficialOemSupportProviderAdapterTests
         Assert.True(response.IsSuccess);
         Assert.Empty(response.Candidates);
     }
+
+    [Theory]
+    [InlineData("Samsung Electronics", "samsung.com")]
+    [InlineData("Huawei", "huawei.com")]
+    [InlineData("LG Electronics", "lg.com")]
+    [InlineData("Toshiba", "dynabook.com")]
+    public async Task LookupAsync_ReturnsOemCandidate_ForAdditionalGlobalManufacturers(string manufacturer, string expectedHostToken)
+    {
+        var adapter = new OfficialOemSupportProviderAdapter();
+
+        var response = await adapter.LookupAsync(
+            new ProviderLookupRequest(
+                ProviderCode: adapter.Descriptor.Code,
+                DeviceInstanceId: "DEV-3",
+                HardwareIds: ["PCI\\VEN_8086&DEV_1234"],
+                InstalledDriverVersion: "1.0.0",
+                OperatingSystemVersion: "Windows 11 23H2",
+                DeviceManufacturer: manufacturer,
+                DeviceModel: "TestModel"),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccess);
+        var candidate = Assert.Single(response.Candidates);
+        Assert.Contains(expectedHostToken, candidate.SourceEvidence.SourceUri.Host, StringComparison.OrdinalIgnoreCase);
+    }
 }

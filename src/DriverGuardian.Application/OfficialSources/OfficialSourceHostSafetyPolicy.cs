@@ -6,15 +6,47 @@ public static class OfficialSourceHostSafetyPolicy
 {
     private static readonly IReadOnlyCollection<string> TrustedHostSuffixes =
     [
+        // Microsoft ecosystem.
         "microsoft.com",
         "update.microsoft.com",
         "catalog.update.microsoft.com",
+
+        // OEM / PC vendors (global + regional domains).
         "dell.com",
+        "dell.co.jp",
+        "dell.com.cn",
         "hp.com",
+        "hp.cn",
         "lenovo.com",
+        "lenovo.cn",
         "asus.com",
+        "asus.com.cn",
+        "asus.co.jp",
         "acer.com",
-        "msi.com"
+        "acer.com.cn",
+        "msi.com",
+        "samsung.com",
+        "samsungcn.com",
+        "sony.com",
+        "sony.jp",
+        "fujitsu.com",
+        "fujitsu.com.cn",
+        "dynabook.com",
+        "dynabook.co.jp",
+        "huawei.com",
+        "consumer.huawei.com",
+        "lg.com",
+        "gigabyte.com",
+        "aorus.com",
+
+        // Chipset / component manufacturers often used for driver redirects.
+        "intel.com",
+        "amd.com",
+        "nvidia.com",
+        "realtek.com",
+        "qualcomm.com",
+        "broadcom.com",
+        "mediatek.com"
     ];
 
     public static bool IsAllowed(Uri uri, out OpenOfficialSourceBlockedReason? blockedReason)

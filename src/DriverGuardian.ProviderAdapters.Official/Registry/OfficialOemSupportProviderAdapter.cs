@@ -12,12 +12,16 @@ public sealed class OfficialOemSupportProviderAdapter : IOfficialProviderAdapter
 {
     private static readonly IReadOnlyCollection<OemRule> OemRules =
     [
-        new("Dell Support", "https://www.dell.com/support/home/en-us?app=drivers", "dell"),
-        new("HP Support", "https://support.hp.com/us-en/drivers", "hp", "hewlett-packard"),
-        new("Lenovo Support", "https://pcsupport.lenovo.com/us/en/products", "lenovo"),
+        new("Dell Support", "https://www.dell.com/support/home", "dell"),
+        new("HP Support", "https://support.hp.com/drivers", "hp", "hewlett-packard"),
+        new("Lenovo Support", "https://pcsupport.lenovo.com/products", "lenovo"),
         new("ASUS Support", "https://www.asus.com/support/download-center", "asus"),
-        new("Acer Support", "https://www.acer.com/us-en/support/drivers-and-manuals", "acer"),
-        new("MSI Support", "https://www.msi.com/support", "msi", "micro-star")
+        new("Acer Support", "https://www.acer.com/support", "acer"),
+        new("MSI Support", "https://www.msi.com/support", "msi", "micro-star"),
+        new("Samsung Support", "https://www.samsung.com/support", "samsung"),
+        new("Huawei Support", "https://consumer.huawei.com/support", "huawei"),
+        new("LG Support", "https://www.lg.com/support", "lg", "lge"),
+        new("Dynabook Support", "https://support.dynabook.com", "dynabook", "toshiba")
     ];
 
     public ProviderDescriptor Descriptor => new(
