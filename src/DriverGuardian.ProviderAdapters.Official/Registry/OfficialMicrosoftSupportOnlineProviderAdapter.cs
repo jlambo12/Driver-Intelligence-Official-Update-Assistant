@@ -18,6 +18,13 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
     private readonly TimeSpan _requestTimeout;
     private readonly TimeSpan _baseRetryDelay;
     private readonly int _maxAttempts;
+    private readonly int _circuitBreakFailureThreshold;
+    private readonly TimeSpan _circuitBreakDuration;
+    private readonly Func<DateTimeOffset> _utcNow;
+
+    private readonly object _resilienceStateLock = new();
+    private int _consecutiveTransientFailures;
+    private DateTimeOffset? _circuitOpenedAtUtc;
 
     public OfficialMicrosoftSupportOnlineProviderAdapter()
         : this(new HttpClient())
@@ -29,7 +36,10 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
             httpClient,
             requestTimeout: TimeSpan.FromSeconds(4),
             maxAttempts: 3,
-            baseRetryDelay: TimeSpan.FromMilliseconds(120))
+            baseRetryDelay: TimeSpan.FromMilliseconds(120),
+            circuitBreakFailureThreshold: 3,
+            circuitBreakDuration: TimeSpan.FromSeconds(30),
+            utcNow: () => DateTimeOffset.UtcNow)
     {
     }
 
@@ -37,12 +47,22 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
         HttpClient httpClient,
         TimeSpan requestTimeout,
         int maxAttempts,
-        TimeSpan baseRetryDelay)
+        TimeSpan baseRetryDelay,
+        int circuitBreakFailureThreshold,
+        TimeSpan circuitBreakDuration,
+        Func<DateTimeOffset> utcNow)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _requestTimeout = requestTimeout <= TimeSpan.Zero ? throw new ArgumentOutOfRangeException(nameof(requestTimeout)) : requestTimeout;
         _maxAttempts = maxAttempts <= 0 ? throw new ArgumentOutOfRangeException(nameof(maxAttempts)) : maxAttempts;
         _baseRetryDelay = baseRetryDelay < TimeSpan.Zero ? throw new ArgumentOutOfRangeException(nameof(baseRetryDelay)) : baseRetryDelay;
+        _circuitBreakFailureThreshold = circuitBreakFailureThreshold <= 0
+            ? throw new ArgumentOutOfRangeException(nameof(circuitBreakFailureThreshold))
+            : circuitBreakFailureThreshold;
+        _circuitBreakDuration = circuitBreakDuration <= TimeSpan.Zero
+            ? throw new ArgumentOutOfRangeException(nameof(circuitBreakDuration))
+            : circuitBreakDuration;
+        _utcNow = utcNow ?? throw new ArgumentNullException(nameof(utcNow));
 
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
@@ -68,6 +88,15 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
             return new ProviderLookupResponse(Descriptor.Code, true, [], null);
         }
 
+        if (IsCircuitOpen(out var openedAgo))
+        {
+            return new ProviderLookupResponse(
+                ProviderCode: Descriptor.Code,
+                IsSuccess: false,
+                Candidates: [],
+                FailureReason: $"[temporary-unavailable] Microsoft Support circuit is open after repeated transient failures ({openedAgo.TotalSeconds:N0}s elapsed). Try again later.");
+        }
+
         var failures = new List<string>();
 
         foreach (var hint in queryHints)
@@ -84,6 +113,8 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
 
                 continue;
             }
+
+            RegisterSuccess();
 
             var candidate = new ProviderCandidate(
                 DriverIdentifier: $"{Descriptor.Code}:{request.DeviceInstanceId}",
@@ -134,8 +165,14 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
 
                     if (IsTransient(response.StatusCode) && attempt < _maxAttempts)
                     {
+                        RegisterTransientFailure();
                         await DelayForRetryAsync(attempt, cancellationToken);
                         continue;
+                    }
+
+                    if (IsTransient(response.StatusCode))
+                    {
+                        RegisterTransientFailure();
                     }
 
                     return new ProbeResult(false, string.Join(" ; ", failures));
@@ -147,6 +184,7 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
             {
                 var failure = $"[temporary-unavailable] Microsoft Support request timed out for {searchUri}.";
                 failures.Add($"attempt {attempt}/{_maxAttempts}: {failure}");
+                RegisterTransientFailure();
 
                 if (attempt < _maxAttempts)
                 {
@@ -160,6 +198,7 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
             {
                 var failure = $"[temporary-unavailable] Microsoft Support network failure for {searchUri}: {ex.Message}";
                 failures.Add($"attempt {attempt}/{_maxAttempts}: {failure}");
+                RegisterTransientFailure();
 
                 if (attempt < _maxAttempts)
                 {
@@ -184,6 +223,53 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
         var factor = Math.Pow(2, Math.Max(0, attempt - 1));
         var delay = TimeSpan.FromMilliseconds(_baseRetryDelay.TotalMilliseconds * factor);
         await Task.Delay(delay, cancellationToken);
+    }
+
+    private bool IsCircuitOpen(out TimeSpan openedAgo)
+    {
+        lock (_resilienceStateLock)
+        {
+            var now = _utcNow();
+
+            if (_circuitOpenedAtUtc is null)
+            {
+                openedAgo = TimeSpan.Zero;
+                return false;
+            }
+
+            openedAgo = now - _circuitOpenedAtUtc.Value;
+            if (openedAgo >= _circuitBreakDuration)
+            {
+                _circuitOpenedAtUtc = null;
+                _consecutiveTransientFailures = 0;
+                openedAgo = TimeSpan.Zero;
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    private void RegisterTransientFailure()
+    {
+        lock (_resilienceStateLock)
+        {
+            _consecutiveTransientFailures++;
+
+            if (_consecutiveTransientFailures >= _circuitBreakFailureThreshold)
+            {
+                _circuitOpenedAtUtc = _utcNow();
+            }
+        }
+    }
+
+    private void RegisterSuccess()
+    {
+        lock (_resilienceStateLock)
+        {
+            _consecutiveTransientFailures = 0;
+            _circuitOpenedAtUtc = null;
+        }
     }
 
     private static bool IsTransient(HttpStatusCode statusCode)

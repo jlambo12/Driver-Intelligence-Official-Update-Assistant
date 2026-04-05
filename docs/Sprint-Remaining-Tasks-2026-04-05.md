@@ -48,8 +48,9 @@
    - Подключён в `OfficialProviderRuntimeFactory`.
    - Добавлены unit-тесты на success/retry/no-hints.
 
-2. [ ] `provider:resilience-regression-tests`
-   - Расширить матрицу регрессионных сценариев partial outage между online провайдерами.
+2. [x] `provider:resilience-regression-tests`
+   - Расширена матрица регрессионных сценариев partial outage между online провайдерами.
+   - Добавлены тесты fallback при `temporary-unavailable` и `circuit open` для первого online provider.
 
 3. [ ] `docs:sync-sprint-remaining-after-each-merge`
    - Поддерживать этот документ в актуальном состоянии после каждого завершённого task/PR.

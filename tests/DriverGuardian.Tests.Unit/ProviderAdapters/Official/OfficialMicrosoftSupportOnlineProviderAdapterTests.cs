@@ -55,6 +55,28 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapterTests
         Assert.Empty(response.Candidates);
     }
 
+    [Fact]
+    public async Task LookupAsync_OpensCircuitBreaker_AfterRepeatedTransientFailures()
+    {
+        var callCount = 0;
+        var handler = new StubHttpMessageHandler(_ =>
+        {
+            callCount++;
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+        });
+
+        var adapter = new OfficialMicrosoftSupportOnlineProviderAdapter(new HttpClient(handler));
+
+        var first = await adapter.LookupAsync(CreateRequest("PCI\\VEN_8086&DEV_A2AF", "Intel Model"), CancellationToken.None);
+        Assert.False(first.IsSuccess);
+        Assert.Equal(3, callCount);
+
+        var second = await adapter.LookupAsync(CreateRequest("PCI\\VEN_10EC&DEV_8168", "RTL8168"), CancellationToken.None);
+        Assert.False(second.IsSuccess);
+        Assert.Contains("circuit is open", second.FailureReason, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(3, callCount);
+    }
+
     private static ProviderLookupRequest CreateRequest(string? hardwareId, string? model)
     {
         var hardwareIds = string.IsNullOrWhiteSpace(hardwareId)

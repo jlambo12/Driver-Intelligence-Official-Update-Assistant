@@ -142,6 +142,54 @@ public sealed class OfficialSourceResolutionServiceTests
         Assert.Equal(OfficialSourceActionTarget.DirectDownloadPage, resolved.Candidate.ActionTarget);
     }
 
+    [Fact]
+    public async Task BuildAsync_FirstOnlineProviderTransientFailure_SecondOnlineProviderSucceeds_ShouldRemainReady()
+    {
+        var providers = new IOfficialProviderAdapter[]
+        {
+            new FailureProvider("microsoft-support-online", "temporary-unavailable"),
+            new FakeProvider("windows-update-catalog-online", [
+                BuildCandidate(
+                    SourceTrustLevel.OperatingSystemCatalog,
+                    CompatibilityConfidence.High,
+                    sourceUri: new Uri("https://catalog.update.microsoft.com/Search.aspx?q=PCI"),
+                    downloadUri: null)])
+        };
+
+        var logger = new RecordingDiagnosticLogger();
+        var action = await BuildActionService(providers, logger)
+            .BuildAsync(BuildDrivers(), BuildRecommendations(), CancellationToken.None);
+
+        Assert.True(action.IsReady);
+        Assert.Equal("https://catalog.update.microsoft.com/Search.aspx?q=PCI", action.ApprovedOfficialSourceUrl);
+        Assert.Single(logger.WarningEvents);
+        Assert.Contains("Provider=microsoft-support-online", logger.WarningEvents[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task BuildAsync_FirstProviderCircuitOpen_SecondProviderSucceeds_ShouldRemainReady()
+    {
+        var providers = new IOfficialProviderAdapter[]
+        {
+            new FailureProvider("microsoft-support-online", "[temporary-unavailable] Microsoft Support circuit is open."),
+            new FakeProvider("oem-support-portal", [
+                BuildCandidate(
+                    SourceTrustLevel.OemSupportPortal,
+                    CompatibilityConfidence.Medium,
+                    sourceUri: new Uri("https://support.lenovo.com/device/123"),
+                    downloadUri: null)])
+        };
+
+        var logger = new RecordingDiagnosticLogger();
+        var action = await BuildActionService(providers, logger)
+            .BuildAsync(BuildDrivers(), BuildRecommendations(), CancellationToken.None);
+
+        Assert.True(action.IsReady);
+        Assert.Equal("https://support.lenovo.com/device/123", action.ApprovedOfficialSourceUrl);
+        Assert.Single(logger.WarningEvents);
+        Assert.Contains("circuit is open", logger.WarningEvents[0], StringComparison.OrdinalIgnoreCase);
+    }
+
     private static OfficialSourceActionService BuildActionService(IEnumerable<IOfficialProviderAdapter> providers, RecordingDiagnosticLogger logger)
         => new(
             new OfficialSourceResolutionService(providers),
