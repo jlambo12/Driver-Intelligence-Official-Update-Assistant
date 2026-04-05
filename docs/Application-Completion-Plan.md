@@ -23,7 +23,7 @@
 Что нужно сделать:
 1. Доработать online provider до стабильного уровня (более точная выборка и ранжирование, прозрачные telemetry-сигналы качества).
 2. Добавить минимум ещё один production-grade официальный источник (OEM/API/official feed) с детерминированными тестами.
-3. Зафиксировать baseline/target по покрытию провайдеров на репрезентативной выборке hardware-id.
+3. [x] Зафиксировать baseline/target по покрытию провайдеров на репрезентативной выборке hardware-id (fixture benchmark в `OfficialWindowsCatalogProviderAdapterIntegrationFixtureTests`).
 
 ### 1.2 Release governance / runbook formalization
 
