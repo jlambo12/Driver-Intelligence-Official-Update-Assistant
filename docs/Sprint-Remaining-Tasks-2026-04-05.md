@@ -43,6 +43,8 @@
 
 ### Текущий прогресс
 
+- [x] `docs:sync-sprint-remaining-after-each-merge` — Added workflow and helper script for timestamped progress entries (2026-04-05 17:42 UTC)
+
 1. [x] `provider:add-microsoft-support-online-source`
    - Добавлен online адаптер `OfficialMicrosoftSupportOnlineProviderAdapter`.
    - Подключён в `OfficialProviderRuntimeFactory`.
@@ -52,8 +54,9 @@
    - Расширена матрица регрессионных сценариев partial outage между online провайдерами.
    - Добавлены тесты fallback при `temporary-unavailable` и `circuit open` для первого online provider.
 
-3. [ ] `docs:sync-sprint-remaining-after-each-merge`
-   - Поддерживать этот документ в актуальном состоянии после каждого завершённого task/PR.
+3. [x] `docs:sync-sprint-remaining-after-each-merge`
+   - Добавлен workflow `docs/Sprint-Tracking-Workflow.md` для обязательного обновления tracking-документа.
+   - Добавлен helper-скрипт `scripts/update-sprint-remaining.py` для добавления timestamp-записей в секцию прогресса.
 
 4. [x] `provider:quality-signals-for-microsoft-support`
    - Для `OfficialMicrosoftSupportOnlineProviderAdapter` добавлена дифференциация confidence/match-strength по типу query hint (hardware-id/model/manufacturer).
