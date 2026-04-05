@@ -175,6 +175,8 @@ public sealed class OfficialSourceResolutionServiceTests
             "2.0.0",
             null,
             compatibility,
+            HardwareIdMatchStrength.ExactHardwareId,
+            "test candidate",
             new SourceEvidence(sourceUri, "Vendor", trustLevel, true, "evidence"),
             downloadUri);
 

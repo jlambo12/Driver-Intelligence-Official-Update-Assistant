@@ -68,6 +68,7 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         Assert.True(response.IsSuccess);
         var candidate = Assert.Single(response.Candidates);
         Assert.Equal("31.0.101.2125", candidate.CandidateVersion);
+        Assert.Equal(HardwareIdMatchStrength.NormalizedHardwareId, candidate.MatchStrength);
         Assert.Contains("normalized", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -90,6 +91,7 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         Assert.True(response.IsSuccess);
         var candidate = Assert.Single(response.Candidates);
         Assert.Equal("10.63.20.1028", candidate.CandidateVersion);
+        Assert.Equal(HardwareIdMatchStrength.NormalizedHardwareId, candidate.MatchStrength);
         Assert.Contains("normalized", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -132,8 +134,9 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
 
         Assert.True(response.IsSuccess);
         var candidate = Assert.Single(response.Candidates);
-        Assert.Equal(CompatibilityConfidence.Low, candidate.CompatibilityConfidence);
-        Assert.Contains("compatible-vendor", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(CompatibilityConfidence.Unknown, candidate.CompatibilityConfidence);
+        Assert.Equal(HardwareIdMatchStrength.VendorFallback, candidate.MatchStrength);
+        Assert.Contains("vendor-fallback", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -159,7 +162,52 @@ public sealed class OfficialWindowsCatalogProviderAdapterTests
         Assert.True(response.IsSuccess);
         var candidate = Assert.Single(response.Candidates);
         Assert.Equal("31.0.101.2125", candidate.CandidateVersion);
-        Assert.Equal(CompatibilityConfidence.High, candidate.CompatibilityConfidence);
+        Assert.Equal(CompatibilityConfidence.Medium, candidate.CompatibilityConfidence);
+        Assert.Equal(HardwareIdMatchStrength.ExactHardwareId, candidate.MatchStrength);
         Assert.Contains("exact", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task LookupAsync_UsesExternalCatalogJson_AsUpdateableSource_WhenProvided()
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllTextAsync(path, """
+[
+  {
+    "hardwareId": "PCI\\VEN_AAAA&DEV_BBBB",
+    "driverIdentifier": "external-driver",
+    "candidateVersion": "99.0.0.1",
+    "sourceUri": "https://www.catalog.update.microsoft.com/Search.aspx?q=PCI%5CVEN_AAAA%26DEV_BBBB",
+    "publisherName": "External Catalog",
+    "evidenceNote": "Loaded from integration test external catalog source."
+  }
+]
+""");
+
+            var adapter = new OfficialWindowsCatalogProviderAdapter(path);
+
+            var response = await adapter.LookupAsync(
+                new ProviderLookupRequest(
+                    ProviderCode: adapter.Descriptor.Code,
+                    DeviceInstanceId: "DEV-EXT",
+                    HardwareIds: [@"PCI\VEN_AAAA&DEV_BBBB"],
+                    InstalledDriverVersion: "1.0.0",
+                    OperatingSystemVersion: null,
+                    DeviceManufacturer: "Test",
+                    DeviceModel: null),
+                CancellationToken.None);
+
+            var candidate = Assert.Single(response.Candidates);
+            Assert.Equal("99.0.0.1", candidate.CandidateVersion);
+            Assert.Equal(CompatibilityConfidence.High, candidate.CompatibilityConfidence);
+            Assert.Contains("external-json", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
 }

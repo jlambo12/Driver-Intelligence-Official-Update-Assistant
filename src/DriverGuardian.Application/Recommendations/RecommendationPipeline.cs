@@ -107,7 +107,7 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
             RecommendationOutcome.Incompatible =>
                 "No recommendation: available candidate is marked as incompatible.",
             RecommendationOutcome.NotRecommended =>
-                "No recommendation: candidate compatibility is unknown.",
+                "No recommendation: candidate confidence is below strict recommendation threshold.",
             RecommendationOutcome.InsufficientEvidence when failures.Count > 0 =>
                 $"No recommendation: insufficient evidence because provider lookup failed ({failures.First().ProviderCode}: {failures.First().FailureReason}).",
             RecommendationOutcome.InsufficientEvidence =>
