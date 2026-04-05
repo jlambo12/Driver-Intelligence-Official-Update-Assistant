@@ -48,8 +48,8 @@
 2. Финально синхронизировать release-facing документы и DoD-артефакты под текущее состояние ветки.
 
 ## P1 (следом)
-3. Закрепить formal go/no-go checklist и owners.
-4. Добавить повторяемый pre-release smoke protocol (15–20 минут) в обязательный ритуал перед публикацией.
+3. [x] Закрепить formal go/no-go checklist и owners. (см. `docs/Release-GoNoGo-Checklist.md`)
+4. [x] Добавить повторяемый pre-release smoke protocol (15–20 минут) в обязательный ритуал перед публикацией. (см. `docs/runbooks/Pre-Release-Smoke-Protocol.md`)
 
 ## 3) Definition of Done для перехода из dev-pilot к public-ready
 
