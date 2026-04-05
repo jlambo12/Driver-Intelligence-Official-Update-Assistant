@@ -11,6 +11,7 @@ public sealed class OfficialProviderRuntimeFactoryTests
 
         Assert.All(providers, provider => Assert.IsType<ResilientOfficialProviderAdapter>(provider));
         Assert.Contains(providers, x => x.Descriptor.Code == "oem-support-portal" && x.Descriptor.IsEnabled);
+        Assert.Contains(providers, x => x.Descriptor.Code == "windows-update-catalog-online" && x.Descriptor.IsEnabled);
         Assert.Contains(providers, x => x.Descriptor.Code == "windows-update-catalog" && x.Descriptor.IsEnabled);
         Assert.DoesNotContain(providers, x => x.Descriptor.Code == "official-baseline");
     }
