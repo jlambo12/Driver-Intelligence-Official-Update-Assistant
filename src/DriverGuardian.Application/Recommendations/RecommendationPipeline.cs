@@ -65,7 +65,8 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
             hasRecommendation: decision.IsRecommendation,
             reason,
             recommendedVersion,
-            officialSourceUrl);
+            officialSourceUrl,
+            MapReasonCode(decision.Outcome, failures));
     }
 
     private static string? ResolveOfficialSourceUrl(RecommendationDecision decision)
@@ -113,6 +114,23 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
                 "No recommendation: insufficient evidence from providers.",
             _ =>
                 "No recommendation: insufficient evidence from providers."
+        };
+    }
+
+    private static RecommendationSummaryReasonCode MapReasonCode(
+        RecommendationOutcome outcome,
+        IReadOnlyCollection<ProviderLookupFailure> failures)
+    {
+        return outcome switch
+        {
+            RecommendationOutcome.Recommended => RecommendationSummaryReasonCode.RecommendedUpgradeAvailable,
+            RecommendationOutcome.AlreadyUpToDate => RecommendationSummaryReasonCode.AlreadyUpToDate,
+            RecommendationOutcome.Incompatible => RecommendationSummaryReasonCode.CandidateMarkedIncompatible,
+            RecommendationOutcome.NotRecommended => RecommendationSummaryReasonCode.CandidateCompatibilityUnknown,
+            RecommendationOutcome.InsufficientEvidence when failures.Count > 0 =>
+                RecommendationSummaryReasonCode.InsufficientEvidenceDueToProviderFailures,
+            RecommendationOutcome.InsufficientEvidence => RecommendationSummaryReasonCode.InsufficientEvidence,
+            _ => RecommendationSummaryReasonCode.Unknown
         };
     }
 

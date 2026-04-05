@@ -32,9 +32,8 @@ public static class MainUiStateFactory
 
         var hasInsufficientEvidence = result.RecommendationDetails.Any(detail =>
             !detail.HasRecommendation &&
-            !string.IsNullOrWhiteSpace(detail.RecommendationReason) &&
-            (detail.RecommendationReason.Contains("insufficient evidence", StringComparison.OrdinalIgnoreCase) ||
-             detail.RecommendationReason.Contains("недостаточно данных", StringComparison.OrdinalIgnoreCase)));
+            detail.RecommendationReasonCode is RecommendationDetailReasonCode.InsufficientEvidence
+                or RecommendationDetailReasonCode.InsufficientEvidenceDueToProviderFailures);
 
         if (hasInsufficientEvidence && result.RecommendedCount == 0)
         {
