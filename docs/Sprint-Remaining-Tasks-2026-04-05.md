@@ -34,3 +34,34 @@
 - [x] Live provider подключён в runtime и покрыт unit/интеграционно-подобными тестами.
 - [x] Validation follow-up issues закрыты документально и проверены.
 - [x] Roadmap-документы отражают фактическое состояние кода без устаревших противоречий.
+
+---
+
+## Обновление 2026-04-05 (старт следующей sprint-итерации)
+
+Новый рабочий план: `docs/Sprint-Plan-2026-04-05-Next.md`.
+
+### Текущий прогресс
+
+- [x] `test:fix-no-hints-null-manufacturer` — Adjusted no-hints test to pass null manufacturer so network is not invoked (2026-04-05 18:00 UTC)
+
+- [x] `provider:ms-support-circuit-stop-extra-hints` — Stop probing additional hints once Microsoft Support circuit opens (2026-04-05 17:49 UTC)
+
+- [x] `docs:sync-sprint-remaining-after-each-merge` — Added workflow and helper script for timestamped progress entries (2026-04-05 17:42 UTC)
+
+1. [x] `provider:add-microsoft-support-online-source`
+   - Добавлен online адаптер `OfficialMicrosoftSupportOnlineProviderAdapter`.
+   - Подключён в `OfficialProviderRuntimeFactory`.
+   - Добавлены unit-тесты на success/retry/no-hints.
+
+2. [x] `provider:resilience-regression-tests`
+   - Расширена матрица регрессионных сценариев partial outage между online провайдерами.
+   - Добавлены тесты fallback при `temporary-unavailable` и `circuit open` для первого online provider.
+
+3. [x] `docs:sync-sprint-remaining-after-each-merge`
+   - Добавлен workflow `docs/Sprint-Tracking-Workflow.md` для обязательного обновления tracking-документа.
+   - Добавлен helper-скрипт `scripts/update-sprint-remaining.py` для добавления timestamp-записей в секцию прогресса.
+
+4. [x] `provider:quality-signals-for-microsoft-support`
+   - Для `OfficialMicrosoftSupportOnlineProviderAdapter` добавлена дифференциация confidence/match-strength по типу query hint (hardware-id/model/manufacturer).
+   - Добавлены unit-тесты на quality-сигналы для hardware-id и manufacturer-only сценариев.

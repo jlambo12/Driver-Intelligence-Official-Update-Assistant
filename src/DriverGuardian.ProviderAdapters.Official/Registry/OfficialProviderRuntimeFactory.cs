@@ -10,6 +10,7 @@ public static class OfficialProviderRuntimeFactory
         {
             new OfficialOemSupportProviderAdapter(),
             new OfficialWindowsCatalogOnlineProviderAdapter(),
+            new OfficialMicrosoftSupportOnlineProviderAdapter(),
             new OfficialWindowsCatalogProviderAdapter()
         };
 
