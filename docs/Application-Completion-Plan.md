@@ -23,7 +23,7 @@
 Что нужно сделать:
 1. Доработать online provider до стабильного уровня (более точная выборка и ранжирование, прозрачные telemetry-сигналы качества).
 2. Добавить минимум ещё один production-grade официальный источник (OEM/API/official feed) с детерминированными тестами.
-3. Зафиксировать baseline/target по покрытию провайдеров на репрезентативной выборке hardware-id.
+3. [x] Зафиксировать baseline/target по покрытию провайдеров на репрезентативной выборке hardware-id (fixture benchmark в `OfficialWindowsCatalogProviderAdapterIntegrationFixtureTests`).
 
 ### 1.2 Release governance / runbook formalization
 
@@ -48,8 +48,8 @@
 2. Финально синхронизировать release-facing документы и DoD-артефакты под текущее состояние ветки.
 
 ## P1 (следом)
-3. Закрепить formal go/no-go checklist и owners.
-4. Добавить повторяемый pre-release smoke protocol (15–20 минут) в обязательный ритуал перед публикацией.
+3. [x] Закрепить formal go/no-go checklist и owners. (см. `docs/Release-GoNoGo-Checklist.md`)
+4. [x] Добавить повторяемый pre-release smoke protocol (15–20 минут) в обязательный ритуал перед публикацией. (см. `docs/runbooks/Pre-Release-Smoke-Protocol.md`)
 
 ## 3) Definition of Done для перехода из dev-pilot к public-ready
 
