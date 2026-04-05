@@ -101,4 +101,29 @@ public sealed class DeviceRelevanceClassifierTests
         Assert.Equal(DeviceCategory.UsbController, usb.Category);
         Assert.True(usb.IsHighPriority);
     }
+
+    [Fact]
+    public void Classify_PlantronicsDevice_DoesNotTriggerLanSubstringFalsePositive()
+    {
+        var device = DeviceRelevanceClassifier.Classify(
+            "AudioEndpoint",
+            "SWD\\MMDEVAPI\\{PLANTRONICS}",
+            ["USB\\VID_047F&PID_C056"],
+            "Plantronics",
+            "Plantronics USB Audio Device");
+
+        Assert.NotEqual(DeviceCategory.NetworkEthernet, device.Category);
+        Assert.NotEqual(DeviceCategory.NetworkWifi, device.Category);
+        Assert.NotEqual(DeviceCategory.Bluetooth, device.Category);
+    }
+
+    [Fact]
+    public void Classify_RealEthernetAndWifi_AreDetectedCorrectly()
+    {
+        var ethernet = DeviceRelevanceClassifier.Classify("Net", "PCI\\VEN_8086&DEV_15F3", ["PCI\\VEN_8086&DEV_15F3"], "Intel", "Intel Ethernet Network Adapter");
+        var wifi = DeviceRelevanceClassifier.Classify("Net", "PCI\\VEN_8086&DEV_2723", ["PCI\\VEN_8086&DEV_2723"], "Intel", "Intel Wireless Wi-Fi Adapter");
+
+        Assert.Equal(DeviceCategory.NetworkEthernet, ethernet.Category);
+        Assert.Equal(DeviceCategory.NetworkWifi, wifi.Category);
+    }
 }

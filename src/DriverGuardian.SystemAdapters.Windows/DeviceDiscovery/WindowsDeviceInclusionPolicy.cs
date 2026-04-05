@@ -19,6 +19,11 @@ public static class WindowsDeviceInclusionPolicy
             return false;
         }
 
+        if (profile == DeviceScanProfile.Comprehensive)
+        {
+            return true;
+        }
+
         if (!string.IsNullOrWhiteSpace(snapshot.DeviceClass) && ExcludedClasses.Contains(snapshot.DeviceClass))
         {
             return false;
@@ -34,11 +39,6 @@ public static class WindowsDeviceInclusionPolicy
         if (classification.IsVirtualOrSoftware)
         {
             return false;
-        }
-
-        if (profile == DeviceScanProfile.Comprehensive)
-        {
-            return true;
         }
 
         return profile switch

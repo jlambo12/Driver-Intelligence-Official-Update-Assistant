@@ -94,7 +94,7 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
             return "Net";
         }
 
-        if (ContainsAny(instanceId, hardwareId, "ethernet", "lan", "gbe"))
+        if (ContainsAny(instanceId, hardwareId, "ethernet", "gbe", "network adapter") || HasWord(instanceId, "lan") || HasWord(hardwareId, "lan"))
         {
             return "Net";
         }
@@ -124,6 +124,14 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
         => keywords.Any(keyword =>
             value1.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
             value2.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasWord(string value, string word)
+    {
+        var tokens = value
+            .Split([' ', '\\', '/', '-', '_', '.', ',', ';', ':', '(', ')', '[', ']', '{', '}', '#', '&'], StringSplitOptions.RemoveEmptyEntries);
+
+        return tokens.Any(token => string.Equals(token, word, StringComparison.OrdinalIgnoreCase));
+    }
 
     private static RecommendationSummary MapSkippedSummary(InstalledDriverSnapshot installedDriver)
         => new(

@@ -243,7 +243,9 @@ public static class DeviceRelevanceClassifier
             return true;
         }
 
-        if (IsClass(deviceClass, "Net") || HasAnyKeyword(instanceId, friendlyName, hardwareIds, "ethernet", "lan", "gbe", "2.5gbe", "10gbe", "wireless", "wi-fi", "wlan", "802.11"))
+        if (IsClass(deviceClass, "Net") ||
+            HasAnyKeyword(instanceId, friendlyName, hardwareIds, "ethernet", "gbe", "2.5gbe", "10gbe", "wireless", "wi-fi", "wlan", "802.11", "network adapter") ||
+            HasLanToken(instanceId, friendlyName, hardwareIds))
         {
             category = HasAnyKeyword(instanceId, friendlyName, hardwareIds, "wireless", "wi-fi", "wlan", "802.11")
                 ? DeviceCategory.NetworkWifi
@@ -481,4 +483,20 @@ public static class DeviceRelevanceClassifier
 
     private static bool HasAnyKeyword(string value1, string value2, IReadOnlyCollection<string> values3, params string[] keywords)
         => HasAnyKeyword(value1, keywords) || HasAnyKeyword(value2, keywords) || HasAnyKeyword(values3, keywords);
+
+    private static bool HasLanToken(string value1, string value2, IReadOnlyCollection<string> values3)
+        => HasWord(value1, "lan") || HasWord(value2, "lan") || values3.Any(value => HasWord(value, "lan"));
+
+    private static bool HasWord(string value, string word)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var tokens = value
+            .Split([' ', '\\', '/', '-', '_', '.', ',', ';', ':', '(', ')', '[', ']', '{', '}', '#', '&'], StringSplitOptions.RemoveEmptyEntries);
+
+        return tokens.Any(token => string.Equals(token, word, StringComparison.OrdinalIgnoreCase));
+    }
 }
