@@ -3,7 +3,6 @@ using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.Models;
 using DriverGuardian.UI.Wpf.Services;
-using DriverGuardian.Application.Abstractions;
 
 namespace DriverGuardian.UI.Wpf.ViewModels;
 
