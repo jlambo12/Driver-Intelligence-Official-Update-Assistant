@@ -29,7 +29,7 @@ public sealed class ScanSessionHistoryService(IResultHistoryRepository resultHis
                 Guid.NewGuid(),
                 occurredAtUtc,
                 scanResult.Session.Id,
-                recommendationCount,
+                Math.Max(recommendationCount, manualHandoffUserActionCount),
                 manualHandoffUserActionCount,
                 notRecommendedCount),
             cancellationToken);

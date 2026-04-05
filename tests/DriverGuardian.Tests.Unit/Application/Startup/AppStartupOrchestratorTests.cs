@@ -1,6 +1,7 @@
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Application.OfficialSources;
 using DriverGuardian.Domain.Settings;
+using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.Settings;
 using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.ViewModels;
@@ -47,7 +48,7 @@ public sealed class AppStartupOrchestratorTests
                 runtime.DiagnosticLogsFolderService,
                 new FakeOfficialSourceLauncher()));
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => orchestrator.StartAsync(cts.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => orchestrator.StartAsync(cts.Token));
         Assert.False(provider.WasCalled);
     }
 
@@ -102,7 +103,7 @@ public sealed class AppStartupOrchestratorTests
     private sealed class FakeDiagnosticLogsFolderService : IDiagnosticLogsFolderService
     {
         public string ResolveEffectiveFolderPath(string? customFolderPath)
-            => string.IsNullOrWhiteSpace(customFolderPath) ? "C:/logs/default" : customFolderPath;
+            => string.IsNullOrWhiteSpace(customFolderPath) ? "C:/logs/default" : customFolderPath.Trim();
 
         public bool OpenFolder(string folderPath) => true;
     }

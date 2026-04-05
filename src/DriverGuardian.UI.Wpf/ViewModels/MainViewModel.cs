@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using DriverGuardian.Application.Abstractions;
 using DriverGuardian.Domain.Settings;
+using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.Models;

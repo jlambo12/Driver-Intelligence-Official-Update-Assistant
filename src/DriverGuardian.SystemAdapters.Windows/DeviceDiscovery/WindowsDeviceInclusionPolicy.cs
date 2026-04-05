@@ -86,6 +86,8 @@ public static class WindowsDeviceInclusionPolicy
             {
                 return true;
             }
+
+            return false;
         }
 
         return snapshot.HardwareIds.Any(id => IncludedHardwarePrefixes.Any(prefix => id.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));

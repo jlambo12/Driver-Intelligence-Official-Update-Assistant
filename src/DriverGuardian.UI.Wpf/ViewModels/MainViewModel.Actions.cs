@@ -1,3 +1,4 @@
+using DriverGuardian.Application.Abstractions;
 using DriverGuardian.UI.Wpf.Commands;
 using DriverGuardian.UI.Wpf.Localization;
 using DriverGuardian.UI.Wpf.Models;

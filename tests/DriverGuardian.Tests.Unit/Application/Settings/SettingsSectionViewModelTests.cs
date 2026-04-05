@@ -35,7 +35,7 @@ public sealed class SettingsSectionViewModelTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+        await Assert.ThrowsAsync<OperationCanceledException>(
             () => viewModel.LoadSettingsAsync("C:/logs/default", cts.Token));
     }
 }
