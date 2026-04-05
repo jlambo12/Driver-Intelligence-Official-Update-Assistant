@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "DriverGuardian WPF (Windows)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build DriverGuardian.UI.Wpf (Debug win-x64)",
+      "program": "${workspaceFolder}/src/DriverGuardian.UI.Wpf/bin/Debug/net8.0-windows10.0.19041.0/win-x64/DriverGuardian.UI.Wpf.exe",
+      "cwd": "${workspaceFolder}/src/DriverGuardian.UI.Wpf",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

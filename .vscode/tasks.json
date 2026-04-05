@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build DriverGuardian.sln (Debug)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/DriverGuardian.sln",
+        "-c",
+        "Debug"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build DriverGuardian.UI.Wpf (Debug win-x64)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/DriverGuardian.UI.Wpf/DriverGuardian.UI.Wpf.csproj",
+        "-c",
+        "Debug",
+        "-r",
+        "win-x64"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

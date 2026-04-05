@@ -3,6 +3,7 @@
     <AssemblyName>DriverGuardian.SystemAdapters.Windows</AssemblyName>
     <RootNamespace>DriverGuardian.SystemAdapters.Windows</RootNamespace>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.0" />
