@@ -37,7 +37,10 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
         {
             calls.Add(request.RequestUri!.Query);
 
-            if (request.RequestUri!.Query.Contains("DEV_0000", StringComparison.OrdinalIgnoreCase))
+            var query = request.RequestUri!.Query;
+            if (query.Contains("SUBSYS_12345678", StringComparison.OrdinalIgnoreCase)
+                || query.Contains("SUBSYS%5F12345678", StringComparison.OrdinalIgnoreCase)
+                || query.Contains("SUBSYS%5f12345678", StringComparison.OrdinalIgnoreCase))
             {
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
