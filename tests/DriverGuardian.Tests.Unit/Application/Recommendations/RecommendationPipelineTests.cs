@@ -142,8 +142,9 @@ public sealed class RecommendationPipelineTests
         var result = await pipeline.BuildAsync([CreateInstalled("DEV-1", "31.0.101.2000", "PCI\\VEN_8086&DEV_15F3")], CancellationToken.None);
 
         var summary = Assert.Single(result);
-        Assert.True(summary.HasRecommendation);
-        Assert.Equal("31.0.101.2125", summary.RecommendedVersion);
+        Assert.False(summary.HasRecommendation);
+        Assert.Null(summary.RecommendedVersion);
+        Assert.Contains("strict recommendation threshold", summary.Reason, StringComparison.OrdinalIgnoreCase);
     }
 
 
@@ -193,6 +194,8 @@ public sealed class RecommendationPipelineTests
             CandidateVersion: version,
             ReleaseDateIso: null,
             CompatibilityConfidence: confidence,
+            MatchStrength: HardwareIdMatchStrength.ExactHardwareId,
+            ConfidenceRationale: "test candidate",
             SourceEvidence: new SourceEvidence(
                 sourceUri ?? new Uri("https://example.test/driver"),
                 "Example Publisher",

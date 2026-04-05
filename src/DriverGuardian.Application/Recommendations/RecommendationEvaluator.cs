@@ -98,11 +98,11 @@ public sealed class RecommendationEvaluator
                 reasons);
         }
 
-        if (best.Candidate.CompatibilityConfidence == CompatibilityConfidence.Unknown)
+        if (best.Candidate.CompatibilityConfidence != CompatibilityConfidence.High)
         {
             reasons.Add(new RecommendationReason(
                 RecommendationReasonCode.CandidateHasLowCompatibilityConfidence,
-                "Candidate is newer but compatibility confidence is unknown.",
+                "Candidate is newer but compatibility confidence is not high enough for an automated recommendation.",
                 best.ProviderCode,
                 best.Candidate.CandidateVersion));
 

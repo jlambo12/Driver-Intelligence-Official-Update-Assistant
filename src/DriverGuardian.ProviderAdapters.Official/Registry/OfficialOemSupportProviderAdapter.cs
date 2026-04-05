@@ -51,7 +51,9 @@ public sealed class OfficialOemSupportProviderAdapter : IOfficialProviderAdapter
             DriverIdentifier: $"{Descriptor.Code}:{request.DeviceInstanceId}",
             CandidateVersion: null,
             ReleaseDateIso: null,
-            CompatibilityConfidence: string.IsNullOrWhiteSpace(queryHint) ? CompatibilityConfidence.Low : CompatibilityConfidence.Medium,
+            CompatibilityConfidence: CompatibilityConfidence.Unknown,
+            MatchStrength: HardwareIdMatchStrength.ManufacturerPortalHint,
+            ConfidenceRationale: "OEM support portal links are official but do not identify a specific compatible driver package.",
             SourceEvidence: new SourceEvidence(
                 SourceUri: sourceUri,
                 PublisherName: rule.PublisherName,

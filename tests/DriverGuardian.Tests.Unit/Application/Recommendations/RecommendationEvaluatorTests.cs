@@ -58,6 +58,19 @@ public sealed class RecommendationEvaluatorTests
     }
 
     [Fact]
+    public void Evaluate_ShouldReturnNotRecommended_WhenCandidateConfidenceIsMedium()
+    {
+        var decision = _evaluator.Evaluate(new RecommendationEvaluationInput(
+            CreateInstalled("1.0.0"),
+            [CreateCandidate("official", "3.0.0", CompatibilityConfidence.Medium, true, SourceTrustLevel.OfficialPublisherSite)],
+            ProviderPrecedence.OfficialFirst));
+
+        Assert.Equal(RecommendationOutcome.NotRecommended, decision.Outcome);
+        Assert.False(decision.IsRecommendation);
+        Assert.Contains(decision.Reasons, reason => reason.Code == RecommendationReasonCode.CandidateHasLowCompatibilityConfidence);
+    }
+
+    [Fact]
     public void Evaluate_ShouldPreferOemCandidate_WhenOemPrecedenceIsConfigured()
     {
         var decision = _evaluator.Evaluate(new RecommendationEvaluationInput(
@@ -94,6 +107,8 @@ public sealed class RecommendationEvaluatorTests
                 CandidateVersion: version,
                 ReleaseDateIso: null,
                 CompatibilityConfidence: confidence,
+                MatchStrength: HardwareIdMatchStrength.ExactHardwareId,
+                ConfidenceRationale: "test candidate",
                 SourceEvidence: new SourceEvidence(
                     new Uri("https://example.test/driver"),
                     "Test Publisher",
