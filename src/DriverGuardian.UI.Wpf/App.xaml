@@ -2,5 +2,85 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
+        <Style x:Key="PrimaryWorkflowCardStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#BFDBFE" />
+            <Setter Property="BorderThickness" Value="1.2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0 0 0 12" />
+            <Setter Property="Background" Value="#F8FBFF" />
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#DBEAFE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="9" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+
+        <Style x:Key="SecondaryCardStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="11" />
+            <Setter Property="Margin" Value="0 0 0 10" />
+            <Setter Property="Background" Value="#FFFFFF" />
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowCardStyleWhenNoScanDataVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State.Results.HasScanData}" Value="False">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyleWhenSecondarySummaryVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowInnerCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State.Results.ShowSecondaryRecommendationSummary}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyleWhenRecommendationDetailsEmptyVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowInnerCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State.Results.RecommendationDetails.Count}" Value="0">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyleWhenUserGuidedStepsEmptyVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowInnerCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Results.UserGuidedSteps.Count}" Value="0">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryWorkflowInnerCardStyleWhenVerificationEmptyStateVisible"
+               TargetType="Border"
+               BasedOn="{StaticResource PrimaryWorkflowInnerCardStyle}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Results.ShowVerificationEmptyState}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Application.Resources>
 </Application>
