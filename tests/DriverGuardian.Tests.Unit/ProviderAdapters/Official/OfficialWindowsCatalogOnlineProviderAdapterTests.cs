@@ -13,7 +13,7 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
     {
         var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent("<html><head><title>Microsoft Update Catalog</title></head><body></body></html>", Encoding.UTF8, "text/html")
+            Content = new StringContent("<html><head><title>Microsoft Update Catalog</title></head><body>Driver KB5021234 Version 10.2.3.4</body></html>", Encoding.UTF8, "text/html")
         });
 
         var adapter = new OfficialWindowsCatalogOnlineProviderAdapter(new HttpClient(handler));
@@ -25,7 +25,42 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
         Assert.Equal(SourceTrustLevel.OperatingSystemCatalog, candidate.SourceEvidence.TrustLevel);
         Assert.Contains("catalog.update.microsoft.com", candidate.SourceEvidence.SourceUri.Host, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("PCI%5CVEN_8086%26DEV_A2AF", candidate.SourceEvidence.SourceUri.Query, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("10.2.3.4", candidate.CandidateVersion);
         Assert.Contains("Microsoft Update Catalog", candidate.SourceEvidence.EvidenceNote, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task LookupAsync_TriesFallbackHint_WhenExactQueryHasNoResults()
+    {
+        var calls = new List<string>();
+        var handler = new StubHttpMessageHandler(request =>
+        {
+            calls.Add(request.RequestUri!.Query);
+
+            if (request.RequestUri!.Query.Contains("DEV_0000", StringComparison.OrdinalIgnoreCase))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("<html><body>We did not find any results for your search</body></html>", Encoding.UTF8, "text/html")
+                };
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("<html><head><title>Microsoft Update Catalog</title></head><body>Driver results found</body></html>", Encoding.UTF8, "text/html")
+            };
+        });
+
+        var adapter = new OfficialWindowsCatalogOnlineProviderAdapter(new HttpClient(handler));
+
+        var response = await adapter.LookupAsync(CreateRequest("PCI\\VEN_8086&DEV_0000&SUBSYS_12345678"), CancellationToken.None);
+
+        Assert.True(response.IsSuccess);
+        Assert.NotEmpty(calls);
+        Assert.True(calls.Count >= 2);
+        var candidate = Assert.Single(response.Candidates);
+        Assert.Equal(HardwareIdMatchStrength.NormalizedHardwareId, candidate.MatchStrength);
+        Assert.Contains("normalized-hardware-id", candidate.ConfidenceRationale, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -42,7 +77,7 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
 
         Assert.False(response.IsSuccess);
         Assert.Empty(response.Candidates);
-        Assert.Contains("503", response.FailureReason);
+        Assert.Contains("temporary-unavailable", response.FailureReason, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -70,7 +105,7 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
             InstalledDriverVersion: "1.0.0",
             OperatingSystemVersion: "Windows 11 24H2",
             DeviceManufacturer: "Microsoft",
-            DeviceModel: null);
+            DeviceModel: "FallbackModelX");
     }
 
     private sealed class StubHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> responseFactory) : HttpMessageHandler
