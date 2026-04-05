@@ -5,6 +5,7 @@ using DriverGuardian.Infrastructure.DiagnosticLogging;
 using DriverGuardian.Infrastructure.Settings;
 using DriverGuardian.UI.Wpf.Services;
 using DriverGuardian.UI.Wpf.ViewModels;
+using DriverGuardian.Infrastructure.DiagnosticLogging;
 
 namespace DriverGuardian.Tests.Unit.Application.Startup;
 
