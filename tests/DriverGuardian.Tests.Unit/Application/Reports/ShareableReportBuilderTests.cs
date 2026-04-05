@@ -32,7 +32,7 @@ public sealed class ShareableReportBuilderTests
         Assert.Equal(1, report.VerificationSummary.VerifiedChangedCount);
         Assert.Equal(1, report.VerificationSummary.NoChangeCount);
 
-        var device = Assert.Single(report.Devices.Where(x => x.DeviceInstanceId == "PCI\\VEN_1111"));
+        var device = Assert.Single(report.Devices, x => x.DeviceInstanceId == "PCI\\VEN_1111");
         Assert.NotNull(device.Recommendation);
         Assert.NotNull(device.ManualInstallHandoff);
         Assert.NotNull(device.Verification);
