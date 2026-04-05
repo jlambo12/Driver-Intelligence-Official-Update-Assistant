@@ -101,6 +101,12 @@ public sealed class OfficialMicrosoftSupportOnlineProviderAdapter : IOfficialPro
 
         foreach (var hint in queryHints)
         {
+            if (IsCircuitOpen(out var openedAgoDuringLookup))
+            {
+                failures.Add($"[temporary-unavailable] Microsoft Support circuit is open after repeated transient failures ({openedAgoDuringLookup.TotalSeconds:N0}s elapsed). Try again later.");
+                break;
+            }
+
             var searchUri = BuildSearchUri(hint.Query);
             var probe = await ProbeWithRetryAsync(searchUri, cancellationToken);
 
