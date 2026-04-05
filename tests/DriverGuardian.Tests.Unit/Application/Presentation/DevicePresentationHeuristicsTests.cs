@@ -46,6 +46,15 @@ public sealed class DevicePresentationHeuristicsTests
         Assert.Equal(0, DevicePresentationHeuristics.ResolvePriorityBucket(device, hasRecommendation: true));
     }
 
+    [Fact]
+    public void IsUserRelevant_KeepsUsefulAudioPeripheral()
+    {
+        var device = BuildDevice("SWD\\MMDEVAPI\\{USBHEADSET}", "USB Conference Headset Microphone", "AudioEndpoint");
+
+        Assert.True(DevicePresentationHeuristics.IsUserRelevant(device, hasRecommendation: false));
+        Assert.Equal(2, DevicePresentationHeuristics.ResolvePriorityBucket(device, hasRecommendation: false));
+    }
+
     private static DiscoveredDevice BuildDevice(string instanceId, string displayName, string deviceClass)
         => DiscoveredDevice.Create(
             instanceId,

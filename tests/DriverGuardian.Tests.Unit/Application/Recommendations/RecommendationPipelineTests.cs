@@ -165,6 +165,20 @@ public sealed class RecommendationPipelineTests
     }
 
     [Fact]
+    public async Task BuildAsync_ShouldNotSkipUsefulUsbAudioEndpoint()
+    {
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("2.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]))
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("SWD\\MMDEVAPI\\{GUID}", "1.0.0", "USB\\VID_046D&PID_0A87")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.True(summary.HasRecommendation);
+        Assert.DoesNotContain("skipped for deep provider lookup", summary.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task BuildAsync_ShouldNotExposeOfficialSourceUrl_WhenSourceUriIsNotSafeHttps()
     {
         var pipeline = new RecommendationPipeline([

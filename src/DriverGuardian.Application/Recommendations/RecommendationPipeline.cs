@@ -61,15 +61,69 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
 
     private static bool ShouldRunLookup(InstalledDriverSnapshot installedDriver)
     {
+        var inferredClass = InferDeviceClass(installedDriver);
+        var friendlySignal = BuildFriendlySignal(installedDriver);
+
         var classification = DeviceRelevanceClassifier.Classify(
-            deviceClass: null,
+            deviceClass: inferredClass,
             instanceId: installedDriver.DeviceIdentity.InstanceId,
             hardwareIds: [installedDriver.HardwareIdentifier.Value],
             manufacturer: installedDriver.ProviderName,
-            friendlyName: null);
+            friendlyName: friendlySignal);
 
         return !classification.IsVirtualOrSoftware && !classification.IsLowValueTechnical;
     }
+
+    private static string? InferDeviceClass(InstalledDriverSnapshot installedDriver)
+    {
+        var instanceId = installedDriver.DeviceIdentity.InstanceId;
+        var hardwareId = installedDriver.HardwareIdentifier.Value;
+
+        if (ContainsAny(instanceId, hardwareId, "swd\\mmdevapi", "hdaudio\\"))
+        {
+            return "AudioEndpoint";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "display", "graphics", "geforce", "radeon", "arc"))
+        {
+            return "Display";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "wireless", "wi-fi", "wlan", "802.11"))
+        {
+            return "Net";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "ethernet", "lan", "gbe"))
+        {
+            return "Net";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "nvme", "ahci", "raid", "sata", "scsi"))
+        {
+            return "SCSIAdapter";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "usb\\", "xhci", "ehci"))
+        {
+            return "USB";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "acpi\\", "smbus", "management engine", "amd psp", "serial io", "chipset"))
+        {
+            return "System";
+        }
+
+        return null;
+    }
+
+    private static string BuildFriendlySignal(InstalledDriverSnapshot installedDriver)
+        => $"{installedDriver.ProviderName} {installedDriver.DeviceIdentity.InstanceId} {installedDriver.HardwareIdentifier.Value}";
+
+    private static bool ContainsAny(string value1, string value2, params string[] keywords)
+        => keywords.Any(keyword =>
+            value1.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+            value2.Contains(keyword, StringComparison.OrdinalIgnoreCase));
 
     private static RecommendationSummary MapSkippedSummary(InstalledDriverSnapshot installedDriver)
         => new(

@@ -118,6 +118,31 @@ public sealed class ShareableReportBuilderTests
     }
 
     [Fact]
+    public void Build_ShouldHideUnknownNoiseWithoutRecommendation()
+    {
+        var now = DateTimeOffset.Parse("2026-04-01T12:00:00+00:00");
+        var session = ScanSession.Start(Guid.NewGuid(), now.AddMinutes(-5)).Complete(now.AddMinutes(-1));
+        var unknownDriver = BuildDriver("ROOT\\DEVICE\\1001", "1.0.0", "VendorX");
+
+        var request = new ShareableReportRequest(
+            new ScanResult(
+                session,
+                1,
+                [DiscoveredDevice.Create("ROOT\\DEVICE\\1001", "Generic Device", ["ROOT\\DEVICE\\1001"], "VendorX", "System", DevicePresenceStatus.Present, null)],
+                [unknownDriver],
+                ScanExecutionStatus.Completed,
+                []),
+            [new RecommendationSummary(unknownDriver.DeviceIdentity, false, "No action", null)],
+            [],
+            [],
+            now);
+
+        var report = _builder.Build(request);
+
+        Assert.Empty(report.Devices);
+    }
+
+    [Fact]
     public void BuildStructuredText_ShouldUseHonestOfficialSourceLanguage_WhenSourceIsNotConfirmed()
     {
         var request = BuildRequest();

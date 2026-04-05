@@ -78,7 +78,12 @@ public static class DeviceRelevanceClassifier
         "platform",
         "management engine",
         "intel me",
-        "amd psp"
+        "amd psp",
+        "serial io",
+        "host controller",
+        "storage controller",
+        "pci bridge",
+        "root port"
     ];
 
     public static DeviceClassification Classify(DiscoveredDevice device)
@@ -104,7 +109,6 @@ public static class DeviceRelevanceClassifier
         var normalizedInstanceId = Normalize(instanceId) ?? string.Empty;
         var hardware = (hardwareIds ?? []).Select(id => id?.Trim()).Where(id => !string.IsNullOrWhiteSpace(id)).Cast<string>().ToArray();
         var name = Normalize(friendlyName) ?? string.Empty;
-        var vendor = Normalize(manufacturer) ?? string.Empty;
 
         if (normalizedInstanceId.StartsWith("SOFTWARE\\", StringComparison.OrdinalIgnoreCase) ||
             IsIn(normalizedClass, SoftwareClasses))
@@ -112,12 +116,21 @@ public static class DeviceRelevanceClassifier
             return Build(DeviceCategory.VirtualOrSoftware, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: true, platformCritical: false);
         }
 
+        if (IsClass(normalizedClass, "AudioEndpoint") &&
+            LooksLikeUserAudioPeripheral(normalizedInstanceId, hardware, name))
+        {
+            var audioCategory = HasAnyKeyword(name, "microphone", "mic", "headset", "conference", "capture")
+                ? DeviceCategory.Microphone
+                : DeviceCategory.Audio;
+            return Build(audioCategory, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false);
+        }
+
         if (IsIn(normalizedClass, LowValueClasses))
         {
             return Build(DeviceCategory.LowValueTechnical, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: false, platformCritical: false);
         }
 
-        var category = ResolveCategory(normalizedClass, normalizedInstanceId, hardware, vendor, name);
+        var category = ResolveCategory(normalizedClass, normalizedInstanceId, hardware, name);
 
         return category switch
         {
@@ -132,6 +145,7 @@ public static class DeviceRelevanceClassifier
             DeviceCategory.Keyboard or DeviceCategory.Mouse or DeviceCategory.Monitor or DeviceCategory.Printer or DeviceCategory.Scanner or DeviceCategory.Microphone or
             DeviceCategory.Camera or DeviceCategory.HidPeripheral or DeviceCategory.DockingStation or DeviceCategory.Touchpad or DeviceCategory.CardReader or DeviceCategory.Biometric
                 => Build(category, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false),
+            DeviceCategory.Unknown => Build(category, relevant: false, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false),
             _ => Build(category, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false)
         };
     }
@@ -140,7 +154,6 @@ public static class DeviceRelevanceClassifier
         string? deviceClass,
         string instanceId,
         IReadOnlyCollection<string> hardwareIds,
-        string manufacturer,
         string friendlyName)
     {
         if (LooksLikeVirtualOrSoftware(instanceId, friendlyName))
@@ -173,7 +186,7 @@ public static class DeviceRelevanceClassifier
             return DeviceCategory.Audio;
         }
 
-        if (IsPlatformCritical(deviceClass, instanceId, hardwareIds, manufacturer, friendlyName, out var platformCategory))
+        if (IsPlatformCritical(deviceClass, instanceId, hardwareIds, friendlyName, out var platformCategory))
         {
             return platformCategory;
         }
@@ -257,13 +270,23 @@ public static class DeviceRelevanceClassifier
         string? deviceClass,
         string instanceId,
         IReadOnlyCollection<string> hardwareIds,
-        string manufacturer,
         string friendlyName,
         out DeviceCategory category)
     {
-        if (!IsClass(deviceClass, "System") && !IsClass(deviceClass, "Chipset") && !IsClass(deviceClass, "Motherboard") &&
-            !HasAnyKeyword(instanceId, friendlyName, hardwareIds, PlatformKeywords) &&
-            !HasAnyKeyword(manufacturer, "intel", "amd"))
+        if (IsClass(deviceClass, "Chipset"))
+        {
+            category = DeviceCategory.Chipset;
+            return true;
+        }
+
+        if (IsClass(deviceClass, "Motherboard") && HasAnyKeyword(instanceId, friendlyName, hardwareIds, PlatformKeywords))
+        {
+            category = DeviceCategory.MotherboardPlatform;
+            return true;
+        }
+
+        if (!IsClass(deviceClass, "System") &&
+            !HasAnyKeyword(instanceId, friendlyName, hardwareIds, PlatformKeywords))
         {
             category = DeviceCategory.Unknown;
             return false;
@@ -281,8 +304,8 @@ public static class DeviceRelevanceClassifier
             return true;
         }
 
-        category = DeviceCategory.MotherboardPlatform;
-        return IsClass(deviceClass, "System");
+        category = DeviceCategory.Unknown;
+        return false;
     }
 
     private static bool IsPeripheral(string? deviceClass, string instanceId, string friendlyName, out DeviceCategory category)
@@ -400,6 +423,21 @@ public static class DeviceRelevanceClassifier
         }
 
         return false;
+    }
+
+    private static bool LooksLikeUserAudioPeripheral(string instanceId, IReadOnlyCollection<string> hardwareIds, string friendlyName)
+    {
+        if (HasAnyKeyword(friendlyName, "microphone", "mic", "headset", "conference", "speakerphone", "usb audio", "webcam"))
+        {
+            return true;
+        }
+
+        if (HasAnyKeyword(instanceId, "usb", "hdaudio"))
+        {
+            return true;
+        }
+
+        return HasAnyKeyword(hardwareIds, "usb\\", "hdaudio\\", "bluetooth\\", "bth\\");
     }
 
     private static DeviceClassification Build(

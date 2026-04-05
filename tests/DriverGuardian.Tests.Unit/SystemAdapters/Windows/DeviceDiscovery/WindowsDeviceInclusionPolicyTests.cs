@@ -73,6 +73,15 @@ public sealed class WindowsDeviceInclusionPolicyTests
         Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Comprehensive));
     }
 
+    [Fact]
+    public void ShouldInclude_UnknownDevice_IsExcludedInMinimalButKeptInBalanced()
+    {
+        var snapshot = BuildSnapshot("ROOT\\DEVICE\\0010", "Generic Device", "System", ["ROOT\\DEVICE\\0010"]);
+
+        Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Minimal));
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
+    }
+
     private static WindowsPnpEntitySnapshot BuildSnapshot(string instanceId, string friendlyName, string deviceClass, IReadOnlyCollection<string> hardwareIds)
         => new(
             InstanceId: instanceId,

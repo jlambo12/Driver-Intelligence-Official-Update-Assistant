@@ -75,6 +75,11 @@ public static class WindowsDeviceInclusionPolicy
             return true;
         }
 
+        if (classification.Category == DeviceCategory.Unknown)
+        {
+            return true;
+        }
+
         if (string.Equals(snapshot.DeviceClass, "System", StringComparison.OrdinalIgnoreCase))
         {
             return true;
