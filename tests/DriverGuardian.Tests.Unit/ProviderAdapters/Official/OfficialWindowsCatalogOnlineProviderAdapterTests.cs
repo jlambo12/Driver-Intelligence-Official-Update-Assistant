@@ -18,7 +18,7 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
 
         var adapter = new OfficialWindowsCatalogOnlineProviderAdapter(new HttpClient(handler));
 
-        var response = await adapter.LookupAsync(CreateRequest("PCI\\VEN_8086&DEV_A2AF"), CancellationToken.None);
+        var response = await adapter.LookupAsync(CreateRequest("PCI\\VEN_8086&DEV_A2AF", "FallbackModelX"), CancellationToken.None);
 
         Assert.True(response.IsSuccess);
         var candidate = Assert.Single(response.Candidates);
@@ -53,7 +53,7 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
 
         var adapter = new OfficialWindowsCatalogOnlineProviderAdapter(new HttpClient(handler));
 
-        var response = await adapter.LookupAsync(CreateRequest("PCI\\VEN_8086&DEV_0000&SUBSYS_12345678"), CancellationToken.None);
+        var response = await adapter.LookupAsync(CreateRequest("PCI\\VEN_8086&DEV_0000&SUBSYS_12345678", "FallbackModelX"), CancellationToken.None);
 
         Assert.True(response.IsSuccess);
         Assert.NotEmpty(calls);
@@ -73,7 +73,7 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
 
         var adapter = new OfficialWindowsCatalogOnlineProviderAdapter(new HttpClient(handler));
 
-        var response = await adapter.LookupAsync(CreateRequest("PCI\\VEN_10EC&DEV_8168"), CancellationToken.None);
+        var response = await adapter.LookupAsync(CreateRequest("PCI\\VEN_10EC&DEV_8168", "FallbackModelX"), CancellationToken.None);
 
         Assert.False(response.IsSuccess);
         Assert.Empty(response.Candidates);
@@ -86,13 +86,13 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
         var handler = new StubHttpMessageHandler(_ => throw new InvalidOperationException("Should not hit network without query."));
         var adapter = new OfficialWindowsCatalogOnlineProviderAdapter(new HttpClient(handler));
 
-        var response = await adapter.LookupAsync(CreateRequest(null), CancellationToken.None);
+        var response = await adapter.LookupAsync(CreateRequest(null, null), CancellationToken.None);
 
         Assert.True(response.IsSuccess);
         Assert.Empty(response.Candidates);
     }
 
-    private static ProviderLookupRequest CreateRequest(string? hardwareId)
+    private static ProviderLookupRequest CreateRequest(string? hardwareId, string? deviceModel)
     {
         var hardwareIds = string.IsNullOrWhiteSpace(hardwareId)
             ? Array.Empty<string>()
@@ -105,7 +105,7 @@ public sealed class OfficialWindowsCatalogOnlineProviderAdapterTests
             InstalledDriverVersion: "1.0.0",
             OperatingSystemVersion: "Windows 11 24H2",
             DeviceManufacturer: "Microsoft",
-            DeviceModel: "FallbackModelX");
+            DeviceModel: deviceModel);
     }
 
     private sealed class StubHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> responseFactory) : HttpMessageHandler
