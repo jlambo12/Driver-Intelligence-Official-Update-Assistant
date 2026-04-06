@@ -1,56 +1,16 @@
 namespace DriverGuardian.SystemAdapters.Windows.DeviceDiscovery;
+
+using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Settings;
 
 public static class WindowsDeviceInclusionPolicy
 {
-    private static readonly HashSet<string> MinimalIncludedClasses = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Display",
-        "System",
-        "Net",
-        "Keyboard",
-        "Mouse",
-        "HIDClass",
-        "Media",
-        "AudioEndpoint"
-    };
-
-    private static readonly HashSet<string> BalancedIncludedClasses = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Display",
-        "System",
-        "Net",
-        "HIDClass",
-        "Keyboard",
-        "Mouse",
-        "Media",
-        "AudioEndpoint",
-        "Bluetooth",
-        "Image",
-        "Camera",
-        "USB",
-        "Ports",
-        "Processor",
-        "Biometric"
-    };
-
     private static readonly HashSet<string> ExcludedClasses = new(StringComparer.OrdinalIgnoreCase)
     {
         "SoftwareComponent",
-        "SoftwareDevice"
+        "SoftwareDevice",
+        "LegacyDriver"
     };
-
-    private static readonly string[] IncludedHardwarePrefixes =
-    [
-        "PCI\\",
-        "USB\\",
-        "HID\\",
-        "ACPI\\",
-        "BTH\\",
-        "HDAUDIO\\",
-        "SCSI\\",
-        "ROOT\\"
-    ];
 
     public static bool ShouldInclude(WindowsPnpEntitySnapshot snapshot, DeviceScanProfile profile = DeviceScanProfile.Balanced)
     {
@@ -59,42 +19,72 @@ public static class WindowsDeviceInclusionPolicy
             return false;
         }
 
-        if (snapshot.InstanceId.StartsWith("SOFTWARE\\", StringComparison.OrdinalIgnoreCase))
+        if (profile == DeviceScanProfile.Comprehensive)
+        {
+            return true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(snapshot.DeviceClass) && ExcludedClasses.Contains(snapshot.DeviceClass))
         {
             return false;
         }
 
-        if (snapshot.InstanceId.StartsWith("SWD\\", StringComparison.OrdinalIgnoreCase)
-            && !snapshot.InstanceId.StartsWith("SWD\\MMDEVAPI", StringComparison.OrdinalIgnoreCase))
+        var classification = DeviceRelevanceClassifier.Classify(
+            snapshot.DeviceClass,
+            snapshot.InstanceId,
+            snapshot.HardwareIds,
+            snapshot.Manufacturer,
+            snapshot.FriendlyName);
+
+        if (classification.IsVirtualOrSoftware)
         {
             return false;
         }
 
-        if (!string.IsNullOrWhiteSpace(snapshot.DeviceClass))
+        return profile switch
         {
-            if (ExcludedClasses.Contains(snapshot.DeviceClass))
-            {
-                return false;
-            }
-
-            if (profile == DeviceScanProfile.Comprehensive)
-            {
-                return true;
-            }
-
-            if (GetIncludedClasses(profile).Contains(snapshot.DeviceClass))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        return snapshot.HardwareIds.Any(id => IncludedHardwarePrefixes.Any(prefix => id.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
+            DeviceScanProfile.Minimal => ShouldIncludeInMinimalProfile(snapshot, classification),
+            _ => ShouldIncludeInBalancedProfile(snapshot, classification)
+        };
     }
 
-    private static HashSet<string> GetIncludedClasses(DeviceScanProfile profile) =>
-        profile == DeviceScanProfile.Minimal
-            ? MinimalIncludedClasses
-            : BalancedIncludedClasses;
+    private static bool ShouldIncludeInMinimalProfile(WindowsPnpEntitySnapshot snapshot, DeviceClassification classification)
+    {
+        if (classification.IsHighPriority || classification.IsPlatformCritical)
+        {
+            return true;
+        }
+
+        if (classification.Category is DeviceCategory.Keyboard or DeviceCategory.Mouse)
+        {
+            return true;
+        }
+
+        if (string.Equals(snapshot.DeviceClass, "AudioEndpoint", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    private static bool ShouldIncludeInBalancedProfile(WindowsPnpEntitySnapshot snapshot, DeviceClassification classification)
+    {
+        if (classification.IsRelevantForUser || classification.IsPlatformCritical)
+        {
+            return true;
+        }
+
+        if (classification.Category == DeviceCategory.Unknown)
+        {
+            return true;
+        }
+
+        if (string.Equals(snapshot.DeviceClass, "System", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

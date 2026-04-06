@@ -148,6 +148,50 @@ public sealed class RecommendationPipelineTests
     }
 
 
+
+    [Fact]
+    public async Task BuildAsync_ShouldSkipLowValueTechnicalDriversForDeepLookup()
+    {
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("99.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]))
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("SWD\\DRIVERENUM\\{FAKE}", "1.0.0", "SWD\\DRIVERENUM")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.False(summary.HasRecommendation);
+        Assert.Contains("skipped for deep provider lookup", summary.Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(DriverGuardian.Domain.Recommendations.RecommendationSummaryReasonCode.InsufficientEvidence, summary.ReasonCode);
+    }
+
+    [Fact]
+    public async Task BuildAsync_ShouldNotSkipUsefulUsbAudioEndpoint()
+    {
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("2.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]))
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("SWD\\MMDEVAPI\\{GUID}", "1.0.0", "USB\\VID_046D&PID_0A87")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.True(summary.HasRecommendation);
+        Assert.DoesNotContain("skipped for deep provider lookup", summary.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task BuildAsync_ShouldNotSkipMixedUsbCameraMicDevice()
+    {
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("3.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]))
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("USB\\VID_0C45&PID_6366", "1.0.0", "USB\\VID_0C45&PID_6366")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.True(summary.HasRecommendation);
+        Assert.DoesNotContain("skipped for deep provider lookup", summary.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Fact]
     public async Task BuildAsync_ShouldNotExposeOfficialSourceUrl_WhenSourceUriIsNotSafeHttps()
     {
@@ -172,10 +216,12 @@ public sealed class RecommendationPipelineTests
         Assert.Empty(result);
     }
 
+    private const string GenericSyntheticPciHardwareId = "PCI\\VEN_1234&DEV_0001";
+
     private static InstalledDriverSnapshot CreateInstalled(string deviceId, string version, string? hardwareId = null)
         => new(
             new DeviceIdentity(deviceId),
-            new HardwareIdentifier(hardwareId ?? $"PCI\\VEN_1234&DEV_{deviceId}"),
+            new HardwareIdentifier(hardwareId ?? GenericSyntheticPciHardwareId),
             version,
             null,
             "Contoso");
