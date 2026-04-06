@@ -131,4 +131,83 @@ public sealed class DeviceRelevanceClassifierTests
         Assert.Equal(DeviceCategory.NetworkEthernet, ethernet.Category);
         Assert.Equal(DeviceCategory.NetworkWifi, wifi.Category);
     }
+
+    [Fact]
+    public void Classify_MixedUsbCameraWithMicrophoneSignals_RemainsUserRelevant()
+    {
+        var device = DeviceRelevanceClassifier.Classify(
+            "Camera",
+            "USB\\VID_0C45&PID_6366",
+            ["USB\\VID_0C45&PID_6366", "USB\\Class_0E"],
+            "Integrated Camera Vendor",
+            "USB Webcam with Microphone");
+
+        Assert.Equal(DeviceCategory.Camera, device.Category);
+        Assert.True(device.IsRelevantForUser);
+        Assert.False(device.IsLowValueTechnical);
+    }
+
+    [Fact]
+    public void Classify_MixedAudioEndpointWithWebcamSignal_IsNotDroppedAsNoise()
+    {
+        var device = DeviceRelevanceClassifier.Classify(
+            "AudioEndpoint",
+            "SWD\\MMDEVAPI\\{CAMMIC}",
+            ["USB\\VID_0C45&PID_6366"],
+            "Integrated Camera Vendor",
+            "Webcam Microphone");
+
+        Assert.True(device.IsRelevantForUser);
+        Assert.Equal(DeviceCategory.Microphone, device.Category);
+    }
+
+    [Fact]
+    public void Classify_PlatformSystemAmbiguousEntries_DistinguishesCriticalFromGeneric()
+    {
+        var critical = DeviceRelevanceClassifier.Classify(
+            "System",
+            "PCI\\VEN_8086&DEV_A33D",
+            ["PCI\\VEN_8086&DEV_A33D"],
+            "Intel",
+            "PCI Express Root Port");
+
+        var generic = DeviceRelevanceClassifier.Classify(
+            "System",
+            "ROOT\\SYSTEM\\0099",
+            ["ROOT\\SYSTEM\\0099"],
+            "Intel",
+            "Intel Device");
+
+        Assert.Equal(DeviceCategory.MotherboardPlatform, critical.Category);
+        Assert.True(critical.IsPlatformCritical);
+        Assert.Equal(DeviceCategory.Unknown, generic.Category);
+        Assert.False(generic.IsPlatformCritical);
+    }
+
+    [Fact]
+    public void Classify_PropertyLike_NoFalsePositiveNetworkForLanSubstrings()
+    {
+        var nonNetworkNames = new[]
+        {
+            "Plantronics USB Audio",
+            "Balance Controller",
+            "Freelance Input Device",
+            "Roland Midi Keyboard",
+            "Milan Webcam"
+        };
+
+        foreach (var name in nonNetworkNames)
+        {
+            var result = DeviceRelevanceClassifier.Classify(
+                "AudioEndpoint",
+                $"SWD\\MMDEVAPI\\{{{name.GetHashCode(StringComparison.Ordinal)}}}",
+                ["USB\\VID_1234&PID_5678"],
+                "Vendor",
+                name);
+
+            Assert.DoesNotContain(
+                result.Category,
+                new[] { DeviceCategory.NetworkEthernet, DeviceCategory.NetworkWifi, DeviceCategory.Bluetooth });
+        }
+    }
 }

@@ -179,6 +179,20 @@ public sealed class RecommendationPipelineTests
     }
 
     [Fact]
+    public async Task BuildAsync_ShouldNotSkipMixedUsbCameraMicDevice()
+    {
+        var pipeline = new RecommendationPipeline([
+            new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("3.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]))
+        ]);
+
+        var result = await pipeline.BuildAsync([CreateInstalled("USB\\VID_0C45&PID_6366", "1.0.0", "USB\\VID_0C45&PID_6366")], CancellationToken.None);
+
+        var summary = Assert.Single(result);
+        Assert.True(summary.HasRecommendation);
+        Assert.DoesNotContain("skipped for deep provider lookup", summary.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task BuildAsync_ShouldNotExposeOfficialSourceUrl_WhenSourceUriIsNotSafeHttps()
     {
         var pipeline = new RecommendationPipeline([
