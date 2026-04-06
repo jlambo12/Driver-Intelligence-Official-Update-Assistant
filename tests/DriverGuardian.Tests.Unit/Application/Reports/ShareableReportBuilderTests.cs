@@ -14,6 +14,7 @@ namespace DriverGuardian.Tests.Unit.Application.Reports;
 public sealed class ShareableReportBuilderTests
 {
     private readonly ShareableReportBuilder _builder = new();
+    private const string GenericSyntheticHardwareId = "PCI\\VEN_1234&DEV_0001";
 
     [Fact]
     public void Build_CreatesExpectedSummarySectionsAndDeviceDetails()
@@ -61,14 +62,14 @@ public sealed class ShareableReportBuilderTests
         var now = DateTimeOffset.Parse("2026-04-01T12:00:00+00:00");
         var session = ScanSession.Start(Guid.NewGuid(), now.AddMinutes(-5)).Complete(now.AddMinutes(-1));
 
-        var swdDriver = BuildDriver("SWD\\MMDEVAPI\\{FAKE}", "10.0.1", "Microsoft");
+        var swdDriver = BuildDriver("SWD\\DRIVERENUM\\{FAKE}", "10.0.1", "Microsoft");
         var gpuDriver = BuildDriver("PCI\\VEN_10DE&DEV_1C8D", "552.44", "NVIDIA");
         var request = new ShareableReportRequest(
             new ScanResult(
                 session,
                 2,
                 [
-                    DiscoveredDevice.Create("SWD\\MMDEVAPI\\{FAKE}", "SWD\\MMDEVAPI\\{FAKE}", ["ROOT\\MMDEVAPI"], "Microsoft", "AudioEndpoint", DevicePresenceStatus.Present, null),
+                    DiscoveredDevice.Create("SWD\\DRIVERENUM\\{FAKE}", "SWD\\DRIVERENUM\\{FAKE}", ["SWD\\DRIVERENUM"], "Microsoft", "SoftwareDevice", DevicePresenceStatus.Present, null),
                     DiscoveredDevice.Create("PCI\\VEN_10DE&DEV_1C8D", "PCI\\VEN_10DE&DEV_1C8D", ["PCI\\VEN_10DE&DEV_1C8D"], "NVIDIA", "Display", DevicePresenceStatus.Present, null)
                 ],
                 [swdDriver, gpuDriver],
@@ -87,6 +88,59 @@ public sealed class ShareableReportBuilderTests
         var onlyDevice = Assert.Single(report.Devices);
         Assert.Equal("PCI\\VEN_10DE&DEV_1C8D", onlyDevice.DeviceInstanceId);
         Assert.Equal("NVIDIA (Display)", onlyDevice.DeviceDisplayName);
+    }
+
+
+    [Fact]
+    public void Build_ShouldKeepLowValueDeviceVisible_WhenItHasRecommendation()
+    {
+        var now = DateTimeOffset.Parse("2026-04-01T12:00:00+00:00");
+        var session = ScanSession.Start(Guid.NewGuid(), now.AddMinutes(-5)).Complete(now.AddMinutes(-1));
+
+        var endpointDriver = BuildDriver("SWD\\MMDEVAPI\\{FAKE}", "10.0.1", "Microsoft");
+        var request = new ShareableReportRequest(
+            new ScanResult(
+                session,
+                1,
+                [DiscoveredDevice.Create("SWD\\MMDEVAPI\\{FAKE}", "Endpoint", ["ROOT\\MMDEVAPI"], "Microsoft", "AudioEndpoint", DevicePresenceStatus.Present, null)],
+                [endpointDriver],
+                ScanExecutionStatus.Completed,
+                []),
+            [new RecommendationSummary(endpointDriver.DeviceIdentity, true, "Upgrade available", "10.0.2")],
+            [],
+            [],
+            now);
+
+        var report = _builder.Build(request);
+
+        var device = Assert.Single(report.Devices);
+        Assert.Equal("SWD\\MMDEVAPI\\{FAKE}", device.DeviceInstanceId);
+        Assert.True(device.Recommendation!.HasRecommendation);
+    }
+
+    [Fact]
+    public void Build_ShouldHideUnknownNoiseWithoutRecommendation()
+    {
+        var now = DateTimeOffset.Parse("2026-04-01T12:00:00+00:00");
+        var session = ScanSession.Start(Guid.NewGuid(), now.AddMinutes(-5)).Complete(now.AddMinutes(-1));
+        var unknownDriver = BuildDriver("ROOT\\DEVICE\\1001", "1.0.0", "VendorX");
+
+        var request = new ShareableReportRequest(
+            new ScanResult(
+                session,
+                1,
+                [DiscoveredDevice.Create("ROOT\\DEVICE\\1001", "Generic Device", ["ROOT\\DEVICE\\1001"], "VendorX", "System", DevicePresenceStatus.Present, null)],
+                [unknownDriver],
+                ScanExecutionStatus.Completed,
+                []),
+            [new RecommendationSummary(unknownDriver.DeviceIdentity, false, "No action", null)],
+            [],
+            [],
+            now);
+
+        var report = _builder.Build(request);
+
+        Assert.Empty(report.Devices);
     }
 
     [Fact]
@@ -175,7 +229,7 @@ public sealed class ShareableReportBuilderTests
     private static InstalledDriverSnapshot BuildDriver(string instanceId, string version, string provider)
         => new(
             new DeviceIdentity(instanceId),
-            new HardwareIdentifier($"HWID-{instanceId}"),
+            new HardwareIdentifier(GenericSyntheticHardwareId),
             version,
             new DateOnly(2026, 3, 31),
             provider);

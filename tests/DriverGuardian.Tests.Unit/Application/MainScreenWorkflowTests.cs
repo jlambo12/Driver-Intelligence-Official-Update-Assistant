@@ -251,11 +251,11 @@ public sealed class MainScreenWorkflowTests
             IReadOnlyCollection<DiscoveredDevice> discoveredDevices =
             [
                 DiscoveredDevice.Create(
-                    "SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}",
-                    "SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}",
-                    ["ROOT\\MMDEVAPI"],
+                    "SWD\\DRIVERENUM\\{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}",
+                    "SWD\\DRIVERENUM\\{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}",
+                    ["SWD\\DRIVERENUM"],
                     "Microsoft",
-                    "AudioEndpoint",
+                    "SoftwareDevice",
                     DevicePresenceStatus.Present,
                     null),
                 DiscoveredDevice.Create(
@@ -271,8 +271,8 @@ public sealed class MainScreenWorkflowTests
             IReadOnlyCollection<InstalledDriverSnapshot> drivers =
             [
                 new InstalledDriverSnapshot(
-                    new DeviceIdentity("SWD\\MMDEVAPI\\{0.0.0.00000000}.{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}"),
-                    new HardwareIdentifier("ROOT\\MMDEVAPI"),
+                    new DeviceIdentity("SWD\\DRIVERENUM\\{AAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}"),
+                    new HardwareIdentifier("SWD\\DRIVERENUM"),
                     "10.0.1",
                     null,
                     "Microsoft"),
