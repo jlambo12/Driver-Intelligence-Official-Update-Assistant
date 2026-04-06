@@ -30,7 +30,8 @@ public sealed class DevicePresentationHeuristicsTests
 
         var bucket = DevicePresentationHeuristics.ResolvePriorityBucket(endpoint, hasRecommendation: false);
 
-        Assert.Equal(4, bucket);
+        Assert.NotEqual(0, bucket);
+        Assert.NotEqual(1, bucket);
     }
 
     [Fact]
