@@ -22,7 +22,11 @@ public sealed class DevicePresentationHeuristicsTests
     [Fact]
     public void ResolvePriorityBucket_DoesNotTreatAudioEndpointAsTopPriority()
     {
-        var endpoint = BuildDevice("SWD\\MMDEVAPI\\{FAKE}", "Speaker Endpoint", "AudioEndpoint");
+        var endpoint = BuildDevice(
+            "SWD\\MMDEVAPI\\{FAKE}",
+            "SWD\\MMDEVAPI\\{FAKE}",
+            "AudioEndpoint",
+            ["ROOT\\MMDEVAPI"]);
 
         var bucket = DevicePresentationHeuristics.ResolvePriorityBucket(endpoint, hasRecommendation: false);
 
@@ -55,11 +59,11 @@ public sealed class DevicePresentationHeuristicsTests
         Assert.Equal(2, DevicePresentationHeuristics.ResolvePriorityBucket(device, hasRecommendation: false));
     }
 
-    private static DiscoveredDevice BuildDevice(string instanceId, string displayName, string deviceClass)
+    private static DiscoveredDevice BuildDevice(string instanceId, string displayName, string deviceClass, IReadOnlyCollection<string>? hardwareIds = null)
         => DiscoveredDevice.Create(
             instanceId,
             displayName,
-            [instanceId],
+            hardwareIds ?? [instanceId],
             "Vendor",
             deviceClass,
             DevicePresenceStatus.Present,
