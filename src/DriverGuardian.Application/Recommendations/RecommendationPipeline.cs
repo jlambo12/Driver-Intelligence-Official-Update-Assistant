@@ -1,4 +1,5 @@
 using DriverGuardian.Application.Abstractions;
+using DriverGuardian.Contracts.DeviceDiscovery;
 using DriverGuardian.Domain.Drivers;
 using DriverGuardian.Domain.Recommendations;
 using DriverGuardian.ProviderAdapters.Abstractions.Lookup;
@@ -39,6 +40,12 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (!ShouldRunLookup(installedDriver))
+            {
+                recommendations.Add(MapSkippedSummary(installedDriver));
+                continue;
+            }
+
             var lookup = await _lookupOrchestrator.LookupAsync(installedDriver, cancellationToken);
             var decision = _evaluator.Evaluate(new RecommendationEvaluationInput(
                 installedDriver,
@@ -50,6 +57,90 @@ public sealed class RecommendationPipeline : IRecommendationPipeline
 
         return recommendations;
     }
+
+
+    private static bool ShouldRunLookup(InstalledDriverSnapshot installedDriver)
+    {
+        var inferredClass = InferDeviceClass(installedDriver);
+        var friendlySignal = BuildFriendlySignal(installedDriver);
+
+        var classification = DeviceRelevanceClassifier.Classify(
+            deviceClass: inferredClass,
+            instanceId: installedDriver.DeviceIdentity.InstanceId,
+            hardwareIds: [installedDriver.HardwareIdentifier.Value],
+            manufacturer: installedDriver.ProviderName,
+            friendlyName: friendlySignal);
+
+        return !classification.IsVirtualOrSoftware && !classification.IsLowValueTechnical;
+    }
+
+    private static string? InferDeviceClass(InstalledDriverSnapshot installedDriver)
+    {
+        var instanceId = installedDriver.DeviceIdentity.InstanceId;
+        var hardwareId = installedDriver.HardwareIdentifier.Value;
+
+        if (ContainsAny(instanceId, hardwareId, "swd\\mmdevapi", "hdaudio\\"))
+        {
+            return "AudioEndpoint";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "display", "graphics", "geforce", "radeon", "arc"))
+        {
+            return "Display";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "wireless", "wi-fi", "wlan", "802.11"))
+        {
+            return "Net";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "ethernet", "gbe", "network adapter") || HasWord(instanceId, "lan") || HasWord(hardwareId, "lan"))
+        {
+            return "Net";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "nvme", "ahci", "raid", "sata", "scsi"))
+        {
+            return "SCSIAdapter";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "usb\\", "xhci", "ehci"))
+        {
+            return "USB";
+        }
+
+        if (ContainsAny(instanceId, hardwareId, "acpi\\", "smbus", "management engine", "amd psp", "serial io", "chipset"))
+        {
+            return "System";
+        }
+
+        return null;
+    }
+
+    private static string BuildFriendlySignal(InstalledDriverSnapshot installedDriver)
+        => $"{installedDriver.ProviderName} {installedDriver.DeviceIdentity.InstanceId} {installedDriver.HardwareIdentifier.Value}";
+
+    private static bool ContainsAny(string value1, string value2, params string[] keywords)
+        => keywords.Any(keyword =>
+            value1.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+            value2.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasWord(string value, string word)
+    {
+        var tokens = value
+            .Split([' ', '\\', '/', '-', '_', '.', ',', ';', ':', '(', ')', '[', ']', '{', '}', '#', '&'], StringSplitOptions.RemoveEmptyEntries);
+
+        return tokens.Any(token => string.Equals(token, word, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static RecommendationSummary MapSkippedSummary(InstalledDriverSnapshot installedDriver)
+        => new(
+            installedDriver.DeviceIdentity,
+            hasRecommendation: false,
+            "No recommendation: low-value technical device skipped for deep provider lookup.",
+            recommendedVersion: null,
+            officialSourceUrl: null,
+            RecommendationSummaryReasonCode.InsufficientEvidence);
 
     private static RecommendationSummary MapSummary(
         InstalledDriverSnapshot installedDriver,

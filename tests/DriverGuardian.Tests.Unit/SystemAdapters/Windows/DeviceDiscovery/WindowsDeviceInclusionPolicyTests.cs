@@ -6,77 +6,108 @@ namespace DriverGuardian.Tests.Unit.SystemAdapters.Windows.DeviceDiscovery;
 public sealed class WindowsDeviceInclusionPolicyTests
 {
     [Fact]
-    public void ShouldInclude_ReturnsTrue_ForSystemOrPeripheralClasses()
+    public void ShouldInclude_ReturnsTrue_ForGpuDevice()
     {
-        var snapshot = new WindowsPnpEntitySnapshot(
-            InstanceId: "USB\\VID_046D&PID_C52B\\1",
-            FriendlyName: "USB Receiver",
-            HardwareIds: ["USB\\VID_046D&PID_C52B"],
-            Manufacturer: "Logitech",
-            DeviceClass: "HIDClass",
-            ConfigManagerErrorCode: 0,
-            Status: "OK");
+        var snapshot = BuildSnapshot("PCI\\VEN_10DE&DEV_1C8D", "NVIDIA GeForce", "Display", ["PCI\\VEN_10DE&DEV_1C8D"]);
 
         Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot));
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Minimal));
+    }
+
+    [Fact]
+    public void ShouldInclude_ReturnsTrue_ForEthernetAndWifiDevices()
+    {
+        var ethernet = BuildSnapshot("PCI\\VEN_8086&DEV_15F3", "Intel Ethernet Controller", "Net", ["PCI\\VEN_8086&DEV_15F3"]);
+        var wifi = BuildSnapshot("PCI\\VEN_8086&DEV_2723", "Intel Wi-Fi 6 AX201", "Net", ["PCI\\VEN_8086&DEV_2723"]);
+
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(ethernet));
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(wifi));
+    }
+
+    [Fact]
+    public void ShouldInclude_KeepsPlatformCriticalSystemEntries()
+    {
+        var snapshot = BuildSnapshot(
+            "PCI\\VEN_8086&DEV_A36D",
+            "Intel(R) SMBus - A36D",
+            "System",
+            ["PCI\\VEN_8086&DEV_A36D"]);
+
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot));
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Minimal));
     }
 
     [Fact]
     public void ShouldInclude_ReturnsFalse_ForSoftwareDeviceClass()
     {
-        var snapshot = new WindowsPnpEntitySnapshot(
-            InstanceId: "SWD\\DRIVERENUM\\{123}",
-            FriendlyName: "Software Device",
-            HardwareIds: ["SWD\\DRIVERENUM"],
-            Manufacturer: "Microsoft",
-            DeviceClass: "SoftwareDevice",
-            ConfigManagerErrorCode: 0,
-            Status: "OK");
+        var snapshot = BuildSnapshot("SWD\\DRIVERENUM\\{123}", "Software Device", "SoftwareDevice", ["SWD\\DRIVERENUM"]);
 
         Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot));
     }
 
     [Fact]
-    public void ShouldInclude_ReturnsTrue_ForAudioEndpointUnderSwdMmdevapi()
+    public void ShouldInclude_ReturnsFalse_ForAudioEndpointInMinimalProfile()
     {
-        var snapshot = new WindowsPnpEntitySnapshot(
-            InstanceId: "SWD\\MMDEVAPI\\{0.0.1.00000000}",
-            FriendlyName: "Microphone",
-            HardwareIds: ["HDAUDIO\\FUNC_01"],
-            Manufacturer: "Vendor",
-            DeviceClass: "AudioEndpoint",
-            ConfigManagerErrorCode: 0,
-            Status: "OK");
-
-        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot));
-    }
-
-    [Fact]
-    public void ShouldInclude_ReturnsFalse_InMinimalProfile_ForCameraClass()
-    {
-        var snapshot = new WindowsPnpEntitySnapshot(
-            InstanceId: "USB\\VID_0C45&PID_6A06\\1",
-            FriendlyName: "Webcam",
-            HardwareIds: ["USB\\VID_0C45&PID_6A06"],
-            Manufacturer: "Vendor",
-            DeviceClass: "Camera",
-            ConfigManagerErrorCode: 0,
-            Status: "OK");
+        var snapshot = BuildSnapshot(
+            "SWD\\MMDEVAPI\\{0.0.1.00000000}",
+            "Microphone",
+            "AudioEndpoint",
+            ["HDAUDIO\\FUNC_01"]);
 
         Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Minimal));
     }
 
     [Fact]
+    public void ShouldInclude_ReturnsTrue_InBalancedProfile_ForCameraClass()
+    {
+        var snapshot = BuildSnapshot("USB\\VID_0C45&PID_6A06\\1", "Webcam", "Camera", ["USB\\VID_0C45&PID_6A06"]);
+
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
+    }
+
+    [Fact]
     public void ShouldInclude_ReturnsTrue_InComprehensiveProfile_ForNonExcludedClass()
     {
-        var snapshot = new WindowsPnpEntitySnapshot(
-            InstanceId: "ROOT\\VIRTUALDEVICE\\0001",
-            FriendlyName: "Virtual Platform Device",
-            HardwareIds: ["ROOT\\VIRTUALDEVICE"],
-            Manufacturer: "Vendor",
-            DeviceClass: "Platform",
-            ConfigManagerErrorCode: 0,
-            Status: "OK");
+        var snapshot = BuildSnapshot("ROOT\\VIRTUALDEVICE\\0001", "Virtual Platform Device", "Platform", ["ROOT\\VIRTUALDEVICE"]);
 
         Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Comprehensive));
     }
+
+    [Fact]
+    public void ShouldInclude_ComprehensiveProfile_KeepsWiderCoverageThanBalancedAndMinimal()
+    {
+        var snapshot = BuildSnapshot("SWD\\DRIVERENUM\\{A1}", "Software Enumerator", "UnknownClass", ["SWD\\DRIVERENUM"]);
+
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Comprehensive));
+        Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
+        Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Minimal));
+    }
+
+    [Fact]
+    public void ShouldInclude_ComprehensiveProfile_IncludesSoftwareLikeValidEntries()
+    {
+        var snapshot = BuildSnapshot("SWD\\DRIVERENUM\\{A2}", "Software Device", "SoftwareDevice", ["SWD\\DRIVERENUM"]);
+
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Comprehensive));
+        Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
+    }
+
+    [Fact]
+    public void ShouldInclude_UnknownDevice_IsExcludedInMinimalButKeptInBalanced()
+    {
+        var snapshot = BuildSnapshot("ROOT\\DEVICE\\0010", "Generic Device", "System", ["ROOT\\DEVICE\\0010"]);
+
+        Assert.False(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Minimal));
+        Assert.True(WindowsDeviceInclusionPolicy.ShouldInclude(snapshot, DeviceScanProfile.Balanced));
+    }
+
+    private static WindowsPnpEntitySnapshot BuildSnapshot(string instanceId, string friendlyName, string deviceClass, IReadOnlyCollection<string> hardwareIds)
+        => new(
+            InstanceId: instanceId,
+            FriendlyName: friendlyName,
+            HardwareIds: hardwareIds,
+            Manufacturer: "Vendor",
+            DeviceClass: deviceClass,
+            ConfigManagerErrorCode: 0,
+            Status: "OK");
 }

@@ -4,55 +4,14 @@ namespace DriverGuardian.Application.Presentation;
 
 public static class DevicePresentationHeuristics
 {
-    private static readonly string[] HighPriorityClasses =
-    [
-        "Display",
-        "Net",
-        "Media",
-        "Bluetooth",
-        "USB",
-        "HDC",
-        "SCSIAdapter",
-        "Camera",
-        "Image",
-        "Keyboard",
-        "Mouse",
-        "HIDClass"
-    ];
-
-    private static readonly string[] LowValueClasses =
-    [
-        "SoftwareDevice",
-        "PrintQueue",
-        "LegacyDriver",
-        "AudioEndpoint",
-        "SoftwareComponent"
-    ];
-
-    private static readonly string[] LowValueInstancePrefixes =
-    [
-        "SWD\\",
-        "ROOT\\",
-        "PRINTENUM\\",
-        "MMDEVAPI\\"
-    ];
-
     public static bool IsUserRelevant(DiscoveredDevice? device, bool hasRecommendation)
     {
-        if (hasRecommendation)
+        if (hasRecommendation || device is null)
         {
             return true;
         }
 
-        if (device is null)
-        {
-            return true;
-        }
-
-        var instanceId = device.Identity.InstanceId;
-        var isLowValuePrefix = HasPrefix(instanceId, LowValueInstancePrefixes);
-        var isLowValueClass = IsInClassList(device.DeviceClass, LowValueClasses);
-        return !(isLowValuePrefix || isLowValueClass);
+        return DeviceRelevanceClassifier.Classify(device).IsRelevantForUser;
     }
 
     public static int ResolvePriorityBucket(DiscoveredDevice? device, bool hasRecommendation)
@@ -67,12 +26,13 @@ public static class DevicePresentationHeuristics
             return 3;
         }
 
-        if (IsInClassList(device.DeviceClass, HighPriorityClasses))
+        var classification = DeviceRelevanceClassifier.Classify(device);
+        if (classification.IsHighPriority)
         {
             return 1;
         }
 
-        if (IsUserRelevant(device, hasRecommendation))
+        if (classification.IsRelevantForUser)
         {
             return 2;
         }
@@ -101,25 +61,13 @@ public static class DevicePresentationHeuristics
         return fallbackInstanceId;
     }
 
-    private static bool IsInClassList(string? value, IReadOnlyCollection<string> classList)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return false;
-        }
-
-        return classList.Contains(value.Trim(), StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static bool HasPrefix(string value, IReadOnlyCollection<string> prefixes)
-    {
-        return prefixes.Any(prefix => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-    }
-
     private static bool LooksTechnical(string value)
     {
         var trimmed = value.Trim();
-        return HasPrefix(trimmed, LowValueInstancePrefixes) ||
+        return trimmed.StartsWith("SWD\\", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("ROOT\\", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("PRINTENUM\\", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("MMDEVAPI\\", StringComparison.OrdinalIgnoreCase) ||
                trimmed.StartsWith("PCI\\", StringComparison.OrdinalIgnoreCase) ||
                trimmed.StartsWith("USB\\", StringComparison.OrdinalIgnoreCase) ||
                trimmed.Contains("VID_", StringComparison.OrdinalIgnoreCase) ||
