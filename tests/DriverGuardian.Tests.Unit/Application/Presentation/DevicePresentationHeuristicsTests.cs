@@ -5,6 +5,8 @@ namespace DriverGuardian.Tests.Unit.Application.Presentation;
 
 public sealed class DevicePresentationHeuristicsTests
 {
+    private const string GenericSyntheticHardwareId = "SYNTH\\HWID\\GENERIC";
+
     [Theory]
     [InlineData("Keyboard", "USB\\VID_0001", "USB Keyboard")]
     [InlineData("Mouse", "USB\\VID_0002", "USB Mouse")]
@@ -64,7 +66,7 @@ public sealed class DevicePresentationHeuristicsTests
         => DiscoveredDevice.Create(
             instanceId,
             displayName,
-            hardwareIds ?? [instanceId],
+            hardwareIds ?? [GenericSyntheticHardwareId],
             "Vendor",
             deviceClass,
             DevicePresenceStatus.Present,

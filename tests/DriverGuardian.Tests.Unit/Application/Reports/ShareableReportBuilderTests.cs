@@ -14,6 +14,7 @@ namespace DriverGuardian.Tests.Unit.Application.Reports;
 public sealed class ShareableReportBuilderTests
 {
     private readonly ShareableReportBuilder _builder = new();
+    private const string GenericSyntheticHardwareId = "PCI\\VEN_1234&DEV_0001";
 
     [Fact]
     public void Build_CreatesExpectedSummarySectionsAndDeviceDetails()
@@ -228,7 +229,7 @@ public sealed class ShareableReportBuilderTests
     private static InstalledDriverSnapshot BuildDriver(string instanceId, string version, string provider)
         => new(
             new DeviceIdentity(instanceId),
-            new HardwareIdentifier($"HWID-{instanceId}"),
+            new HardwareIdentifier(GenericSyntheticHardwareId),
             version,
             new DateOnly(2026, 3, 31),
             provider);

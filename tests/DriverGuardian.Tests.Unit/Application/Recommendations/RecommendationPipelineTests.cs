@@ -216,10 +216,12 @@ public sealed class RecommendationPipelineTests
         Assert.Empty(result);
     }
 
+    private const string GenericSyntheticPciHardwareId = "PCI\\VEN_1234&DEV_0001";
+
     private static InstalledDriverSnapshot CreateInstalled(string deviceId, string version, string? hardwareId = null)
         => new(
             new DeviceIdentity(deviceId),
-            new HardwareIdentifier(hardwareId ?? $"PCI\\VEN_1234&DEV_{deviceId}"),
+            new HardwareIdentifier(hardwareId ?? GenericSyntheticPciHardwareId),
             version,
             null,
             "Contoso");
