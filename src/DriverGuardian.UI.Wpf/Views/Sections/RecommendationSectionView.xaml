@@ -26,7 +26,7 @@
             </StackPanel>
         </Border>
 
-        <Border Style="{StaticResource PrimaryWorkflowCardStyle}" BorderBrush="#93C5FD" BorderThickness="1.3" Padding="13" Margin="0 0 0 10" Background="#F1F7FF">
+        <Border Style="{DynamicResource PrimaryWorkflowCardStyle}" BorderBrush="#93C5FD" BorderThickness="1.3" Padding="13" Margin="0 0 0 10" Background="#F1F7FF">
             <StackPanel>
                 <DockPanel LastChildFill="True" Margin="0 0 0 6">
                     <Border DockPanel.Dock="Left" Width="22" Height="22" CornerRadius="11" Background="#DBEAFE" Margin="0 0 8 0" VerticalAlignment="Center">
@@ -35,7 +35,7 @@
                     <TextBlock Text="{Binding State.Results.RecommendationSectionTitle}" FontWeight="SemiBold" FontSize="17" Foreground="#1E3A8A"/>
                 </DockPanel>
                 <TextBlock Text="{Binding State.Results.RecommendationSectionHint}" Margin="0 0 0 8" TextWrapping="Wrap" Foreground="#1E293B"/>
-                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 8" Background="#EFF6FF">
+                <Border Style="{DynamicResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 8" Background="#EFF6FF">
                     <StackPanel>
                         <TextBlock Text="{Binding State.Results.PrimaryRecommendationSummary}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#1E3A8A"/>
                         <TextBlock Text="{Binding State.Results.SecondaryRecommendationSummary}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155">
@@ -65,7 +65,7 @@
                     </ItemsControl.Style>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Padding="8" Margin="0 0 0 6">
+                            <Border Style="{DynamicResource PrimaryWorkflowInnerCardStyle}" Padding="8" Margin="0 0 0 6">
                                 <StackPanel>
                                     <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding WorkflowState}" Margin="0 2 0 0" TextWrapping="Wrap" FontWeight="SemiBold"/>
@@ -115,7 +115,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyleWhenSecondarySummaryVisible}" Padding="8" Margin="0 0 0 8" Background="#F8FAFC">
+                <Border Style="{DynamicResource PrimaryWorkflowInnerCardStyleWhenSecondarySummaryVisible}" Padding="8" Margin="0 0 0 8" Background="#F8FAFC">
                     <StackPanel>
                         <ToggleButton IsChecked="{Binding ShowSecondaryRecommendations, Mode=TwoWay}"
                                       Content="{Binding State.Results.SecondaryRecommendationToggleLabel}"
@@ -182,7 +182,7 @@
                         </ItemsControl>
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource PrimaryWorkflowInnerCardStyleWhenRecommendationDetailsEmptyVisible}" Padding="10">
+                <Border Style="{DynamicResource PrimaryWorkflowInnerCardStyleWhenRecommendationDetailsEmptyVisible}" Padding="10">
                     <StackPanel>
                         <TextBlock Text="{Binding State.Results.RecommendationEmptyState}" TextWrapping="Wrap" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding State.Results.WorkflowHint}" Margin="0 4 0 0" TextWrapping="Wrap" Foreground="#334155"/>

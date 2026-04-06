@@ -1,7 +1,7 @@
 <UserControl x:Class="DriverGuardian.UI.Wpf.Views.Sections.VerificationSectionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border Style="{StaticResource PrimaryWorkflowCardStyle}" BorderBrush="#93C5FD" BorderThickness="1.3" Margin="0 0 0 10" Background="#F8FBFF">
+    <Border Style="{DynamicResource PrimaryWorkflowCardStyle}" BorderBrush="#93C5FD" BorderThickness="1.3" Margin="0 0 0 10" Background="#F8FBFF">
         <StackPanel>
             <DockPanel LastChildFill="True" Margin="0 0 0 6">
                 <Border DockPanel.Dock="Left" Width="22" Height="22" CornerRadius="11" Background="#E0F2FE" Margin="0 0 8 0" VerticalAlignment="Center">
@@ -11,10 +11,10 @@
             </DockPanel>
             <TextBlock Text="{Binding Results.VerificationSummary}" Margin="0 0 0 5" TextWrapping="Wrap"/>
             <TextBlock Text="{Binding Results.VerificationSectionHint}" Margin="0 0 0 4" TextWrapping="Wrap" Foreground="#1E293B"/>
-            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 4">
+            <Border Style="{DynamicResource PrimaryWorkflowInnerCardStyle}" Margin="0 0 0 4">
                 <TextBlock Text="{Binding Results.VerificationRescanHint}" TextWrapping="Wrap" Foreground="#0F172A"/>
             </Border>
-            <Border Style="{StaticResource PrimaryWorkflowInnerCardStyleWhenVerificationEmptyStateVisible}">
+            <Border Style="{DynamicResource PrimaryWorkflowInnerCardStyleWhenVerificationEmptyStateVisible}">
                 <TextBlock Text="{Binding Results.VerificationEmptyState}" TextWrapping="Wrap" Foreground="#334155"/>
             </Border>
         </StackPanel>
