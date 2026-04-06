@@ -61,14 +61,14 @@ public sealed class ShareableReportBuilderTests
         var now = DateTimeOffset.Parse("2026-04-01T12:00:00+00:00");
         var session = ScanSession.Start(Guid.NewGuid(), now.AddMinutes(-5)).Complete(now.AddMinutes(-1));
 
-        var swdDriver = BuildDriver("SWD\\MMDEVAPI\\{FAKE}", "10.0.1", "Microsoft");
+        var swdDriver = BuildDriver("SWD\\DRIVERENUM\\{FAKE}", "10.0.1", "Microsoft");
         var gpuDriver = BuildDriver("PCI\\VEN_10DE&DEV_1C8D", "552.44", "NVIDIA");
         var request = new ShareableReportRequest(
             new ScanResult(
                 session,
                 2,
                 [
-                    DiscoveredDevice.Create("SWD\\MMDEVAPI\\{FAKE}", "SWD\\MMDEVAPI\\{FAKE}", ["ROOT\\MMDEVAPI"], "Microsoft", "AudioEndpoint", DevicePresenceStatus.Present, null),
+                    DiscoveredDevice.Create("SWD\\DRIVERENUM\\{FAKE}", "SWD\\DRIVERENUM\\{FAKE}", ["SWD\\DRIVERENUM"], "Microsoft", "SoftwareDevice", DevicePresenceStatus.Present, null),
                     DiscoveredDevice.Create("PCI\\VEN_10DE&DEV_1C8D", "PCI\\VEN_10DE&DEV_1C8D", ["PCI\\VEN_10DE&DEV_1C8D"], "NVIDIA", "Display", DevicePresenceStatus.Present, null)
                 ],
                 [swdDriver, gpuDriver],

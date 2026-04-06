@@ -216,6 +216,11 @@ public static class DeviceRelevanceClassifier
 
     private static bool IsUsbController(string? deviceClass, string instanceId, IReadOnlyCollection<string> hardwareIds, string friendlyName)
     {
+        if (IsClass(deviceClass, "Bluetooth") || IsClass(deviceClass, "Net"))
+        {
+            return false;
+        }
+
         if (IsClass(deviceClass, "USB"))
         {
             return true;

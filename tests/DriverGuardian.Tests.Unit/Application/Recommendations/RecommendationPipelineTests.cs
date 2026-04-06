@@ -156,7 +156,7 @@ public sealed class RecommendationPipelineTests
             new TestProviderAdapter(CreateSuccessResponse("official", [CreateCandidate("99.0.0", CompatibilityConfidence.High, true, SourceTrustLevel.OfficialPublisherSite)]))
         ]);
 
-        var result = await pipeline.BuildAsync([CreateInstalled("SWD\\MMDEVAPI\\{FAKE}", "1.0.0", "ROOT\\MMDEVAPI")], CancellationToken.None);
+        var result = await pipeline.BuildAsync([CreateInstalled("SWD\\DRIVERENUM\\{FAKE}", "1.0.0", "SWD\\DRIVERENUM")], CancellationToken.None);
 
         var summary = Assert.Single(result);
         Assert.False(summary.HasRecommendation);
