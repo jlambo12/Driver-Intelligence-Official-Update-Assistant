@@ -35,7 +35,8 @@ public sealed record DeviceClassification(
     bool IsLowValueTechnical,
     bool IsVirtualOrSoftware,
     bool IsPlatformCritical,
-    bool IsRecommendationScopeCandidate);
+    bool IsRecommendationScopeCandidate,
+    string MatchedRuleId);
 
 public static class DeviceRelevanceClassifier
 {
@@ -113,7 +114,7 @@ public static class DeviceRelevanceClassifier
         if (normalizedInstanceId.StartsWith("SOFTWARE\\", StringComparison.OrdinalIgnoreCase) ||
             IsIn(normalizedClass, SoftwareClasses))
         {
-            return Build(DeviceCategory.VirtualOrSoftware, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: true, platformCritical: false);
+            return Build(DeviceCategory.VirtualOrSoftware, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: true, platformCritical: false, matchedRuleId: "software_class_or_instance");
         }
 
         if (IsClass(normalizedClass, "AudioEndpoint") &&
@@ -122,31 +123,32 @@ public static class DeviceRelevanceClassifier
             var audioCategory = HasAnyKeyword(name, "microphone", "mic", "headset", "conference", "capture")
                 ? DeviceCategory.Microphone
                 : DeviceCategory.Audio;
-            return Build(audioCategory, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false);
+            return Build(audioCategory, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false, matchedRuleId: "audioendpoint_user_peripheral");
         }
 
         if (IsIn(normalizedClass, LowValueClasses))
         {
-            return Build(DeviceCategory.LowValueTechnical, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: false, platformCritical: false);
+            return Build(DeviceCategory.LowValueTechnical, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: false, platformCritical: false, matchedRuleId: "low_value_class");
         }
 
         var category = ResolveCategory(normalizedClass, normalizedInstanceId, hardware, name);
+        var matchedRuleId = ResolveMatchedRuleId(category);
 
         return category switch
         {
-            DeviceCategory.VirtualOrSoftware => Build(category, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: true, platformCritical: false),
-            DeviceCategory.LowValueTechnical => Build(category, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: false, platformCritical: false),
+            DeviceCategory.VirtualOrSoftware => Build(category, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: true, platformCritical: false, matchedRuleId: matchedRuleId),
+            DeviceCategory.LowValueTechnical => Build(category, relevant: false, highPriority: false, lowValue: true, virtualOrSoftware: false, platformCritical: false, matchedRuleId: matchedRuleId),
             DeviceCategory.Chipset or DeviceCategory.MotherboardPlatform or DeviceCategory.StorageController or DeviceCategory.UsbController
-                => Build(category, relevant: true, highPriority: true, lowValue: false, virtualOrSoftware: false, platformCritical: true),
+                => Build(category, relevant: true, highPriority: true, lowValue: false, virtualOrSoftware: false, platformCritical: true, matchedRuleId: matchedRuleId),
             DeviceCategory.Gpu or DeviceCategory.NetworkEthernet or DeviceCategory.NetworkWifi or DeviceCategory.Bluetooth
-                => Build(category, relevant: true, highPriority: true, lowValue: false, virtualOrSoftware: false, platformCritical: false),
+                => Build(category, relevant: true, highPriority: true, lowValue: false, virtualOrSoftware: false, platformCritical: false, matchedRuleId: matchedRuleId),
             DeviceCategory.Audio
-                => Build(category, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false),
+                => Build(category, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false, matchedRuleId: matchedRuleId),
             DeviceCategory.Keyboard or DeviceCategory.Mouse or DeviceCategory.Monitor or DeviceCategory.Printer or DeviceCategory.Scanner or DeviceCategory.Microphone or
             DeviceCategory.Camera or DeviceCategory.HidPeripheral or DeviceCategory.DockingStation or DeviceCategory.Touchpad or DeviceCategory.CardReader or DeviceCategory.Biometric
-                => Build(category, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false),
-            DeviceCategory.Unknown => Build(category, relevant: false, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false),
-            _ => Build(category, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false)
+                => Build(category, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false, matchedRuleId: matchedRuleId),
+            DeviceCategory.Unknown => Build(category, relevant: false, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false, matchedRuleId: matchedRuleId),
+            _ => Build(category, relevant: true, highPriority: false, lowValue: false, virtualOrSoftware: false, platformCritical: false, matchedRuleId: matchedRuleId)
         };
     }
 
@@ -453,7 +455,8 @@ public static class DeviceRelevanceClassifier
         bool highPriority,
         bool lowValue,
         bool virtualOrSoftware,
-        bool platformCritical)
+        bool platformCritical,
+        string matchedRuleId)
     {
         return new DeviceClassification(
             category,
@@ -462,8 +465,38 @@ public static class DeviceRelevanceClassifier
             IsLowValueTechnical: lowValue,
             IsVirtualOrSoftware: virtualOrSoftware,
             IsPlatformCritical: platformCritical,
-            IsRecommendationScopeCandidate: relevant || platformCritical);
+            IsRecommendationScopeCandidate: relevant || platformCritical,
+            MatchedRuleId: matchedRuleId);
     }
+
+    private static string ResolveMatchedRuleId(DeviceCategory category)
+        => category switch
+        {
+            DeviceCategory.Chipset => "platform_chipset",
+            DeviceCategory.MotherboardPlatform => "platform_system_signal",
+            DeviceCategory.StorageController => "storage_controller",
+            DeviceCategory.UsbController => "usb_controller",
+            DeviceCategory.Gpu => "gpu_display",
+            DeviceCategory.NetworkEthernet => "network_ethernet",
+            DeviceCategory.NetworkWifi => "network_wifi",
+            DeviceCategory.Bluetooth => "network_bluetooth",
+            DeviceCategory.Audio => "audio_media",
+            DeviceCategory.Monitor => "peripheral_monitor",
+            DeviceCategory.Keyboard => "peripheral_keyboard",
+            DeviceCategory.Mouse => "peripheral_mouse",
+            DeviceCategory.Printer => "peripheral_printer",
+            DeviceCategory.Scanner => "peripheral_scanner",
+            DeviceCategory.Microphone => "peripheral_microphone",
+            DeviceCategory.Camera => "peripheral_camera",
+            DeviceCategory.HidPeripheral => "peripheral_hid",
+            DeviceCategory.DockingStation => "peripheral_dock",
+            DeviceCategory.Touchpad => "peripheral_touchpad",
+            DeviceCategory.CardReader => "peripheral_card_reader",
+            DeviceCategory.Biometric => "peripheral_biometric",
+            DeviceCategory.LowValueTechnical => "low_value_technical",
+            DeviceCategory.VirtualOrSoftware => "virtual_or_software",
+            _ => "unknown_fallback"
+        };
 
     private static bool IsClass(string? value, string expected)
         => string.Equals(value?.Trim(), expected, StringComparison.OrdinalIgnoreCase);

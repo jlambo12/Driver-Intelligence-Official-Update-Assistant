@@ -13,10 +13,13 @@ public sealed class DeviceRelevanceClassifierTests
 
         Assert.Equal(DeviceCategory.Gpu, gpu.Category);
         Assert.True(gpu.IsHighPriority);
+        Assert.Equal("gpu_display", gpu.MatchedRuleId);
         Assert.Equal(DeviceCategory.NetworkWifi, wifi.Category);
         Assert.True(wifi.IsHighPriority);
+        Assert.Equal("network_wifi", wifi.MatchedRuleId);
         Assert.Equal(DeviceCategory.Bluetooth, bluetooth.Category);
         Assert.True(bluetooth.IsHighPriority);
+        Assert.Equal("network_bluetooth", bluetooth.MatchedRuleId);
     }
 
     [Fact]
@@ -46,6 +49,7 @@ public sealed class DeviceRelevanceClassifierTests
         Assert.Equal(DeviceCategory.Unknown, platform.Category);
         Assert.False(platform.IsPlatformCritical);
         Assert.False(platform.IsHighPriority);
+        Assert.Equal("unknown_fallback", platform.MatchedRuleId);
     }
 
     [Fact]
@@ -88,6 +92,7 @@ public sealed class DeviceRelevanceClassifierTests
         Assert.True(audio.IsRelevantForUser);
         Assert.Equal(DeviceCategory.Microphone, audio.Category);
         Assert.False(audio.IsLowValueTechnical);
+        Assert.Equal("audioendpoint_user_peripheral", audio.MatchedRuleId);
     }
 
     [Fact]
